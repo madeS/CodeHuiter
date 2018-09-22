@@ -1,0 +1,2 @@
+win bat
+start chrome -incognito https://www.google.co.in/

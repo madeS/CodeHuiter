@@ -1,0 +1,23 @@
+{
+    "description": "The CodeHuiter framework",
+    "name": "madeS/codeHuiterFramework",
+    "type": "project",
+    "homepage": "https://andrei.bogarevich.com",
+    "license": "MIT",
+    "require": {
+        "php": ">=5.6"
+    },
+    "suggest": {
+        "paragonie/random_compat": "Provides better randomness in PHP 5.x"
+    },
+    "classmap-authoritative": false,
+    "autoload": {
+        "psr-4": {
+            "App\\": "app/",
+            "CodeHuiter\\": "system/"
+        }
+    },
+    "require-dev": {
+
+    }
+}

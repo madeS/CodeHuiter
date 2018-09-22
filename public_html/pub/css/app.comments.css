@@ -1,0 +1,60 @@
+/* 
+Comments 
+v.1.0.0.1
+*/
+.comments {overflow: hidden;}
+.comments .comment_add_form { margin: 5px 10px 0px 80px; padding:10px 0; position: relative; }
+.comments .comment_add_form .guest_name { margin-bottom: 10px; }
+.comments .comment_add_form img{ position: absolute; left:-70px; width: 60px; height: auto; }
+.comments .comment_add_form textarea{ width: 100%; min-width: 100%; max-width: 100%; margin: 0 0 4px; min-height: 60px; height: auto; box-sizing: border-box; padding: 0 4px;}
+.comments .comment_add_form .tipsy{ color: #ccc;}
+.comments .comment { margin: 15px 0 15px;  }
+.comments .comment.lvl0 { margin-left: 0; }
+.comments .comment.lvl1 { margin-left: 3%; }
+.comments .comment.lvl2 { margin-left: 6%; }
+.comments .comment.lvl3 { margin-left: 9%; }
+.comments .comment.lvl4 { margin-left: 12%; }
+.comments .comment.lvl5 { margin-left: 14%; }
+.comments .comment.lvl6 { margin-left: 16%; }
+.comments .comment.lvl7 { margin-left: 18%; }
+.comments .comment.lvl8 { margin-left: 20%; }
+.comments .comment.lvl9 { margin-left: 22%; }
+.comments .comment.lvl10 { margin-left: 24%; }
+.comments .comment.lvl11 { margin-left: 25%; }
+.comments .comment.lvl12 { margin-left: 26%; }
+.comments .comment.lvl13 { margin-left: 27%; }
+.comments .comment.lvl14 { margin-left: 28%; }
+.comments .comment.lvl15 { margin-left: 29%; }
+.comments .comment.lvl16 { margin-left: 30%; }
+.comments .comment.lvl17 { margin-left: 31%; }
+.comments .comment.lvl18 { margin-left: 32%; }
+.comments .comment.lvl19 { margin-left: 33%; }
+.comments .comment.lvl20 { margin-left: 34%; }
+.comments .comment .comment_add_in { margin-left: 2%;}
+.comments .comment .controls { display:inline-block; margin:0 0 0 10px; }
+.comments .comment .controls > span { text-decoration: none; font-size: 14px;}
+.comments .comment .message_cont{ margin: 0 100px 0 80px; position: relative; }
+.comments .comment .message_cont img{ position: absolute; left:-70px; width: 60px; height: auto;  }
+.comments .comment .message_cont .name{ font-weight: bold; margin-bottom: 4px; }
+.comments .comment .message_cont .botton{ color: #999; font-size: 12px; margin-top: 3px; }
+.comments .comment .message_cont .repled{ text-decoration: underline; cursor:pointer; }
+.comment .btn_cont.thumbs { position:absolute; right: -100px; top: 5px; width: 78px; }
+.comment .thumbs .btn{ height: 50px; line-height: 24px; font-size: 12px; padding: 0; width: 37px; padding-right: 2px; text-align: center;
+	vertical-align:top; background: none; border-right: 1px solid transparent; border-bottom: 1px solid transparent; 
+}
+.comment .thumbs_hover:hover .thumbs .btn{ border-right: 1px solid #ddd; border-bottom: 1px solid #ddd; 
+	 background-image: -webkit-linear-gradient(top,#FAFAFA 0,#EAEAEA 100%); 
+	 background-image: linear-gradient(to bottom, #FAFAFA 0px, #EAEAEA 100%);
+}
+.comment .thumbs_hover:hover .thumbs .btn:hover{
+	background-image: -webkit-linear-gradient(top,#F6F6F6 0,#DADADA 100%);
+	background-image: linear-gradient(to bottom, #F6F6F6 0px, #DADADA 100%);
+}
+.comment .thumbs .btn.thumbs_up{ border-radius: 5px 0 0 5px; color: #00b000; }
+.comment .thumbs .btn.thumbs_down{ border-radius: 0px 5px 5px 0px; color: #b00000; }
+.comment .thumbs .btn span{ display: block;}
+@media screen and (max-width: 400px) { 
+	.comments .comment .message_cont{ margin: 0 100px 0 15px; position: relative; }
+	.comments .comment .message_cont img{ position: absolute; left:-13px; top: 4px; width: 10px; height: auto;  }
+}
+ 

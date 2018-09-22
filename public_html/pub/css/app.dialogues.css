@@ -1,0 +1,44 @@
+/* 
+Dialogues 
+v.1.0.0.1
+*/
+.dialogue_view #dialogue_messages {overflow-y: auto; min-height: 200px;}
+.dialogue_view .bottom_block {height: 100px;}
+.dialogue_view .message_workspace {position: fixed; bottom:0; width: 1100px; height: 90px; padding: 5px 12px 0;
+								   margin-left: -12px;
+								   background: #fff; border-top: 1px solid #ccc;
+}
+.dialogue_view .message_workspace .profile_ava {display: block; float: left; width: 50px; padding: 0 20px 0 0;}
+.dialogue_view .message_workspace .interlocutor_profile {float: right; padding: 0 0 0 60px; width: 230px; position: relative; text-decoration:none; color: #414141;}
+.dialogue_view .message_workspace .interlocutor_profile > img { position: absolute; top: 0px; left: 0px;}
+.dialogue_view .message_workspace .interlocutor_profile .name{ color: #0773C6; font-size: 16px; font-weight: bold; padding-bottom: 10px;}
+
+.dialogue_view .message_workspace .profile_ava img { width: 50px; display: block;}
+.dialogue_view .message_workspace .profile_ava .name { display: block; overflow: hidden; }
+.dialogue_view .message_workspace .message_writing {margin-left: 70px; width: 610px;}
+.dialogue_view .message_workspace .message_writing .message {
+	display: block; background-color: #fff; border: 1px solid #ccc; 
+	resize: none; padding: 5px 5px 0; overflow-y: scroll;margin-bottom: 5px;
+	width: 585px; min-width: 585px; max-width: 585px; 
+	height: 43px; min-height: 43px; max-height: 43px;}
+.footer.footerhide {display: none;}
+
+.dialogue_view .show_more_container {text-align: center; height: 35px; }
+.dialogue_view .message_content { margin-bottom: 10px; }
+.dialogue_view .message_content .profile_ava {width: 50px; float: left; }
+.dialogue_view .message_content .profile_ava > img{width: 50px; min-height: 50px; }
+.dialogue_view .message_content .message_time {width: 100px; float: right; text-align: right; }
+.dialogue_view .message_content .message_time .time{font-weight: bold;}
+.dialogue_view .message_content .message_text {margin: 0 100px 0 70px; }
+.dialogue_view .message_content .message_text .name {font-weight: bold; color: #0773C6; font-size: 16px; margin-bottom: 5px;}
+.dialogue_view .message_content.adm .message_text { background-color: #fcc; }
+
+.dialogues_view .dialogue {border-top: 1px solid #ccc; padding: 5px 0 10px;}
+.dialogues_view .dialogue .talker_img {display: inline-block; vertical-align: top; width: 70px; padding: 0 20px 0 0; height: 70px; }
+.dialogues_view .dialogue .talker_img > img {width: 70px; height: auto;}
+.dialogues_view .dialogue .talker_info {display: inline-block; vertical-align: top; width: 200px; padding: 0 20px 0 0; height: 70px; }
+.dialogues_view .dialogue .talker_info .talker_name {display: block; font-weight: bold; color: #0773C6; font-size: 16px; }
+.dialogues_view .dialogue .talker_info .lastmessagetime {display: block;}
+.dialogues_view .dialogue .talker_info .newmessages {display: inline-block; padding: 5px 8px; background-color: #0773C6; color: #fff; margin-top:6px;}
+.dialogues_view .dialogue .lastmessage {display: inline-block; position: relative; vertical-align: top; width: 500px; padding: 10px 20px 0 70px; min-height: 70px; text-decoration: none; color: #414141;} 
+.dialogues_view .dialogue .lastmessage > img {position: absolute; width: 50px; left: 10px; top:10px;}

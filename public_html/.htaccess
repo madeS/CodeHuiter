@@ -1,0 +1,84 @@
+#DirectoryIndex index.php index.html index.htm
+AddDefaultCharset UTF-8
+Options +FollowSymLinks
+Options -Indexes
+
+php_flag display_errors On
+
+php_value upload_max_filesize 10M
+
+#ErrorDocument 404 /error404.php
+#ErrorDocument 403 /error404.php
+#redirect /s /w.html
+
+<IfModule !mod_rewrite.c>
+    ErrorDocument 404 /index.php
+    ErrorDocument 500 /index.php?codeerror=500
+    ErrorDocument 503 /index.php?codeerror=503
+</IfModule>
+#ErrorDocument 404 /index.php/404.html
+
+# Увеличиваем объем загрузки файла
+php_value upload_max_filesize 100M
+php_value post_max_size 100M
+php_value max_execution_time 200
+php_value max_input_time 200
+
+
+
+
+# Склеивание Домена с WWW + нижний регистр
+<IfModule mod_rewrite.c>
+    RewriteEngine on
+	RewriteCond %{HTTP_HOST} ^www\.(.*) [NC]
+	RewriteRule ^/?(.*) http://%1/$1 [L,R=permanent]
+</IfModule>
+
+# Control-files of search-engines
+<IfModule mod_rewrite.c>
+	RewriteEngine on
+	RewriteRule ^robots.txt$ domains/%{HTTP_HOST}/robots.txt [L]
+	RewriteRule ^humans.txt$ domains/%{HTTP_HOST}/humans.txt [L]
+	RewriteRule ^sitemap.xml$ domains/%{HTTP_HOST}/sitemap.xml [L]
+	RewriteRule ^google.*html$ domains/%{HTTP_HOST}/%{REQUEST_URI} [L]
+	RewriteRule ^yandex_.*\.txt$ domains/%{HTTP_HOST}/%{REQUEST_URI} [L]
+	RewriteRule ^y_key_.*\.html$ domains/%{HTTP_HOST}/%{REQUEST_URI} [L]
+</IfModule>
+
+
+# Удаляем index.php в URL
+<IfModule mod_rewrite.c>
+    RewriteEngine on
+	RewriteCond %{HTTP_HOST} ^(.*) [NC]
+    RewriteRule ^(.*)/index(/?)+$ http://%1/$1 [R=301,L]
+
+	RewriteCond %{HTTP_HOST} ^(.*) [NC]
+    RewriteRule ^index\.php/(.+)$ http://%1/$1 [R=301,L]
+</IfModule>
+
+# Удаляем слеш в конце URL
+<IfModule mod_rewrite.c>
+    RewriteEngine on
+    RewriteCond %{HTTP_HOST} (.*)
+    RewriteCond %{REQUEST_URI} /$ [NC]
+    RewriteRule ^(.*)(/)$ $1 [L,R=301]
+</IfModule>
+
+# Для работы Codeineger
+<IfModule mod_rewrite.c>
+    RewriteEngine on
+    RewriteBase /
+    RewriteCond $1 !^(index\.php|pub|user_dok|upload|domains|temp|sitemap\.xml|robots\.txt)
+    RewriteCond %{REQUEST_URI} !\.(css¦js¦jpg¦gif¦png¦woff¦ttf¦svg¦eot)$
+	#RewriteCond %{REQUEST_URI} !\.(css|js|jpg|gif|png|woff|ttf|svg|eot)$
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^(.*)$ /index.php?/$1 [L]
+</IfModule>
+
+
+
+#<IfModule mod_rewrite.c>
+#    RewriteEngine on
+#    RewriteRule (.*)\.xml(.*) sitemap [nocase]
+#</IfModule>
