@@ -2,7 +2,6 @@
 
 namespace CodeHuiter\Pattern\Modules\Auth\Controllers;
 
-
 use CodeHuiter\Exceptions\TagException;
 use CodeHuiter\Pattern\Controllers\Base\BaseController;
 use CodeHuiter\Pattern\Modules\Auth\AuthService;

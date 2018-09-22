@@ -2,7 +2,9 @@
 
 namespace App\Controllers;
 
-class Auth_Controller extends \CodeHuiter\Pattern\Modules\Auth\Controllers\AuthController
+use CodeHuiter\Pattern\Modules\Auth\Controllers\AuthController;
+
+class Auth_Controller extends AuthController
 {
 
 

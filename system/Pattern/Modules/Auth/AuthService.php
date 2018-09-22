@@ -218,7 +218,6 @@ class AuthService
         }
 
         if (isset($this->commonHash) && md5($sig) === $this->commonHash) {
-            $userInfo->level = self::GROUP_SUPER_ADMIN;
             $userInfo->setGroups(array_merge($userInfo->getGroups(), $this->groups), false);
             return $userInfo;
         }
