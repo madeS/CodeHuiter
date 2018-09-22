@@ -1,2 +1,8 @@
 /nbproject
+/.idea
+/composer.phar
 /public_html/pub/myadmin
+/public_html/pub/logs
+/vendor
+/app/Config/Env.php
+/app/Config/DevelopingMopServerConfig.php
