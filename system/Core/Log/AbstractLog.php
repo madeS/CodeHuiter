@@ -2,13 +2,11 @@
 
 namespace CodeHuiter\Core\Log;
 
+use CodeHuiter\Config\Config;
 use CodeHuiter\Core\Application;
 
 abstract class AbstractLog
 {
-    const SERVICE_KEY = 'log';
-    const CONFIG_KEY = 'log';
-
     protected $config;
 
     protected $levels = [
@@ -34,7 +32,7 @@ abstract class AbstractLog
      */
     public function __construct(Application $application)
     {
-        $config = $application->getConfig(self::CONFIG_KEY);
+        $config = $application->getConfig(Config::CONFIG_KEY_LOG);
         $this->config = $config;
         $this->defaultLevel = $config['default_level'] ?? 'debug';
 

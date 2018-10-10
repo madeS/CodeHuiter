@@ -2,6 +2,7 @@
 
 namespace CodeHuiter\Pattern\Controllers\Base;
 
+use CodeHuiter\Config\Config;
 use CodeHuiter\Core\Application;
 use CodeHuiter\Core\Controller;
 use CodeHuiter\Core\Exceptions\ExceptionProcessor;
@@ -21,7 +22,7 @@ use CodeHuiter\Services\Compressor;
  */
 class BaseController extends Controller
 {
-    /** @var array $config config['main'] in configs */
+    /** @var array $config config[Config::CONFIG_KEY_MAIN] in configs */
     public $config;
 
     /** @var array $data */
@@ -33,7 +34,7 @@ class BaseController extends Controller
     public function __construct(Application $app)
     {
         parent::__construct($app);
-        $this->config = $this->app->getConfig('main');
+        $this->config = $this->app->getConfig(Config::CONFIG_KEY_MAIN);
 
         $this->init();
     }

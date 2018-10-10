@@ -82,6 +82,12 @@
 
 	<?php $those->response->render($template . 'main_parts/body_cont_after') ?>
 	<?php $those->response->render($template . 'main_parts/body_after') ?>
+
+	<?php if(($_GET[\CodeHuiter\Core\Benchmark::GET_DEBUG_BENCH_ENABLE] ?? false)):?>
+		{#result_time_table}
+		{#result_class_table}
+	<?php endif;?>
+
 </body>
 </html>
 <?php endif;?>

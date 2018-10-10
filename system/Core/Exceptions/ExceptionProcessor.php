@@ -2,6 +2,7 @@
 
 namespace CodeHuiter\Core\Exceptions;
 
+use CodeHuiter\Config\Config;
 use CodeHuiter\Core\Application;
 use CodeHuiter\Core\Request;
 use CodeHuiter\Core\Response;
@@ -27,9 +28,9 @@ class ExceptionProcessor
         try {
             $app = Application::getInstance();
             /** @var Request $request */
-            $request = $app->get('request');
+            $request = $app->get(Config::SERVICE_KEY_REQUEST);
 
-            $frameworkConfig = $app->getConfig('framework');
+            $frameworkConfig = $app->getConfig(Config::CONFIG_KEY_FRAMEWORK);
             $show_debug_backtrace = $frameworkConfig['show_debug_backtrace'];
             $show_errors = $frameworkConfig['show_errors'];
 
@@ -48,7 +49,7 @@ class ExceptionProcessor
                 }
             }
             /** @var Log $log */
-            $log = $app->get('log');
+            $log = $app->get(Config::SERVICE_KEY_LOG);
             $log->error($exception->getMessage(), ['exception' => $exception], 'exceptions');
 
         } catch (\Exception $exceptionInner) {

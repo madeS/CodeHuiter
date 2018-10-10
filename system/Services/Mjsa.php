@@ -2,6 +2,7 @@
 
 namespace CodeHuiter\Services;
 
+use CodeHuiter\Config\Config;
 use CodeHuiter\Core\Application;
 use CodeHuiter\Modifiers\Filter;
 use CodeHuiter\Modifiers\StringModifier;
@@ -34,7 +35,7 @@ class Mjsa
      */
     public function __construct(Application $app)
     {
-        $this->lang = $app->get('lang');;
+        $this->lang = $app->get(Config::SERVICE_KEY_LANG);;
     }
 
     /**

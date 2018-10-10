@@ -2,15 +2,13 @@
 
 namespace CodeHuiter\Core;
 
+use CodeHuiter\Config\Config;
 use CodeHuiter\Core\Exceptions\ExceptionProcessor;
 use CodeHuiter\Exceptions\InvalidConfigException;
 use CodeHuiter\Services\Mjsa;
 
 class Response
 {
-    const SERVICE_KEY = 'response';
-    const CONFIG_KEY = 'response';
-
     /** @var array */
     protected $finalHeaders = [];
 
@@ -38,8 +36,8 @@ class Response
     {
         $this->initLevel = ob_get_level();
         $this->app = $app;
-        $this->config = $app->getConfig(self::CONFIG_KEY);
-        $this->request = $this->app->get(Request::SERVICE_KEY);
+        $this->config = $app->getConfig(Config::CONFIG_KEY_RESPONSE);
+        $this->request = $this->app->get(Config::SERVICE_KEY_REQUEST);
     }
 
     public function getRealViewFile($viewFile)
@@ -157,7 +155,7 @@ class Response
     {
         if ($this->config['profiler']) {
             /** @var Benchmark $benchmark */
-            $benchmark = $this->app->get('benchmark');
+            $benchmark = $this->app->get(Config::SERVICE_KEY_BENCHMARK);
             $benchmark->mark('ResponseSend');
             if (strpos($this->finalOutput, '{#result_time_table}') !== false) {
                 $this->finalOutput = str_replace('{#result_time_table}', $benchmark->totalTimeTable(), $this->finalOutput);

@@ -8,7 +8,7 @@ class DefaultConfig extends \CodeHuiter\Config\PatternConfig
     {
         parent::__construct();
 
-        $this->config['domain'] = [
+        $this->configs['domain'] = [
             'main' => 'app.local',
             'subdomain' => 'sub.app.local',
         ];

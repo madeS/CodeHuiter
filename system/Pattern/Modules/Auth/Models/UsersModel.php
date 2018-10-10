@@ -113,6 +113,9 @@ class UsersModel extends Model
             'passhash' => $passhash,
             'regtime' => $date->sqlTime(null),
             'lastact' => $date->now,
+            'oauths' => '{}',
+            'about_me' => '',
+            'data_info' => '{}',
         ]);
         //return self::getOneWhere(['id' => $id]);
     }

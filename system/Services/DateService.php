@@ -2,14 +2,12 @@
 
 namespace CodeHuiter\Services;
 
+use CodeHuiter\Config\Config;
 use CodeHuiter\Core\Application;
 use CodeHuiter\Pattern\Modules\Auth\Models\UsersModel;
 
 class DateService
 {
-    const SERVICE_KEY = 'date';
-    const CONFIG_KEY = 'date';
-
     /** @var int  */
     public $now = 0;
 
@@ -24,7 +22,7 @@ class DateService
 
     public function __construct(Application $application)
     {
-        $this->config = $application->getConfig(self::CONFIG_KEY);
+        $this->config = $application->getConfig(Config::CONFIG_KEY_DATE);
         $this->now = time();
     }
 

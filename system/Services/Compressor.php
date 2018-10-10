@@ -3,6 +3,7 @@
 namespace CodeHuiter\Services;
 
 
+use CodeHuiter\Config\Config;
 use CodeHuiter\Core\Application;
 use CodeHuiter\Core\Request;
 use CodeHuiter\Core\Response;
@@ -27,8 +28,8 @@ class Compressor
     public function __construct(Application $app)
     {
         $this->config = $app->getConfig('compressor');
-        $this->request = $app->get('request');
-        $this->response = $app->get('response');
+        $this->request = $app->get(Config::SERVICE_KEY_REQUEST);
+        $this->response = $app->get(Config::SERVICE_KEY_RESPONSE);
     }
 
     public function checkCompress()

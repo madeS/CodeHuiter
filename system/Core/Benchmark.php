@@ -3,9 +3,18 @@ namespace CodeHuiter\Core;
 
 class Benchmark
 {
-    const SERVICE_KEY = 'benchmark';
     const APP_START = 'AppStart';
-    
+
+    public const BENCH_MODE_SCRIPT_START = 1;
+    public const BENCH_MODE_APP_INIT = 2;
+
+    public const GET_DEBUG_BENCH_ENABLE = 'debug_bench';
+
+    private const CLASS_PLACE = [
+        'App' => 'app',
+        'CodeHuiter' => 'system',
+    ];
+
     /**
      * List of all benchmark markers
      *
@@ -22,26 +31,42 @@ class Benchmark
 
     protected $loadedClasses = [];
 
+    public $benchMode = 0;
+
+
     public function __construct() {
+        $options = getopt("m::");
+        $this->benchMode = $options['m'] ?? 0;
         $this->mark(self::APP_START);
     }
 
     public function setAutoloader(\Composer\Autoload\ClassLoader $autoloader)
     {
         $this->autoloader = $autoloader;
-        //$this->calculateLoadedClasses();
-    }
-
-    protected function calculateLoadedClasses()
-    {
         spl_autoload_register(array($this, 'loadClass'), true, true);
     }
 
     public function loadClass($class)
     {
-        if(!isset($this->loadedClasses[$class])) {
-            $this->loadedClasses[$class] = true;
+        if (isset($this->loadedClasses[$class])) {
+            include BASE_PATH . $this->loadedClasses[$class];
+            return true;
         }
+        $explodedClass = explode('\\', $class);
+        foreach (self::CLASS_PLACE as $classStart => $classRoot) {
+            if ($explodedClass[0] === $classStart) {
+                $explodedClass[0] = $classRoot;
+            }
+        }
+        $file = implode(DIRECTORY_SEPARATOR, $explodedClass) . '.php';
+
+        if (file_exists(BASE_PATH . $file)) {
+            $this->loadedClasses[$class] = $file;
+            include BASE_PATH . $this->loadedClasses[$class];
+            return true;
+        }
+
+        $this->loadedClasses['UNKNOWN_' . $class] = true;
     }
 
     /**
@@ -166,7 +191,7 @@ class Benchmark
 
         $ret = '<div style="">';
         $ret .= '    <div style=";">';
-        $ret .= '        <div style=" width: 66%; display:inline-block; vertical-align:top;">LOADED CLASSES</div>';
+        $ret .= '        <div style=" width: 66%; display:inline-block; vertical-align:top;">LOADED CLASSES ('.count($classes).')</div>';
         $ret .= '    </div>';
         foreach ($classes as $class => $result) {
             $ret .= '    <div style=";">';

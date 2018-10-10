@@ -2,12 +2,14 @@
 
 namespace CodeHuiter\Pattern\Modules\Auth;
 
+use CodeHuiter\Config\Config;
+use CodeHuiter\Config\PatternConfig;
 use CodeHuiter\Core\Application;
 use CodeHuiter\Core\Request;
 use CodeHuiter\Core\Response;
 use CodeHuiter\Exceptions\TagException;
 use CodeHuiter\Pattern\Modules\Auth\Models\UsersModel;
-use CodeHuiter\Services\Date;
+use CodeHuiter\Services\DateService;
 use CodeHuiter\Services\Email\AbstractEmail;
 use CodeHuiter\Services\Language;
 use CodeHuiter\Services\Mjsa;
@@ -19,7 +21,7 @@ class AuthService
     /** @var Application */
     protected $app;
 
-    /** @var Date */
+    /** @var DateService */
     protected $date = null;
 
     /** @var Language */
@@ -69,11 +71,11 @@ class AuthService
     public function __construct(Application $application)
     {
         $this->app = $application;
-        $this->date = $application->get('date');
-        $this->lang = $application->get('lang');
-        $this->request = $application->get('request');
-        $this->response = $application->get('response');
-        $this->config = $application->getConfig('auth');
+        $this->date = $application->get(Config::SERVICE_KEY_DATE);
+        $this->lang = $application->get(Config::SERVICE_KEY_LANG);
+        $this->request = $application->get(Config::SERVICE_KEY_REQUEST);
+        $this->response = $application->get(Config::SERVICE_KEY_RESPONSE);
+        $this->config = $application->getConfig(PatternConfig::CONFIG_KEY_AUTH);
 
         $this->groups = array_merge($this->groups, ($this->config['groups'] ?? [])); // Additional groups
     }
@@ -225,12 +227,12 @@ class AuthService
             if ($this->config['logout_if_ip_change'] && $userInfo->lastip != $this->request->getClientIP()) {
                 return $this->setErrorMessage($this->lang->get('auth:incorrect_ip'));
             }
-            if ($this->date->time > intval($userInfo->sigtime) + 3600 * 24) {
+            if ($this->date->now > intval($userInfo->sigtime) + 3600 * 24) {
                 // При мультиконнекте продлевает старый sig иначе создает новый и меняет
                 $this->updateSig($userInfo);
             }
-            if ($this->date->time - $userInfo->lastact > $this->config['nonactive_update_time']) {
-                $userInfo->update(['lastact' => $this->date->time]);
+            if ($this->date->now - $userInfo->lastact > $this->config['nonactive_update_time']) {
+                $userInfo->update(['lastact' => $this->date->now]);
             }
             return $userInfo;
         } else {
@@ -292,15 +294,15 @@ class AuthService
             $newSig = $oldSig;
         }
 
-        $userInfo->update(['sig' => $newSig, 'sigtime' => $this->date->time, 'lastip' => $this->request->getClientIP()]);
+        $userInfo->update(['sig' => $newSig, 'sigtime' => $this->date->now, 'lastip' => $this->request->getClientIP()]);
 
         $this->response->setCookie(
             'id', $userInfo->id,
-            $this->date->time + 3600 * 24 * $this->config['cookie_days'], '/', $this->config['cookie_domain']
+            $this->date->now + 3600 * 24 * $this->config['cookie_days'], '/', $this->config['cookie_domain']
         );
         $this->response->setCookie(
             'sig', $userInfo->id,
-            $this->date->time + 3600 * 24 * $this->config['cookie_days'], '/', $this->config['cookie_domain']
+            $this->date->now + 3600 * 24 * $this->config['cookie_days'], '/', $this->config['cookie_domain']
         );
     }
 
@@ -315,11 +317,11 @@ class AuthService
         if ($withLogout) {
             $this->response->setCookie(
                 'id', $userInfo->id,
-                $this->date->time + 3600 * 24 * $this->config['cookie_days'], '/', $this->config['cookie_domain']
+                $this->date->now + 3600 * 24 * $this->config['cookie_days'], '/', $this->config['cookie_domain']
             );
             $this->response->setCookie(
                 'sig', $userInfo->id,
-                $this->date->time + 3600 * 24 * $this->config['cookie_days'], '/', $this->config['cookie_domain']
+                $this->date->now + 3600 * 24 * $this->config['cookie_days'], '/', $this->config['cookie_domain']
             );
         }
     }
@@ -333,7 +335,7 @@ class AuthService
      */
     protected function sigFunc($id, $login, $email, $passhash)
     {
-        return md5(($this->config['salt'] ?? '') . $id . $login . $email . $passhash . $this->date->time);
+        return md5(($this->config['salt'] ?? '') . $id . $login . $email . $passhash . $this->date->now);
     }
 
     /**
@@ -465,7 +467,7 @@ class AuthService
         $user->updateDataInfo($userDataInfo);
 
         $subject = $this->lang->get('auth_email:confirm_subject', [
-            '{#siteName}' => ($this->app->getConfigs()->config['main']['project_name'] ?? '')
+            '{#siteName}' => ($this->app->getConfig(Config::CONFIG_KEY_MAIN)['project_name'] ?? '')
         ]);
         $content = $this->lang->get('auth_email:confirm_body', [
             '{#userId}' => $user->id,

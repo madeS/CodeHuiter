@@ -2,14 +2,12 @@
 
 namespace CodeHuiter\Core;
 
+use CodeHuiter\Config\Config;
 use CodeHuiter\Exceptions\InvalidRequestException;
 use CodeHuiter\Exceptions\ServerConfigException;
 
 class Request
 {
-    const SERVICE_KEY = 'request';
-    const CONFIG_KEY = 'request';
-
     /** @var array $segments */
     public $segments;
 
@@ -32,7 +30,7 @@ class Request
      */
     public function __construct(Application $application)
     {
-        $this->config = $application->getConfig(self::CONFIG_KEY);
+        $this->config = $application->getConfig(Config::CONFIG_KEY_REQUEST);
         $this->initialize();
         $this->checkServer();
 

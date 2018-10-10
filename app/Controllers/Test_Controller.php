@@ -11,7 +11,7 @@ class Test_Controller extends \CodeHuiter\Pattern\Controllers\Base\BaseControlle
         phpinfo();
     }
 
-    public function test($data1 = '', $data2 = '')
+    public function bench($data1 = '', $data2 = '')
     {
         //echo "This is test method of test controller with data1 = $data1; and data2 = $data2";
         $this->data['test_var'] = $data1;

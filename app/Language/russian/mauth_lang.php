@@ -10,7 +10,6 @@ $lang['mauth.login:user_not_active'] = 'Пользователь не актив
 $lang['mauth.token:not_created'] = 'Что-то не так, токен не создался';
 $lang['mauth.token:is_incorrect'] = 'Неверный токен подтверждения';
 $lang['mauth.cant_send_email'] = 'Невозможно отправить письмо';
-$lang['mauth.reg.email_already_taken'] = 'Такой email уже занят';
 $lang['mauth.reg.login_already_taken'] = 'Такой логин уже занят';
 $lang['mauth.reg.incorrect_password'] = 'Неверный пароль';
 $lang['mauth.reg.something_wrong.user_not_found'] = 'Ошибка. Зарегистрированный пользователь не найден';

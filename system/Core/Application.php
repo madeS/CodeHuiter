@@ -18,17 +18,30 @@ class Application
      * @return Application
      * @throws AppContainerException
      */
-    public static function getInstance() {
+    public static function getInstance(): Application
+    {
         if (!self::$instance) {
             self::$instance = new self();
         }
         return self::$instance;
     }
 
-    /** @var string $environment */
+    /**
+     * @var string
+     */
     protected $environment;
 
-    public function getEnvironment()
+    /**
+     * @var Config
+     */
+    protected $config;
+
+    /**
+     * @var array
+     */
+    protected $container = [];
+
+    public function getEnvironment(): ?string
     {
         return $this->environment;
     }
@@ -37,39 +50,30 @@ class Application
      * @param string $key
      * @return array
      */
-    public function getConfig($key)
+    public function getConfig($key): array
     {
-        return $this->configs->config[$key] ?? [];
+        return $this->config->configs[$key] ?? [];
     }
 
     /**
      * @return Config
      */
-    public function getConfigs()
+    public function getConfigs(): Config
     {
-        return $this->configs;
+        return $this->config;
     }
-
-    /** @var Config */
-    protected $configs;
 
     /**
      * Application constructor.
      * @throws AppContainerException
      */
-    protected function __construct() {
-        // Load Services
-        $this->services = array_merge(
-            $this->requireVarIfFileExist(SYSTEM_PATH . 'Config/Services.php', []),
-            $this->requireVarIfFileExist(APP_PATH . 'Config/Services.php', [])
-        );
-        
-        //$config = $this->get('config');
-        
-        // Load main Configs
+    protected function __construct()
+    {
         $this->environment = $this->requireVarIfFileExist(APP_PATH . 'Config/Env.php', 'Developing');
-        $this->configs = $this->get('config');
-        $this->configs->initialize();
+
+        $configClassName = "\\App\\Config\\{$this->environment}Config";
+        $this->config = new $configClassName();
+        $this->config->initialize();
     }
 
     /**
@@ -78,7 +82,8 @@ class Application
      * @return mixed|null
      * @throws AppContainerException
      */
-    protected function requireVarIfFileExist($fileName, $default = null) {
+    protected function requireVarIfFileExist($fileName, $default = null)
+    {
         if (file_exists($fileName) && is_file($fileName)) {
             $result = require $fileName;
             if (gettype($result) !== gettype($default)) {
@@ -89,47 +94,32 @@ class Application
             return $default;
         }
     }
-    
-    /**
-     * ---------------------------
-     * Dependency Injection
-     */
-
-    /**
-     * @var array
-     */
-    protected $container = [];
-
-    /**
-     * @var array
-     */
-    protected $services;
 
     /**
      * @param string $name Key of object
-     * @param array $params To
      * @return mixed
      */
-    public function get($name){
-        if(!isset($this->services[$name])) {
+    public function get($name)
+    {
+        if(!isset($this->config->services[$name])) {
             ExceptionProcessor::defaultProcessException(
                 new AppContainerException("Class [$name] not found in services")
             );
         }
         if (
             isset($this->container[$name])
-            && isset($this->services[$name]['single']) && $this->services[$name]['single']
+            && isset($this->config->services[$name]['single']) && $this->config->services[$name]['single']
         ){
             return $this->container[$name];
         }
-        if (isset($this->services[$name]['callback']) && $this->services[$name]['callback']) {
-            $callback = $this->services[$name]['callback'];
+        if (isset($this->config->services[$name]['callback']) && $this->config->services[$name]['callback']) {
+            $callback = $this->config->services[$name]['callback'];
             $this->container[$name] = $callback($this);
-        } elseif (isset($this->services[$name]['class']) && $this->services[$name]['class']) {
-            $class = $this->services[$name]['class'];
+        } elseif (isset($this->config->services[$name]['class']) && $this->config->services[$name]['class']) {
+            $class = $this->config->services[$name]['class'];
             $this->container[$name] = new $class();
-        } elseif (isset($this->services[$name]['class_app']) && $this->services[$name]['class_app']) {
-            $class = $this->services[$name]['class_app'];
+        } elseif (isset($this->config->services[$name]['class_app']) && $this->config->services[$name]['class_app']) {
+            $class = $this->config->services[$name]['class_app'];
             $this->container[$name] = new $class($this);
         } else {
             ExceptionProcessor::defaultProcessException(
@@ -140,21 +130,23 @@ class Application
         return $this->container[$name];
     }
     
-    public function set($name, $instance){
+    public function set($name, $instance): void
+    {
         $this->container[$name] = $instance;
     }
 
     /**
      * Run the application
      */
-    public function run() {
+    public function run(): void
+    {
         try {
             /** @var Router $router */
-            $router = $this->get('router');
+            $router = $this->get(Config::SERVICE_KEY_ROUTER);
             $router->execute();
 
             /** @var Response $response */
-            $response = $this->get('response');
+            $response = $this->get(Config::SERVICE_KEY_RESPONSE);
             $response->send();
 
         } catch (CodeHuiterException $ex) {

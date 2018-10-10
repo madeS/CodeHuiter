@@ -2,14 +2,12 @@
 
 namespace CodeHuiter\Services\Email;
 
-
+use CodeHuiter\Config\Config;
 use CodeHuiter\Core\Application;
 use CodeHuiter\Core\Log\AbstractLog;
 
 abstract class AbstractEmail
 {
-    const CONFIG_KEY = 'email';
-
     /**
      * @var AbstractLog
      */
@@ -27,8 +25,8 @@ abstract class AbstractEmail
 
     public function __construct(Application $application)
     {
-        $this->log = $application->get(AbstractLog::SERVICE_KEY);
-        $this->config = $application->getConfig(self::CONFIG_KEY);
+        $this->log = $application->get(Config::SERVICE_KEY_LOG);
+        $this->config = $application->getConfig(Config::CONFIG_KEY_EMAIL);
     }
 
     public function getLastStatusMessage()

@@ -2,6 +2,7 @@
 
 namespace CodeHuiter\Database;
 
+use CodeHuiter\Config\Config;
 use CodeHuiter\Core\Application;
 use CodeHuiter\Exceptions\AppContainerException;
 use CodeHuiter\Services\DateService;
@@ -43,7 +44,7 @@ class Model
     protected static function getDateService()
     {
         if (static::$dateService === null) {
-            static::$dateService = Application::getInstance()->get('date');
+            static::$dateService = Application::getInstance()->get(Config::CONFIG_KEY_DATE);
         }
         return static::$dateService;
     }

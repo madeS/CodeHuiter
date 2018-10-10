@@ -8,7 +8,7 @@ class ProductionConfig extends DefaultConfig
     {
         parent::__construct();
 
-        $this->config['frameweork']['show_errors'] = false;
+        $this->configs[self::CONFIG_KEY_FRAMEWORK]['show_errors'] = false;
 //        $this->config['database'] = [
 //
 //        ];

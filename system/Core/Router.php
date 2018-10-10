@@ -2,15 +2,13 @@
 
 namespace CodeHuiter\Core;
 
+use CodeHuiter\Config\Config;
 use CodeHuiter\Exceptions\CoreCodeHuiterException;
 use CodeHuiter\Exceptions\InvalidConfigException;
 use CodeHuiter\Exceptions\InvalidRequestException;
 
 class Router
 {
-    const SERVICE_KEY = 'router';
-    const CONFIG_KEY = 'router';
-
     /** @var Request $request */
     protected $request;
 
@@ -43,10 +41,10 @@ class Router
      */
     public function __construct(Application $app)
     {
-        $this->config = $app->getConfig(self::CONFIG_KEY);
+        $this->config = $app->getConfig(Config::CONFIG_KEY_ROUTER);
         $this->app = $app;
-        $this->request = $app->get(Request::SERVICE_KEY);
-        $this->benchmark = $app->get(Benchmark::SERVICE_KEY);
+        $this->request = $app->get(Config::SERVICE_KEY_REQUEST);
+        $this->benchmark = $app->get(Config::SERVICE_KEY_BENCHMARK);
 
         $segments = $this->checkRoutingRewriteSegments();
         if ($segments === null) {
