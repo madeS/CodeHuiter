@@ -9,9 +9,6 @@ class ProductionConfig extends DefaultConfig
         parent::__construct();
 
         $this->configs[self::CONFIG_KEY_FRAMEWORK]['show_errors'] = false;
-//        $this->config['database'] = [
-//
-//        ];
     }
 
     protected function initErrorReporting()

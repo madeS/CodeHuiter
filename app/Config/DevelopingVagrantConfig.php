@@ -9,8 +9,8 @@ class DevelopingVagrantConfig extends DefaultConfig
         parent::__construct();
 
         $this->configs[self::CONFIG_KEY_FRAMEWORK]['show_errors'] = true;
-        $this->configs['database_default'] = array_merge(
-            $this->configs['database_default'],
+        $this->configs[self::CONFIG_KEY_DB_DEFAULT] = array_merge(
+            $this->configs[self::CONFIG_KEY_DB_DEFAULT],
             [
                 'dsn' => 'mysql:host=localhost;dbname=app_db',
                 'username' => 'appuser',

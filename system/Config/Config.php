@@ -68,7 +68,6 @@ abstract class Config
 
         $this->services[self::SERVICE_KEY_ROUTER] = ['single' => true, 'class_app' => '\\CodeHuiter\\Core\\Router'];
         $this->configs[self::CONFIG_KEY_ROUTER] = [
-            'default' => ['controller' => '\\App\\Controllers\\Blog_Controller', 'controller_method' => 'index'],
             'error_404' => ['controller' => '\\App\\Controllers\\Errors\\Error_Controller', 'controller_method' => 'error404'],
             'error_500' => ['controller' => '\\App\\Controllers\\Errors\\Error_Controller', 'controller_method' => 'error500'],
             'translate_uri' => [
@@ -77,8 +76,12 @@ abstract class Config
             ],
             'translate_uri_dashes' => false,
             'domain_routes' => [
+                'all' => [
+                    'developing' => 'SYS_MODULE_PATH_Pattern_Modules_Developing',
+                    'developing/(:all)' => 'SYS_MODULE_PATH_Pattern_Modules_Developing/$1',
+                ],
                 'sub.example.com' => [
-                    //'testmodule/(:all)' => 'MODULE_TestModule/$1',
+                    //'testmodule/(:all)' => 'APP_MODULE_TestModule/$1',
                 ]
             ],
             'routes' => [

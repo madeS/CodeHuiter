@@ -16,7 +16,7 @@ class Router
     protected $config;
 
     /** @var string $directory */
-    protected $directory;
+    protected $directory = 'App/Controllers/';
 
     /** @var string $controller */
     protected $controller;
@@ -147,17 +147,13 @@ class Router
      */
     protected function setController($controllerName = null, $isFullName = false)
     {
-        if ($controllerName) {
-            if ($isFullName) {
-                $this->controller = $controllerName;
-            } else {
-                $this->controller =
-                    '\\App\\'
-                    . str_replace('/', '\\', $this->directory)
-                    . $controllerName . '_Controller';
-            }
+        if ($isFullName) {
+            $this->controller = $controllerName;
         } else {
-            $this->controller = $this->config['default']['controller'];
+            $this->controller =
+                '\\'
+                . str_replace('/', '\\', $this->directory)
+                . ($controllerName ?? 'Main') . '_Controller';
         }
     }
 
@@ -167,7 +163,7 @@ class Router
     protected function setControllerMethod($controllerMethodName = null)
     {
         $this->controllerMethod = ($controllerMethodName)
-            ? $controllerMethodName : $this->config['default']['controller_method'];
+            ? $controllerMethodName : 'index';
     }
 
     /**
@@ -194,6 +190,9 @@ class Router
         $http_verb = $this->request->method;
 
         $routes = $this->config['routes'];
+        if (isset($this->config['domain_routes']['all'])) {
+            $routes = array_merge($routes, $this->config['domain_routes']['all']);
+        }
         if (isset($this->config['domain_routes'][$this->request->domain])) {
             $routes = array_merge($routes, $this->config['domain_routes'][$this->request->domain]);
         }
@@ -251,13 +250,18 @@ class Router
         for ($i = 0; $i < $segmentsCount; $i++) {
             $segmentTest = $this->translateUriPart($segments[0]);
             if ($i === 0) {
-                if (strpos($segmentTest, 'MODULE_') === 0) {
-                    $moduleName = substr($segmentTest, strlen('MODULE_'));
-                    $this->setDirectory('Modules/'.$moduleName.'/Controllers', false);
+                if (strpos($segmentTest, 'APP_MODULE_') === 0) {
+                    $moduleName = substr($segmentTest, strlen('APP_MODULE_'));
+                    $this->setDirectory('App/Modules/'.$moduleName.'/Controllers', false);
+                    array_shift($segments);
+                    continue;
+                } elseif (strpos($segmentTest, 'SYS_MODULE_PATH_') === 0) {
+                    $modulePath = str_replace('_','/',substr($segmentTest, strlen('SYS_MODULE_PATH_')));
+                    $this->setDirectory('CodeHuiter/'.$modulePath.'/Controllers', false);
                     array_shift($segments);
                     continue;
                 } else {
-                    $this->setDirectory('Controllers', false);
+                    $this->setDirectory('App/Controllers', false);
                 }
             }
             $nameTest = $this->directory . $segmentTest;
@@ -265,6 +269,9 @@ class Router
             if (
                 !file_exists(APP_PATH . $nameTest . '_Controller.php')
                 && is_dir(APP_PATH . $nameTest)
+                ||
+                !file_exists(SYSTEM_PATH . $nameTest . '_Controller.php')
+                && is_dir(SYSTEM_PATH . $nameTest)
             ) {
                 array_shift($segments);
                 $this->setDirectory($segmentTest, true);
