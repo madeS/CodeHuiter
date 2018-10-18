@@ -50,7 +50,7 @@ class ExceptionProcessor
             }
             /** @var Log $log */
             $log = $app->get(Config::SERVICE_KEY_LOG);
-            $log->error($exception->getMessage(), ['exception' => $exception], 'exceptions');
+            $log->error($exception->getMessage(), ['trace' => $exception->getTraceAsString()], 'exceptions');
 
         } catch (\Exception $exceptionInner) {
             $exceptions[] = $exceptionInner;

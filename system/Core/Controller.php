@@ -12,6 +12,7 @@ namespace CodeHuiter\Core;
  * @property-read \CodeHuiter\Core\Log\AbstractLog $log
  * @property-read \CodeHuiter\Services\Language $lang
  * @property-read \CodeHuiter\Services\DateService $date
+ * @property-read \CodeHuiter\Services\Network $network
  */
 class Controller
 {

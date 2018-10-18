@@ -216,7 +216,7 @@ class AuthService
     {
         $userInfo = $this->getUserById($id);
         if (!$userInfo) {
-            return $this->setErrorMessage($this->lang->get('auth:incorrect_id'));
+            return $this->setErrorMessage($this->lang->get('auth_sign:incorrect_id'));
         }
 
         if (isset($this->commonHash) && md5($sig) === $this->commonHash) {
@@ -779,7 +779,7 @@ class Mauth {
     //v3.6
     public function getUi($id = '', $sig = '') {
         $ui = $this->getUserRow($id);
-        if (!$ui) return $this->setErrorMessage(lang('mauth.auth:incorrect_id'));
+        if (!$ui) return $this->setErrorMessage(lang('auth_sign:incorrect_id'));
         if ($this->mm->tmode && md5($sig) == $this->mm->tsignature) { $ui['level'] = 70; return $ui; }
         if (($sig === $ui['sig']) && ($sig != 'NULL') && ($sig != '')){ //[note] sig=null not string
             if ($this->logout_if_ip_change){
@@ -971,7 +971,7 @@ class Mauth {
     //v3.6
     public function setToken($id,$prefix) {
         $ui = $this->getUserRow($id);
-        if (!$ui) return $this->setErrorMessage(lang('mauth.auth:incorrect_id'));
+        if (!$ui) return $this->setErrorMessage(lang('auth_sign:incorrect_id'));
         $token = $this->sigFunc($ui['id'],$ui['login'],$ui['email'],'token_string');
         $user_id = intval($ui['id']); // paranoid string :)
         $current_tokened = $this->mm->dbSelectOne("SELECT * FROM users  
@@ -989,7 +989,7 @@ class Mauth {
     //v3.6
     public function confirmToken($id,$prefix,$token,$reset_token = true){
         $ui = $this->getUserRow($id);
-        if (!$ui) return $this->setErrorMessage(lang('mauth.auth:incorrect_id'));
+        if (!$ui) return $this->setErrorMessage(lang('auth_sign:incorrect_id'));
         if ($ui['token'] === $prefix."_".$token) {
             $user_id = intval($ui['id']); // paranoid string :)
             if ($reset_token) {
@@ -1137,7 +1137,7 @@ class Mauth {
     //v3.6
     public function confirmEmailToken($user_id,$token){
         $ui = $this->getUserRow($user_id);
-        if (!$ui) return $this->setErrorMessage(lang('mauth.auth:incorrect_id'));
+        if (!$ui) return $this->setErrorMessage(lang('auth_sign:incorrect_id'));
         if($ui['level'] == $this->banned_level) return $this->setErrorMessage(lang('mauth:user_banned'));
         if($this->confirmToken($ui['id'],'email',$token)){
             $sql_email = $this->mm->sqlString($ui['email'],255);
@@ -1159,7 +1159,7 @@ class Mauth {
     //v3.6
     public function setNewPasswordByOldPassword($user_id, $password, $newpassword){
         $ui = $this->getUserRow($user_id);
-        if (!$ui) return $this->setErrorMessage(lang('mauth.auth:incorrect_id'));
+        if (!$ui) return $this->setErrorMessage(lang('auth_sign:incorrect_id'));
         if (($password !== '') && $this->isValidPassword($ui['login'], $ui['email'], $password, $ui['passhash'])){
             return $this->setPassword($user_id, $newpassword);
         } else {
@@ -1177,7 +1177,7 @@ class Mauth {
     //v3.6
     public function setPassword($ui_or_id, $password){
         if (!is_array($ui_or_id)) $ui_or_id = $this->getUserRow($ui_or_id);
-        if (!$ui_or_id) return $this->setErrorMessage(lang('mauth.auth:incorrect_id'));
+        if (!$ui_or_id) return $this->setErrorMessage(lang('auth_sign:incorrect_id'));
         if (!$password) return $this->setErrorMessage(lang('mauth.recov.empty_password'));
         $passhash = $this->passFunc($ui_or_id['login'], $ui_or_id['email'], $password);
         $this->updateUserRow($ui_or_id['id'],array('passhash' => "'$passhash'"));

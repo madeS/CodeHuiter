@@ -21,6 +21,7 @@ abstract class Config
     public const CONFIG_KEY_DATE = 'date';
     public const SERVICE_KEY_LANG = 'lang';
     public const SERVICE_KEY_MIME_TYPES = 'mime_types';
+    public const SERVICE_KEY_NETWORK = 'network';
 
     public const SERVICE_KEY_DB = 'db';
     public const CONFIG_KEY_DB_DEFAULT = 'db_default';
@@ -55,7 +56,7 @@ abstract class Config
 
         $this->services[self::SERVICE_KEY_RESPONSE] = ['single' => true, 'class_app' => '\\CodeHuiter\\Core\\Response'];
         $this->configs[self::CONFIG_KEY_RESPONSE] = [
-            'charset' => 'UTF-8', // Recomended
+            'charset' => 'UTF-8', // Recommended
             'template_name_append' => '.tpl.php',
             'profiler' => true,
             'profiler_placeholders' => [
@@ -132,6 +133,9 @@ abstract class Config
         $this->services[self::SERVICE_KEY_LANG] = ['single' => true, 'class' => '\\CodeHuiter\\Services\\Language'];
 
         $this->services[self::SERVICE_KEY_MIME_TYPES] = ['single' => true, 'class' => '\\CodeHuiter\\Config\\Data\\MimeTypes'];
+
+        $this->services[self::SERVICE_KEY_NETWORK] = ['single' => true, 'class' => '\\CodeHuiter\\Services\\Network'];
+
 
         $this->services[self::SERVICE_KEY_DB] = ['single' => true, 'callback' => function(\CodeHuiter\Core\Application $app) {
             return new \CodeHuiter\Database\Drivers\PDOMySQL(

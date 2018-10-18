@@ -1,6 +1,5 @@
 <?php
 
-$lang['mauth.auth:incorrect_id'] = 'Пользователь не найден';
 $lang['mauth.auth:incorrect_sig'] = 'Срок действия сигнатуры истёк, войдите на сайт заново';
 $lang['mauth.auth:incorrect_ip'] = 'Ваш IP был изменён';
 $lang['mauth.login:incorrect_logemail'] = 'Пользователь с таким Логином или Email\'ом не найден';

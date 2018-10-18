@@ -32,5 +32,7 @@ imagegif($im, './php_interlaced.gif');
 
 [ ] EmailSender Config class instead config array
 
+[ ] Script. Generate languages files for all project
+
 Auto load additional scripts
 https://stackoverflow.com/questions/14521108/dynamically-load-js-inside-js

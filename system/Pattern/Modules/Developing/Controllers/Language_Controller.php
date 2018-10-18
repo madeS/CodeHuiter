@@ -2,9 +2,10 @@
 
 namespace CodeHuiter\Pattern\Modules\Developing\Controllers;
 
+use CodeHuiter\Exceptions\ErrorException;
 use CodeHuiter\Pattern\Controllers\Base\BaseController;
 
-class Test_Controller extends BaseController
+class Language_Controller extends BaseController
 {
     /**
      * @return bool|void
@@ -14,8 +15,14 @@ class Test_Controller extends BaseController
         echo "Developing test index";
     }
 
-    public function some()
+    /**
+     * @throws ErrorException
+     */
+    public function generate()
     {
+        if (!$this->request->isCli()) {
+            throw new ErrorException('This method runs only by CLI');
+        }
         echo "Developing test some";
     }
 

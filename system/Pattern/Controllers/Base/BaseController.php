@@ -42,7 +42,7 @@ class BaseController extends Controller
     protected function error404()
     {
         try {
-            $this->log->warning('Page 404 showed wuth uri ['.$this->request->uri.']', [], 'exceptions');
+            $this->log->warning('Page 404 showed with uri ['.$this->request->uri.']', [], 'exceptions');
 
             $this->router->setRouting('error_404', []);
             $this->router->execute();
@@ -93,7 +93,7 @@ class BaseController extends Controller
     ) {
         $those = $this;
         $success = $this->auth->initUser($require, $requiredGroups , ([
-            AuthService::GROUP_AUTH_SUCCESS => function(UsersModel $user) use ($those) {
+            AuthService::GROUP_AUTH_SUCCESS => function(/** @noinspection PhpUnusedParameterInspection */UsersModel $user) use ($those) {
                 // User Not authed
                 if ($those->request->isMjsaAJAX()) {
                     $this->data['in_popup'] = true;
@@ -107,7 +107,7 @@ class BaseController extends Controller
                     $those->response->location($those->auth->config['url_auth'] . $addUrl, true);
                 }
             },
-            AuthService::GROUP_NOT_BANNED => function(UsersModel $user) use ($those) {
+            AuthService::GROUP_NOT_BANNED => function(/** @noinspection PhpUnusedParameterInspection */UsersModel $user) use ($those) {
                 // User banned
                 if ($those->request->isMjsaAJAX()) {
                     $this->mjsa->events()
@@ -118,7 +118,7 @@ class BaseController extends Controller
                     $those->response->location($those->auth->config['url_ban'], true);
                 }
             },
-            AuthService::GROUP_ACTIVE => function(UsersModel $user) use ($those) {
+            AuthService::GROUP_ACTIVE => function(/** @noinspection PhpUnusedParameterInspection */UsersModel $user) use ($those) {
                 // User banned
                 if ($those->request->isMjsaAJAX()) {
                     $this->mjsa->events()
