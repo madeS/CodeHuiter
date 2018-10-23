@@ -13,6 +13,7 @@ namespace CodeHuiter\Core;
  * @property-read \CodeHuiter\Services\Language $lang
  * @property-read \CodeHuiter\Services\DateService $date
  * @property-read \CodeHuiter\Services\Network $network
+ * @property-read \CodeHuiter\Services\HtmlParser\HtmlParserInterface $htmlParser
  */
 class Controller
 {

@@ -20,8 +20,10 @@ abstract class Config
     public const SERVICE_KEY_DATE = 'date';
     public const CONFIG_KEY_DATE = 'date';
     public const SERVICE_KEY_LANG = 'lang';
-    public const SERVICE_KEY_MIME_TYPES = 'mime_types';
+    public const SERVICE_KEY_MIME_TYPES = 'mimeTypes';
     public const SERVICE_KEY_NETWORK = 'network';
+
+    public const SERVICE_KEY_HTML_PARSER = 'htmlParser';
 
     public const SERVICE_KEY_DB = 'db';
     public const CONFIG_KEY_DB_DEFAULT = 'db_default';
@@ -134,7 +136,8 @@ abstract class Config
 
         $this->services[self::SERVICE_KEY_MIME_TYPES] = ['single' => true, 'class' => '\\CodeHuiter\\Config\\Data\\MimeTypes'];
 
-        $this->services[self::SERVICE_KEY_NETWORK] = ['single' => true, 'class' => '\\CodeHuiter\\Services\\Network'];
+        $this->services[self::SERVICE_KEY_NETWORK] = ['single' => true, 'class_app' => '\\CodeHuiter\\Services\\Network'];
+        $this->services[self::SERVICE_KEY_HTML_PARSER] = ['single' => true, 'class' => '\\CodeHuiter\\Services\\HtmlParser\\SimpleHtmlDomParser'];
 
 
         $this->services[self::SERVICE_KEY_DB] = ['single' => true, 'callback' => function(\CodeHuiter\Core\Application $app) {

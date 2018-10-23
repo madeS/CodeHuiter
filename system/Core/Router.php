@@ -15,8 +15,11 @@ class Router
     /** @var array */
     protected $config;
 
-    /** @var string $directory */
-    protected $directory = 'App/Controllers/';
+    /** @var string */
+    protected $directory = APP_PATH . 'Controllers/';
+
+    /** @var string */
+    protected $namespace = '\\App\\Controllers\\';
 
     /** @var string $controller */
     protected $controller;
@@ -130,14 +133,27 @@ class Router
 
     /**
      * @param string $dir
-     * @param bool $append
+     * @param string $root
      */
-    protected function setDirectory(string $dir, $append = false)
+    protected function setDirectory(string $dir, $root = '')
     {
-        if ($append !== true || empty($this->directory)) {
-            $this->directory = str_replace('.', '', $dir) . '/';
+        if ($root || empty($this->directory)) {
+            $this->directory = $root . str_replace('.', '', $dir) . '/';
         } else {
             $this->directory .= str_replace('.', '', $dir) . '/';
+        }
+    }
+
+    /**
+     * @param string $space
+     * @param string $root
+     */
+    protected function setNamespace(string $space, $root = '')
+    {
+        if ($root || empty($this->namespace)) {
+            $this->namespace = $root . str_replace('/', '\\', $space) . '\\';
+        } else {
+            $this->namespace .= str_replace('/', '\\', $space) . '\\';
         }
     }
 
@@ -150,10 +166,7 @@ class Router
         if ($isFullName) {
             $this->controller = $controllerName;
         } else {
-            $this->controller =
-                '\\'
-                . str_replace('/', '\\', $this->directory)
-                . ($controllerName ?? 'Main') . '_Controller';
+            $this->controller = $this->namespace . ($controllerName ?? 'Main') . '_Controller';
         }
     }
 
@@ -252,29 +265,27 @@ class Router
             if ($i === 0) {
                 if (strpos($segmentTest, 'APP_MODULE_') === 0) {
                     $moduleName = substr($segmentTest, strlen('APP_MODULE_'));
-                    $this->setDirectory('App/Modules/'.$moduleName.'/Controllers', false);
+                    $this->setDirectory( 'Modules/'.$moduleName.'/Controllers', APP_PATH);
+                    $this->setNamespace('', '\\App\\Modules\\' . $moduleName . '\\Controllers');
                     array_shift($segments);
                     continue;
                 } elseif (strpos($segmentTest, 'SYS_MODULE_PATH_') === 0) {
                     $modulePath = str_replace('_','/',substr($segmentTest, strlen('SYS_MODULE_PATH_')));
-                    $this->setDirectory('CodeHuiter/'.$modulePath.'/Controllers', false);
+                    $this->setDirectory( $modulePath . '/Controllers', SYSTEM_PATH);
+                    $this->setNamespace($modulePath . '\\Controllers', '\\CodeHuiter\\');
                     array_shift($segments);
                     continue;
                 } else {
-                    $this->setDirectory('App/Controllers', false);
+                    $this->setDirectory( 'Controllers', APP_PATH);
+                    $this->setNamespace('', '\\App\\Controllers');
                 }
             }
             $nameTest = $this->directory . $segmentTest;
 
-            if (
-                !file_exists(APP_PATH . $nameTest . '_Controller.php')
-                && is_dir(APP_PATH . $nameTest)
-                ||
-                !file_exists(SYSTEM_PATH . $nameTest . '_Controller.php')
-                && is_dir(SYSTEM_PATH . $nameTest)
-            ) {
+            if (is_dir($nameTest) && !file_exists($nameTest . '_Controller.php')) {
                 array_shift($segments);
-                $this->setDirectory($segmentTest, true);
+                $this->setDirectory($segmentTest, '');
+                $this->setNamespace($segmentTest, '');
                 continue;
             }
 

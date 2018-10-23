@@ -8,15 +8,18 @@ use CodeHuiter\Core\Log\AbstractLog;
 
 class Network
 {
-    public const TYPE_HTTP_GET = 1;
-    public const TYPE_HTTPS_GET = 2;
-    public const TYPE_HTTP_POST = 3;
-    public const TYPE_HTTPS_POST = 4;
-    public const TYPE_HTTP_HEAD = 5;
+    public const METHOD_GET = 1;
+    public const METHOD_POST = 2;
+    public const METHOD_HEAD = 3;
 
-    private const METHOD_TYPE_GET = 1;
-    private const METHOD_TYPE_POST = 2;
-    private const METHOD_TYPE_HEAD = 3;
+    private const FAKE_AGENT = [
+        'headers' => [
+
+        ],
+        'options' => [
+            'useragent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.100 Safari/537.36',
+        ],
+    ];
 
     /**
      * @var AbstractLog
@@ -40,11 +43,10 @@ class Network
      * Позволяет сохранять cookie между запросами.
      * Заголовок и куки сохраняются в $this->lastResponseInfo.
      * @param string $url URL
-     * @param string $type Тип запроса ['GET','POST','GET_HTTPS', 'POST_HTTPS']
+     * @param string $method Method
      * @param array $post_data Для POST array(key => value)
      * @param array $additionalHeaders Дополнительные заголовки array('Accept:application/json');
      * @param array $options
-     * <br/><b>saveheader</b> - true - Сохраняет полностью заголовоки
      * <br/><b>saveCookie</b> - true - Сохраняет полностью заголовоки
      * <br/><b>cookie</b> - будут установлены для запроса (обычно берётся из $this->lastResponseInfo['cookie'])
      * <br/><b>useragent</b> - UserAgent
@@ -53,25 +55,29 @@ class Network
      * <br/><b>timeout</b> - Timeout
      * @return string|null Тело ответа
      */
-    public function curlRequest(
+    public function httpRequest(
         string $url,
-        string $type = 'GET',
+        string $method = self::METHOD_GET,
         array $post_data = [],
         array $additionalHeaders = [],
         array $options = []
     ): ?string {
-        $saveHeader = (isset($options['saveheader']) || isset($options['saveCookie'])) ? true : false;
+        if (isset($options['fake'])) {
+            $options = array_merge(self::FAKE_AGENT['options'], $options);
+            $additionalHeaders = array_merge(self::FAKE_AGENT['headers'], $additionalHeaders);
+        }
+
+        $saveHeader = (isset($options['saveCookie'])) ? true : false;
         $cookie = '';
         if (isset($options['cookie']) && is_array($options['cookie'])){
             foreach ($options['cookie'] as $key => $value) {
                 $cookie .= $key.'='.$value.'; ';
             }
         }
-        $method = self::METHOD_TYPE_GET;
-        if (($type == self::TYPE_HTTP_POST) || ($type == self::TYPE_HTTPS_POST)) { $method = self::METHOD_TYPE_POST; }
-        if ($type == self::TYPE_HTTP_HEAD) { $method = self::METHOD_TYPE_HEAD; $saveHeader = true; }
-        $secure = false;
-        if (($type == self::TYPE_HTTPS_GET) || ($type == self::TYPE_HTTPS_POST)) $secure = true;
+        if ($method === self::METHOD_HEAD) {
+            $saveHeader = true;
+        }
+        $secure = (strpos($url, 'https:') !== false) ? true : false;
         try {
             $ch = curl_init();
             curl_setopt($ch,CURLOPT_URL,$url);
@@ -91,12 +97,12 @@ class Network
             if (isset($options['encoding']) && $options['encoding'] == 'gzip'){
                 curl_setopt($ch, CURLOPT_ENCODING, "gzip");
             }
-            if ($method == self::METHOD_TYPE_POST) {
+            if ($method == self::METHOD_POST) {
                 curl_setopt($ch, CURLOPT_CUSTOMREQUEST,'POST');
                 curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($post_data));
                 curl_setopt($ch, CURLOPT_POST, 1);
             }
-            if ($method == self::METHOD_TYPE_HEAD) {
+            if ($method == self::METHOD_HEAD) {
                 curl_setopt($ch, CURLOPT_CUSTOMREQUEST,'HEAD');
                 curl_setopt($ch, CURLOPT_NOBODY, true);
             }

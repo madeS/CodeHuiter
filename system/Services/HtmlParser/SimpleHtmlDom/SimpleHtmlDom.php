@@ -41,9 +41,7 @@
  * @subpackage SimpleHtmlDom
  */
 
-namespace CodeHuiter\Services\HtmlDom;
-
-
+namespace CodeHuiter\Services\HtmlParser\SimpleHtmlDom;
 
 /**
  * simple html dom node

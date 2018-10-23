@@ -127,7 +127,7 @@ class Response
     public function setMimeType($extensionOrFilename, $charset = 'default')
     {
         /** @var \CodeHuiter\Config\Data\MimeTypes $mimeTypes */
-        $mimeTypes = $this->app->get('mime_types');
+        $mimeTypes = $this->app->get(Config::SERVICE_KEY_MIME_TYPES);
         if ($charset === 'default') {
             $charset = $this->config['charset'];
         }
