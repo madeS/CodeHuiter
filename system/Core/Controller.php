@@ -10,6 +10,7 @@ namespace CodeHuiter\Core;
  * @property-read Request $request
  * @property-read Response $response
  * @property-read \CodeHuiter\Core\Log\AbstractLog $log
+ * @property-read \CodeHuiter\Services\Console $console
  * @property-read \CodeHuiter\Services\Language $lang
  * @property-read \CodeHuiter\Services\DateService $date
  * @property-read \CodeHuiter\Services\Network $network
