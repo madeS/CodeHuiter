@@ -30,9 +30,9 @@ class Console
      */
     public function log($message, $clearLine = false, $endLine = true){
         if ($clearLine){
-            print_r(str_pad('', strlen($this->clog_out), chr(0x08)));
-            print_r(str_pad('', strlen($this->clog_out), ' '));
-            print_r(str_pad('', strlen($this->clog_out), chr(0x08)));
+            print_r(str_pad('', mb_strlen($this->clog_out), chr(0x08)));
+            print_r(str_pad('', mb_strlen($this->clog_out), ' '));
+            print_r(str_pad('', mb_strlen($this->clog_out), chr(0x08)));
             $this->clog_out = '';
         }
         if(is_object($message) || is_array($message)){
@@ -40,7 +40,7 @@ class Console
         } else {
             $message = (string) $message;
         }
-        $this->clog_out = $message;
+        $this->clog_out .= $message;
         print_r($message);
         if ($endLine){
             print_r("\r\n");
@@ -54,7 +54,7 @@ class Console
 
     protected $startTime = 0;
     public function progressRemaining($now,$total) {
-        if ($this->startTime === 0) {
+        if ($this->startTime === 0 || $now == 0) {
             $this->startTime = microtime(true);
             return '???';
         }

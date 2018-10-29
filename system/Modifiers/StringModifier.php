@@ -5,6 +5,17 @@ namespace CodeHuiter\Modifiers;
 
 class StringModifier
 {
+    private const CHARSET = 'UTF-8';
+    public const FILTER_BASIC_EN = 1;
+    public const FILTER_BASIC_EN_RU = 2;
+    public const FILTER_BASIC_EN_BY = 3;
+
+    public static function mbInit()
+    {
+        mb_internal_encoding(self::CHARSET);
+        mb_regex_encoding(self::CHARSET);
+    }
+
     /**
      * @param string $textPattern Init string
      * @param array $replacePairs key value replaces
@@ -19,8 +30,25 @@ class StringModifier
         return $result;
     }
 
-    const FILTER_BASIC_EN = 1;
-    const FILTER_BASIC_EN_RU = 2;
+    public static function toLower(string $string)
+    {
+        return mb_strtolower($string, self::CHARSET);
+    }
+
+    public static function toUpper(string $string)
+    {
+        return mb_strtoupper($string, self::CHARSET);
+    }
+
+    public static function sub(string $string, $start, $length = null)
+    {
+        return mb_substr($string, $start, $length, self::CHARSET);
+    }
+
+    public static function pos(string $haystack, $needle, $offset = 0)
+    {
+        return mb_strpos($haystack, $needle, $offset, self::CHARSET);
+    }
 
     public static function filterChars($textPattern, $filterOption)
     {
@@ -32,10 +60,13 @@ class StringModifier
         }
         if (is_int($filterOption)) {
             if ($filterOption === self::FILTER_BASIC_EN) {
-                $result = preg_replace('%[^A-Za-z0-9_-]%', '', $result);
+                $result = preg_replace('/[^A-Za-z0-9_-]/ui', '', $result);
             }
             if ($filterOption === self::FILTER_BASIC_EN_RU) {
-                $result = preg_replace('%[^A-Za-zА-Яа-я0-9_-]%', '', $result);
+                $result = preg_replace('/[^A-Za-zА-Яа-я0-9_-]/ui', '', $result);
+            }
+            if ($filterOption === self::FILTER_BASIC_EN_BY) {
+                $result = preg_replace('/[^A-Za-zА-Яа-яіў0-9_-]/ui', '', $result);
             }
         }
 
