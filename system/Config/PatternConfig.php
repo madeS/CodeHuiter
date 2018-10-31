@@ -22,7 +22,6 @@ class PatternConfig extends Config
 
             'protocol' => 'http',
             'domain' => 'app.local',
-
             'language' => 'russian',
 
             'data_default' => ['head_title','head_description','head_keywords','head_image',],

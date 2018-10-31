@@ -44,6 +44,9 @@ abstract class Config
 
         $this->configs[self::CONFIG_KEY_MAIN] = [
             'template' => 'default',
+            'protocol' => 'http',
+            'domain' => 'app.local',
+            'language' => 'russian',
         ];
 
         $this->configs[self::CONFIG_KEY_FRAMEWORK] = [
