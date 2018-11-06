@@ -121,7 +121,7 @@ class Model
         }
         if ($whereArray) {
             $db = static::getDb();
-            $db->update(static::$table, $setArray, $whereArray);
+            $db->update(static::$table, $whereArray, $setArray);
         }
     }
 

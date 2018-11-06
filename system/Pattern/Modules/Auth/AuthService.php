@@ -301,7 +301,7 @@ class AuthService
             $this->date->now + 3600 * 24 * $this->config['cookie_days'], '/', $this->config['cookie_domain']
         );
         $this->response->setCookie(
-            'sig', $userInfo->id,
+            'sig', $newSig,
             $this->date->now + 3600 * 24 * $this->config['cookie_days'], '/', $this->config['cookie_domain']
         );
     }

@@ -16,6 +16,7 @@ abstract class Config
     public const SERVICE_KEY_LOG = 'log';
     public const CONFIG_KEY_LOG = 'log';
     public const SERVICE_KEY_CONSOLE = 'console';
+    public const SERVICE_KEY_DEBUG = 'debug';
     public const SERVICE_KEY_EMAIL = 'email';
     public const CONFIG_KEY_EMAIL = 'email';
     public const SERVICE_KEY_DATE = 'date';
@@ -126,6 +127,7 @@ abstract class Config
         ];
 
         $this->services[self::SERVICE_KEY_CONSOLE] = ['single' => true, 'class_app' => '\\CodeHuiter\\Services\\Console'];
+        $this->services[self::SERVICE_KEY_DEBUG] = ['single' => true, 'class' => '\\CodeHuiter\\Services\\Debug'];
 
         $this->services[self::SERVICE_KEY_EMAIL] = ['single' => true, 'class_app' => '\\CodeHuiter\\Services\\Email\\Mailer\\Mailer'];
         $this->configs[self::CONFIG_KEY_EMAIL] = [

@@ -131,7 +131,7 @@ class BaseController extends Controller
             },
         ] + $customActions));
 
-        $this->data['ui'] = ($success) ? $this->auth->user : false;
+        $this->data['userInfo'] = ($success) ? $this->auth->user : false;
         return $success;
     }
 
