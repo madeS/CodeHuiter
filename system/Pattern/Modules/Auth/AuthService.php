@@ -172,17 +172,8 @@ class AuthService
     protected function userNotInGroups(UsersModel $user, array $requiredGroups)
     {
         $result = [];
-        $userGroups = $user->getGroups();
         foreach ($requiredGroups as $requiredGroup) {
-            $inRequiredGroup = false;
-            if ($userGroups && is_array($userGroups)) {
-                foreach ($userGroups as $group) {
-                    if ($group === $requiredGroup) {
-                        $inRequiredGroup = true;
-                    }
-                }
-            }
-            if (!$inRequiredGroup) {
+            if (!$user->isInGroup($requiredGroup)) {
                 $result[] = $requiredGroup;
             }
         }

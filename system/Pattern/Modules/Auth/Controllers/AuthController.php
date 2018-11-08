@@ -92,8 +92,12 @@ class AuthController extends BaseController
         $this->mjsa->reload();
     }
 
-
-
+    public function logout()
+    {
+        $this->initWithAuth(false);
+        $this->auth->resetSig($this->auth->user);
+        $this->response->location($_SERVER['HTTP_REFERER'],true);
+    }
 
 
 
@@ -305,11 +309,7 @@ class AuthController extends BaseController
         ));
     }
 
-    public function logout(){
-        $this->initWithAuth(false);
-        $this->mauth->resetSig($this->data['ui']);
-        $this->mm->location($this->mm->g($_SERVER['HTTP_REFERER'],'/'));
-    }
+
 
     public function facebook(){
         $this->initWithAuth(false);

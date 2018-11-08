@@ -6,11 +6,11 @@
 <!DOCTYPE html>
 <html prefix="og: http://ogp.me/ns#">
 <head>
-    <?php $those->response->render($template . 'main_parts/head') ?>
-    <?php if(isset($head_tpl) && $head_tpl):?>
-        <?php $those->response->render($template . $head_tpl); ?>
-    <?php endif;?>
-    <?php $those->response->render($template . 'main_parts/head_after.tpl.php'); ?>
+	<?php $those->response->render($template . 'main_parts/head') ?>
+	<?php if(isset($head_tpl) && $head_tpl):?>
+		<?php $those->response->render($template . $head_tpl); ?>
+	<?php endif;?>
+	<?php $those->response->render($template . 'main_parts/head_after.tpl.php'); ?>
 </head>
 <body>
 <?php $those->response->render($template . 'main_parts/body_cont_before') ?>

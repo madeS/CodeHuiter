@@ -17,6 +17,7 @@ use CodeHuiter\Services\Compressor;
  *
  * @property-read Compressor $compressor
  * @property-read \App\Services\Links $links
+ * @property-read \CodeHuiter\Pattern\Services\Media $media
  * @property-read \CodeHuiter\Pattern\Modules\Auth\AuthService $auth
  * @property-read \CodeHuiter\Services\Mjsa $mjsa
  */

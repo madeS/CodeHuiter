@@ -141,6 +141,19 @@ class UsersModel extends Model
         $this->update(['data_info' => $this->data_info]);
     }
 
+    public function isInGroup($requiredGroup)
+    {
+        $groups = $this->getGroups();
+        if ($groups && is_array($groups)) {
+            foreach($groups as $group) {
+                if ($group === $requiredGroup) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     public function getGroups()
     {
         if ($this->groupsDecoded === null) {

@@ -8,6 +8,10 @@ class PatternConfig extends Config
     public const SERVICE_KEY_COMPRESSOR = 'compressor';
     public const CONFIG_KEY_COMPRESSOR = 'compressor';
     public const SERVICE_KEY_LINKS = 'links';
+    public const CONFIG_KEY_LINKS = self::SERVICE_KEY_LINKS;
+
+    public const SERVICE_KEY_MEDIA = 'media';
+    public const CONFIG_KEY_MEDIA = self::SERVICE_KEY_MEDIA;
 
     public const SERVICE_KEY_AUTH = 'auth';
     public const CONFIG_KEY_AUTH = 'auth';
@@ -49,7 +53,48 @@ class PatternConfig extends Config
         $this->services[self::SERVICE_KEY_COMPRESSOR] = ['single' => true, 'class_app' => '\\CodeHuiter\\Services\\Compressor'];
         $this->compressorConfig();
 
-        $this->services[self::SERVICE_KEY_LINKS] = ['single' => true, 'class' => '\\App\\Services\\Links'];
+        $this->services[self::SERVICE_KEY_LINKS] = ['single' => true, 'class_app' => '\\App\\Services\\Links'];
+        $this->configs[self::CONFIG_KEY_LINKS] = [
+            'aliases' => [
+                'users' => '/users',
+                'user_view' => '/users/id{#param}',
+                'user_settings' => '/users/settings',
+                'user_medias' => '/users/id{#param}/medias',
+                'messages' => '/messages',
+                'messages_user' => '/messages/user{#param}',
+                'messages_room' => '/messages/room{#param}',
+
+                'blog_add' => '/blog/add',
+                'blog_edit' => '/blog/edit/{#param}',
+                'blog_page_categored' => '/page-{#param}/{#param}',
+                'blog_page' => '/page-{#param}',
+
+                'user_albums' => '/users/id{#param}/albums',
+                'user_album' => '/users/id{#param}/album{#param}',
+                'user_album_edit' => '/users/id{#param}/album{#param}/edit',
+            ],
+        ];
+
+        $this->services[self::SERVICE_KEY_MEDIA] = ['single' => true, 'class_app' => '\\CodeHuiter\\Pattern\\Services\\Media'];
+        $this->configs[self::CONFIG_KEY_MEDIA] = [
+            'storage_map' => [
+                'watermarks' => [
+                    'store' => '/pub/images/watermarks/',
+                    'server_root' => PUB_PATH,
+                    'site_url' => '',
+                ],
+                'user_medias' => [
+                    'store' => '/pub/files/images/user_medias/',
+                    'server_root' => PUB_PATH,
+                    'site_url' => '',
+                ],
+                'example_cloud' => [
+                    'store' => '/cloud_folder/{#locale}/',
+                    'server_root' => '/home/disk1',
+                    'site_url' => 'http://asset.example.com',
+                ],
+            ]
+        ];
 
         $this->services[self::SERVICE_KEY_AUTH] = ['single' => true, 'class_app' => '\\CodeHuiter\\Pattern\\Modules\\Auth\\AuthService'];
         $this->configs[self::CONFIG_KEY_AUTH] = [
@@ -89,8 +134,8 @@ class PatternConfig extends Config
     protected function compressorConfig()
     {
         $this->configs[self::SERVICE_KEY_COMPRESSOR] = [
-            'version' => '201810091950',
-            //'version' => 'dev', // dev обновляется постоянно
+            //'version' => '201810091950',
+            'version' => 'dev', // dev обновляется постоянно
             'css' => [
                 //'http://code.jquery.com/ui/1.9.2/themes/base/jquery-ui.css',
                 '/pub/css/mjsa.css',

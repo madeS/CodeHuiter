@@ -181,7 +181,7 @@ var app = new (function ($){
     };
 
     this.changeSearchParamSubmit = function(el){
-        var params = mjsa.urlParams()
+        var params = mjsa.urlParams();
         var paramKeyValue = $(el).attr('data-param').split(':');
         if (paramKeyValue.length > 1){
             params[paramKeyValue[0]] = paramKeyValue[1];
@@ -234,4 +234,6 @@ jQuery(function(){
         app.onloadCustom && app.onloadCustom();
     };
     mjsa.def.bodyAjaxOnloadFunc();
+
+    //window.onunload = function() { debugger; }
 });

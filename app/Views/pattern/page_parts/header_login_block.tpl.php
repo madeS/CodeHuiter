@@ -1,3 +1,7 @@
+<?php if (false) require_once __DIR__ . '/../../IDE_Helper.tpl.php';
+?>
+<div class="social_login">
+
 <?php if($those->auth->config['vk_app_id']):?>
 	<a class="socbtn sik-vk small translucent hint hbottom action"
 	data-title="<?php echo $those->lang->get('auth_ui:sign_in_with_vk');?>"
@@ -30,3 +34,5 @@
 <?php endif;?>
 <a href="#/auth" class="btn blue auth action"
 	data-action="easyAjax" data-uri="/auth?in_popup=true"><?php echo $those->lang->get('auth_ui:sign_in_btn')?></a>
+
+</div>

@@ -23,8 +23,8 @@ $project_logo = '';
 /** @var string $pageStyle Style of page default, backed */
 $pageStyle = '';
 
-/** @var Mixed $userInfo */
-$userInfo = [];
+/** @var \CodeHuiter\Pattern\Modules\Auth\Models\UsersModel|false $userInfo */
+$userInfo = false;
 
 /** @var string $copyright_name */
 $copyright_name = '';
