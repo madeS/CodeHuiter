@@ -199,6 +199,7 @@ var mjsaClass = function ($){
         var innerOptions = $.extend(self.clone(options), {
             success: function(html, textStatus, XMLHttpRequest) {
                 self.ajax._repeat = 3;
+                debugger;
                 if (options.success !== undefined) options.success(html, textStatus, XMLHttpRequest);
             },
             error: function(jqXHR, textStatus, errorThrown) {
@@ -754,7 +755,7 @@ var mjsaClass = function ($){
         self.bodyAjax.shadow().animate({opacity: "show"},150);
         self.bodyAjax._lastLink = link;
         self.ajax.send({
-            url: link, type: 'GET', data: {body_ajax: 'true'}, timeout: self.def.bodyAjax_timeout,
+            url: link, type: 'GET', data: {bodyAjax: 'true'}, timeout: self.def.bodyAjax_timeout,
             success:function(content){
                 var collected = self.collectParams(self.def.haSaveSelector);
                 var content_separated = undefined;
@@ -1278,7 +1279,7 @@ var mjsaClass = function ($){
     };
     this.popups.closeAll = function() {
         for(var key in self.popups._openedPopups){
-            if (self.popups.openedPopups[key]) self.popups.close(key);
+            if (self.popups._openedPopups[key]) self.popups.close(key);
         }
     };
     this.popups._getSelector = function(name){

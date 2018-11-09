@@ -68,7 +68,7 @@ class Request
         return (
             !empty($_SERVER['HTTP_X_REQUESTED_WITH'])
             && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest'
-            && ($this->getRequest('mjsaAjax') || $this->getRequest('bodyAjax'))
+            && ($this->getRequestValue('mjsaAjax') || $this->getRequestValue('bodyAjax'))
         );
     }
 
@@ -80,7 +80,7 @@ class Request
         return (
             !empty($_SERVER['HTTP_X_REQUESTED_WITH'])
             && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest'
-            && $this->getRequest('bodyAjax')
+            && $this->getRequestValue('bodyAjax')
         );
     }
 
@@ -117,9 +117,12 @@ class Request
         return $value;
     }
 
-    public function getRequest($key, $default = '')
+    public function getRequestValue($key, $default = '')
     {
-        $value = $this->getGlobal(INPUT_REQUEST, $key);
+        $value = $this->getGlobal(INPUT_POST, $key);
+        if ($value === null) {
+            $value = $this->getGlobal(INPUT_GET, $key);
+        }
         if ($value === null) {
             return $default;
         }
@@ -162,7 +165,7 @@ class Request
 
         $value = $source[$key] ?? $default;
 
-        return filter_var($value, FILTER_DEFAULT);
+        return $value !== null ? filter_var($value, FILTER_DEFAULT) : $value;
     }
 
     /**

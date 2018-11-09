@@ -303,7 +303,7 @@ class AuthService
      */
     public function resetSig(UsersModel $userInfo, $withLogout = true)
     {
-        $userInfo->update(['sig' => null]);
+        $userInfo->update(['sig' => '']);
 
         if ($withLogout) {
             $this->response->setCookie(

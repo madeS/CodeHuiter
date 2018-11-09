@@ -17,5 +17,7 @@ class DevelopingVagrantConfig extends DefaultConfig
                 'password' => 'apppassword',
             ]
         );
+
+        //$this->configs[self::SERVICE_KEY_COMPRESSOR]['version'] = '20181109143000';
     }
 }
