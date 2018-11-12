@@ -52,7 +52,7 @@ class AuthController extends BaseController
         }
 
         try {
-            $this->auth->registerByEmail($data['email'], $data['password'], $data['email'], $connectUi);
+            $this->auth->registerByEmail($data['email'], $data['password'], $data['login'], $connectUi);
         } catch (TagException $exception) {
             if ($exception->getTag() !== AuthService::AUTH_EVENT_EXCEPTION_TAG) {
                 throw $exception;
@@ -92,6 +92,51 @@ class AuthController extends BaseController
         $this->mjsa->reload();
     }
 
+    public function login()
+    {
+        $this->initWithAuth(false);
+        $data = $this->auth->loginByPasswordValidator($this->mjsa, $_POST);
+        if (!$data) {
+            return false;
+        }
+        try {
+            $this->auth->loginByPassword($data['logemail'], $data['password']);
+        } catch (TagException $exception) {
+            if ($exception->getTag() !== AuthService::AUTH_EVENT_EXCEPTION_TAG) {
+               throw $exception;
+            }
+            $successMessage = '';
+            $errorMessage = $exception->getMessage();
+            switch ($exception->getCode()) {
+                case AuthService::ERROR_LOGIN_LOGEMAIL_NOT_FOUND:
+                    $this->mjsa->incorrect('logemail');
+                    break;
+                case AuthService::ERROR_LOGIN_PASSWORD_WRONG:
+                    $this->mjsa->incorrect('password');
+                    break;
+                case AuthService::ERROR_LOGIN_EMAIL_CONF_SENT:
+                    $successMessage = $errorMessage;
+                    $errorMessage = '';
+                    $this->mjsa->formReplace($successMessage);
+                    break;
+                default:
+                    $errorMessage .= " Code [{$exception->getCode()}]";
+            }
+            if ($errorMessage) {
+                $this->mjsa->errorMessage($errorMessage);
+            }
+            if ($successMessage) {
+                $this->mjsa->successMessage($successMessage);
+            }
+            return false;
+        }
+        $this->mjsa->closePopups();
+        echo '<script>'
+            . 'if ($(".regauth_form_container .continue_url").val()) location.reload();'
+            . 'else mjsa.bodyUpdate();'
+            . '</script>';
+    }
+
     public function logout()
     {
         $this->initWithAuth(false);
@@ -114,42 +159,6 @@ class AuthController extends BaseController
         $this->mm->mjsaPrintEvent(array(
             /* 'success'=> 'Язык изменен', */ 'reload' => true, 'closePopups' => true,
         ));
-    }
-
-    public function login(){
-        $this->mm->request_type = 'mjsa_ajax';
-        $this->initWithAuth(false);
-        $pdata = $this->mm->mjsaValidator($_POST, array(
-            'logemail' => array('required' => true, 'required_text' => lang('mauth.auth.logemail_need')),
-            'password' => array('required' => true, 'required_text' => lang('mauth.auth.password_need')),
-        ));
-        if ($this->mauth->loginPass($pdata['logemail'], $pdata['password']) === false){
-            return $this->mm->mjsaPrintError($this->mauth->getErrorMessage());
-        }
-        echo '<script>mjsa.scrollPopup.closeAll();'
-            . 'if($(".regauth_form_container .continue_url").val()) location.reload();'
-            . 'else mjsa.bodyUpdate()</script>';
-    }
-
-    public function confirm_email(){
-        $this->initWithAuth(false);
-        if (!isset($_GET['user_id']) || ($_GET['user_id'] == '')
-            || !isset($_GET['token']) || ($_GET['token'] == '')) {
-            $this->data['h2'] = lang('mauth.email_token.broken_link.title');
-            $this->data['p'] = lang('mauth.email_token.broken_link.p1');
-            $this->data['content_tpl'] = 'mop/text_page.tpl.php';
-            $this->load->view('main.tpl.php',$this->data);
-            return false;
-        }
-        if($this->mauth->confirmEmailToken($_GET['user_id'],$_GET['token'])){
-            $this->mm->location($this->links->userSettings());
-        } else {
-            $this->data['h2'] = lang('mauth.email_token.incorrect_link.title');
-            $this->data['p'] = lang('mauth.email_token.incorrect_link.p1').$this->mauth->getErrorMessage();
-            $this->data['content_tpl'] = 'mop/text_page.tpl.php';
-            $this->load->view('main.tpl.php',$this->data);
-            return false;
-        }
     }
 
     public function user_edit_submit(){

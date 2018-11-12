@@ -421,26 +421,30 @@ var mjsaClass = function ($){
             opt.param || {},
             paramSelector,
             function(response, data) {
+                var i;
                 $el.removeClass(opt.disableClass);
                 if (opt.callback && !opt.callback(response,data,el)) return false;
                 var errorMsgs = self.grabResponseTag(response,opt.errorSeparator);
-                for (var errorMsgKey in errorMsgs) {
-                    if (!errorMsgs.hasOwnProperty(errorMsgKey)) continue;
-                    $form.find(opt.errorSelector).append(errorMsgs[errorMsgKey]);
+                if (errorMsgs) {
+                    for (i = 0; i < errorMsgs.length; i++) {
+                        $form.find(opt.errorSelector).append(errorMsgs[i]);
+                    }
                 }
                 var incorrects = self.grabResponseTag(response,opt.incorrectSeparator);
-                for (var incorrectKey in incorrects) {
-                    if (!incorrects.hasOwnProperty(incorrectKey)) continue;
-                    var $input = $form.find('[name='+incorrects[incorrectKey]+']').addClass(opt.incorrectClass);
-                    if (incorrectKey === 0  && $form.attr(opt.scrollToIncorrectAttr)){
-                        self.scrollTo($input);
+                if (incorrects) {
+                    for (i = 0; i < incorrects.length; i++) {
+                        var $input = $form.find('[name='+incorrects[i]+']').addClass(opt.incorrectClass);
+                        if (i === 0  && $form.attr(opt.scrollToIncorrectAttr)){
+                            self.scrollTo($input);
+                        }
                     }
                 }
                 var msgs = self.grabResponseTag(response,opt.formReplaceSeparator);
-                for (var msgsKey in msgs) {
-                    if (!msgs.hasOwnProperty(msgsKey)) continue;
-                    if (msgsKey === 0) $form.html('');
-                    $form.append(msgs[msgsKey]);
+                if (msgs) {
+                    for (i = 0; i < msgs.length; i++) {
+                        if (i === 0) $form.html('');
+                        $form.append(msgs[i]);
+                    }
                 }
                 return false;
             },
