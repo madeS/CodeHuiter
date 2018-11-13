@@ -18,7 +18,8 @@ class PDOMySQL extends AbstractDatabase
         $this->config = $config;
         $this->connection = new \PDO($config['dsn'], $config['username'], $config['password'], [
             \PDO::ATTR_PERSISTENT => (isset($config['persistent']) ? $config['persistent'] : true),
-            \PDO::ATTR_ERRMODE => \PDO::ERRMODE_WARNING
+            \PDO::ATTR_ERRMODE => \PDO::ERRMODE_WARNING,
+            \PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8mb4 COLLATE utf8mb4_general_ci",
         ]);
     }
 

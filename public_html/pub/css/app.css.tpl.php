@@ -549,6 +549,14 @@ body .scoll_popup_container.thepopup_nopadd .popup_scroll_content { padding: 0; 
 /* END Default site Elements */
 <?php endif;?>
 
+/* Messages */
+<?php if(true):?>
+.message_holder { padding: 15px 15px; background-color: #eee;}
+.message_holder.error { background-color: #fee;}
+.message_holder.success { background-color: #efe;}
+/* END Messages */
+<?php endif;?>
+
 /* UserView */
 <?php if(true):?>
 .user_view { position: relative;}

@@ -227,7 +227,7 @@ class AuthService
             }
             return $userInfo;
         } else {
-            return $this->setErrorMessage($this->lang->get('auth:incorrect_sig'));
+            return $this->setErrorMessage($this->lang->get('auth_ui:incorrect_sig'));
         }
     }
 
@@ -461,6 +461,7 @@ class AuthService
             '{#siteName}' => ($this->app->getConfig(Config::CONFIG_KEY_MAIN)['project_name'] ?? '')
         ]);
         $content = $this->lang->get('auth_email:confirm_body', [
+            '{#siteUrl}' => ($this->app->getConfig(Config::CONFIG_KEY_MAIN)['site_url'] ?? ''),
             '{#userId}' => $user->id,
             '{#login}' => $user->login,
             '{#token}' => $userDataInfo['email_conf_token'],

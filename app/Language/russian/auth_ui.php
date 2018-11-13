@@ -1,5 +1,6 @@
 <?php
 
+$lang['auth_ui:incorrect_sig'] = 'Ошибка авторизации. Неверная подпись';
 $lang['auth_ui:sign_in_with_vk'] = 'Вход через ВКонтакте';
 $lang['auth_ui:sign_in_with_ig'] = 'Вход через Instagram';
 $lang['auth_ui:sign_in_with_fb'] = 'Вход через Facebook';

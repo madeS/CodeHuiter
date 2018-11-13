@@ -155,7 +155,8 @@ abstract class Config
         }];
 
         $this->configs[self::CONFIG_KEY_DB_DEFAULT] = [
-            'dsn' => 'mysql:host=localhost;dbname=app_db',
+            'dsn' => 'mysql:host=localhost;dbname=app_db;charset=utf8mb4',
+            'persistent' => true,
             'username' => 'appuser',
             'password' => 'apppassword',
             'debug' => true, // Save in memory data of time executing for totally print page

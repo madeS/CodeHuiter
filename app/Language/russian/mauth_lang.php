@@ -43,11 +43,7 @@ $lang['mauth.email_token.broken_link.p1'] = 'В ссылке отсутству�
 $lang['mauth.email_token.incorrect_link.title'] = 'Подтверждение E-mail неудачно.';
 $lang['mauth.email_token.incorrect_link.p1'] = 'Причина: ';
 
-$lang['mauth.ePattern.checkemail.subject'] = 'Проверка E-mail';
-$lang['mauth.ePattern.checkemail.p11'] = 'Пользователь нашего сайта';
-$lang['mauth.ePattern.checkemail.p12'] = 'при регистрации  указал этот E-mail в качестве своего.';
-$lang['mauth.ePattern.checkemail.p2'] = 'Если это были вы, перейдите по ссылке ниже для подтверждения этого E-mail:';
-$lang['mauth.ePattern.checkemail.p4'] = 'Если это были не вы, то просто проигнорируйте это письмо';
+
 
 $lang['mauth.recpass.email_need'] = 'Укажите ваш E-mail';
 $lang['mauth.recpass.email_not_found'] = 'Пользователь с таким E-mail не найден';

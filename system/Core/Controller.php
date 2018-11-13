@@ -2,6 +2,8 @@
 
 namespace CodeHuiter\Core;
 
+use CodeHuiter\Database\AbstractDatabase;
+
 /**
  * The base controller
  *
@@ -9,6 +11,7 @@ namespace CodeHuiter\Core;
  * @property-read Router $router
  * @property-read Request $request
  * @property-read Response $response
+ * @property-read AbstractDatabase $db
  * @property-read \CodeHuiter\Core\Log\AbstractLog $log
  * @property-read \CodeHuiter\Services\Console $console
  * @property-read \CodeHuiter\Services\Debug $debug
