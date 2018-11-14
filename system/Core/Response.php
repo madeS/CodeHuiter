@@ -3,6 +3,7 @@
 namespace CodeHuiter\Core;
 
 use CodeHuiter\Config\Config;
+use CodeHuiter\Config\ResponseConfig;
 use CodeHuiter\Core\Exceptions\ExceptionProcessor;
 use CodeHuiter\Exceptions\InvalidConfigException;
 use CodeHuiter\Services\Mjsa;
@@ -15,7 +16,9 @@ class Response
     /** @var string */
     protected $finalOutput;
 
-    /** @var array */
+    /**
+     * @var ResponseConfig
+     */
     protected $config;
 
     protected $initLevel;
@@ -36,7 +39,7 @@ class Response
     {
         $this->initLevel = ob_get_level();
         $this->app = $app;
-        $this->config = $app->getConfig(Config::CONFIG_KEY_RESPONSE);
+        $this->config = $app->config->responseConfig;
         $this->request = $this->app->get(Config::SERVICE_KEY_REQUEST);
     }
 
@@ -58,8 +61,8 @@ class Response
             $_view_file = VIEW_PATH . substr($viewFile, 1);
         }
 
-        if (strpos($_view_file, $this->config['template_name_append']) === false) {
-            $_view_file .= $this->config['template_name_append'];
+        if (strpos($_view_file, $this->config->templateNameAppend) === false) {
+            $_view_file .= $this->config->templateNameAppend;
         }
 
         if (!file_exists($_view_file)) {
@@ -129,7 +132,7 @@ class Response
         /** @var \CodeHuiter\Config\Data\MimeTypes $mimeTypes */
         $mimeTypes = $this->app->get(Config::SERVICE_KEY_MIME_TYPES);
         if ($charset === 'default') {
-            $charset = $this->config['charset'];
+            $charset = $this->config->charset;
         }
         $this->setHeader($mimeTypes->getTypeHeader($extensionOrFilename, $charset));
     }
@@ -148,12 +151,12 @@ class Response
 
     public function profilerEnable($isEnable = true)
     {
-        $this->config['profiler'] = $isEnable;
+        $this->config->profiler = $isEnable;
     }
 
     public function send()
     {
-        if ($this->config['profiler']) {
+        if ($this->config->profiler) {
             /** @var Benchmark $benchmark */
             $benchmark = $this->app->get(Config::SERVICE_KEY_BENCHMARK);
             $benchmark->mark('ResponseSend');

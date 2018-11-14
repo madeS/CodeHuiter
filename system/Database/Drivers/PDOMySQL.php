@@ -1,6 +1,7 @@
 <?php
 namespace CodeHuiter\Database\Drivers;
 
+use CodeHuiter\Config\DatabaseConfig;
 use CodeHuiter\Database\AbstractDatabase;
 
 class PDOMySQL extends AbstractDatabase
@@ -11,16 +12,25 @@ class PDOMySQL extends AbstractDatabase
     /** @var bool */
     protected $inTransaction = false;
 
+    /**
+     * @var DatabaseConfig
+     */
     protected $config = null;
 
-    protected function connect($config)
+    /**
+     * @param DatabaseConfig $config
+     */
+    protected function connect(DatabaseConfig $config)
     {
         $this->config = $config;
-        $this->connection = new \PDO($config['dsn'], $config['username'], $config['password'], [
-            \PDO::ATTR_PERSISTENT => (isset($config['persistent']) ? $config['persistent'] : true),
+        $this->connection = new \PDO($config->dsn, $config->username, $config->password, [
+            \PDO::ATTR_PERSISTENT => $config->persistent,
             \PDO::ATTR_ERRMODE => \PDO::ERRMODE_WARNING,
             \PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8mb4 COLLATE utf8mb4_general_ci",
         ]);
+        if ($config->persistent) {
+            $this->connection->query("SET NAMES utf8mb4 COLLATE utf8mb4_general_ci");
+        }
     }
 
     /**
@@ -42,7 +52,7 @@ class PDOMySQL extends AbstractDatabase
 
     protected function reconnectProblem(\PDOException $exception)
     {
-        if (!isset($this->config['reconnect']) || !$this->config['reconnect']) {
+        if (!$this->config->reconnect) {
             return false;
         }
 

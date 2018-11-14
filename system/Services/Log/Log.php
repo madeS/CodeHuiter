@@ -21,15 +21,15 @@ class Log extends AbstractLog
             return;
         }
 
-        $file = ($this->config['date_prepend'] ? date($this->config['date_prepend']). '_' : '')
+        $file = ($this->config->datePrepend ? date($this->config->datePrepend). '_' : '')
             . str_replace(
                 ['{#tag}', '{#level}'],
                 [$tag,     $level],
-                $this->config['by_file']
+                $this->config->byFile
             ) . '.log';
 
         $message = $this->contextToString($message, $context);
-        $this->writeToFile($this->config['directory'] . $file, $level, $message);
+        $this->writeToFile($this->config->directory . $file, $level, $message);
     }
 
     /**
@@ -83,13 +83,13 @@ class Log extends AbstractLog
 
         $fp = fopen($file, 'a');
         flock($fp, LOCK_EX);
-        $timeString = '[' . $level . ' | ' . date($this->config['date_format']) . ']';
+        $timeString = '[' . $level . ' | ' . date($this->config->dateFormat) . ']';
         fwrite($fp, $timeString .' '. $message ."\n");
         flock($fp, LOCK_UN);
         fclose($fp);
 
         if ($isNewFile) {
-            chmod($file, $this->config['file_permission']);
+            chmod($file, $this->config->filePermission);
         }
     }
 }

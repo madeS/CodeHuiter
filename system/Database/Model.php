@@ -44,7 +44,7 @@ class Model
     protected static function getDateService()
     {
         if (static::$dateService === null) {
-            static::$dateService = Application::getInstance()->get(Config::CONFIG_KEY_DATE);
+            static::$dateService = Application::getInstance()->get(Config::SERVICE_KEY_DATE);
         }
         return static::$dateService;
     }

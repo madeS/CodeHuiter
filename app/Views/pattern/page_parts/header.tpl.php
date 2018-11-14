@@ -1,16 +1,16 @@
 <?php if (false) require_once __DIR__ . '/../../IDE_Helper.tpl.php';
 ?>
 
-<?php if($those->config['pageStyle'] == 'backed'):?>
+<?php if($those->app->config->projectConfig->pageStyle == 'backed'):?>
 	<div class="centerwrap<?=(isset($wrap_classes))?' '.$wrap_classes:''?>">
 	<?/* centerwrap in footer */?>
 <?php endif;?>
 
 
-<?php if($those->config['pageStyle'] === 'backed'):?>
+<?php if($those->app->config->projectConfig->pageStyle === 'backed'):?>
 
 	<div class="header">
-		<a class="logo bodyajax noa" href="<?php echo $those->links->main()?>"><?php echo $those->config['project_logo']?></a>
+		<a class="logo bodyajax noa" href="<?php echo $those->links->main()?>"><?php echo $those->app->config->projectConfig->projectLogo?></a>
 		<div class="profile">
 			<?php if($userInfo->id):?>
 				<div class="profile_block" id="profile_panel">
@@ -54,7 +54,7 @@
 	<div class="wrap">
 	<div class="centerwrap<?=(isset($wrap_classes))?' '.$wrap_classes:''?>">
 
-		<a class="logo bodyajax noa" href="<?php echo $those->links->main()?>"><?php echo $those->config['project_logo']?></a>
+		<a class="logo bodyajax noa" href="<?php echo $those->links->main()?>"><?php echo $those->app->config->projectConfig->projectLogo?></a>
 
 		<div class="mobilemenu" onclick="$(this).parents('.header').toggleClass('menu-active'); return false;"><span class="inner"><span class="ficon-menu"></span></span></div>
 

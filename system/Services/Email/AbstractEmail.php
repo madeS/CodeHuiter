@@ -3,6 +3,7 @@
 namespace CodeHuiter\Services\Email;
 
 use CodeHuiter\Config\Config;
+use CodeHuiter\Config\EmailConfig;
 use CodeHuiter\Core\Application;
 use CodeHuiter\Core\Log\AbstractLog;
 
@@ -14,7 +15,7 @@ abstract class AbstractEmail
     protected $log;
 
     /**
-     * @var array
+     * @var EmailConfig
      */
     protected $config;
 
@@ -26,7 +27,7 @@ abstract class AbstractEmail
     public function __construct(Application $application)
     {
         $this->log = $application->get(Config::SERVICE_KEY_LOG);
-        $this->config = $application->getConfig(Config::CONFIG_KEY_EMAIL);
+        $this->config = $application->config->emailConfig;
     }
 
     public function getLastStatusMessage()
@@ -44,7 +45,7 @@ abstract class AbstractEmail
      */
     public function sendFromSite($subject, $content, $emails, $ccEmails = [], $queued = true)
     {
-        $from = [$this->config['site_robot_email'] => $this->config['site_robot_name']];
+        $from = [$this->config->siteRobotEmail => $this->config->siteRobotName];
         return $this->send($subject, $content, $from, $emails, $ccEmails, $queued);
     }
 

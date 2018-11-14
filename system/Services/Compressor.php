@@ -2,7 +2,7 @@
 
 namespace CodeHuiter\Services;
 
-
+use CodeHuiter\Config\CompressorConfig;
 use CodeHuiter\Config\Config;
 use CodeHuiter\Core\Application;
 use CodeHuiter\Core\Request;
@@ -10,7 +10,7 @@ use CodeHuiter\Core\Response;
 
 class Compressor
 {
-    /** @var array $config */
+    /** @var CompressorConfig  */
     protected $config;
 
     /** @var Request $request */
@@ -19,34 +19,32 @@ class Compressor
     /** @var Response $response */
     protected $response;
 
-    /** @var array $result */
-    public $result = [];
-
     /**
      * @param Application $app
      */
     public function __construct(Application $app)
     {
-        $this->config = $app->getConfig('compressor');
+        $this->config = $app->config->compressorConfig;
         $this->request = $app->get(Config::SERVICE_KEY_REQUEST);
         $this->response = $app->get(Config::SERVICE_KEY_RESPONSE);
     }
 
+    /**
+     * @return CompressorConfig
+     */
     public function checkCompress()
     {
-        if (isset($this->config['domain_compressor'][$this->request->domain])) {
-            // Or merge ?
-            $this->config = $this->config['domain_compressor'][$this->request->domain];
+        if (!empty($this->config->domainCompressor[$this->request->domain])) {
+            $this->config = $this->config->domainCompressor[$this->request->domain];
         }
 
-        $outputFileTemplate = $this->config['dir'] . '/' . $this->config['names'] . '_' . $this->config['version'];
-        $exts = ['css','js'];
-        $this->result = [];
-        foreach ($exts as $ext) {
+        $outputFileTemplate = $this->config->dir . '/' . $this->config->names . '_' . $this->config->version;
+        $exts = ['css' => 'resultCss','js' => 'resultJs'];
+        foreach ($exts as $ext => $resultProp) {
             $outputFile = PUB_PATH . $outputFileTemplate . '.' . $ext;
-            if (!file_exists($outputFile) || $this->config['version'] === 'dev') {
+            if (!file_exists($outputFile) || $this->config->version === 'dev') {
                 $fp = fopen($outputFile, 'w');
-                foreach ($this->config[$ext] as $connected) {
+                foreach ($this->config->$ext as $connected) {
                     $connectedExtArr = explode('.',$connected);
                     if (end($connectedExtArr) === 'php') {
                         $connected_content = $this->response->render(PUB_PATH . $connected, [],true);
@@ -61,11 +59,12 @@ class Compressor
                 }
                 fclose($fp);
             }
-            $this->result[$ext] = $outputFileTemplate . '.' . $ext;
-            if ($this->config['version'] === 'dev'){
-                $this->result[$ext] .= '?t='.time();
+
+            $this->config->$resultProp = $outputFileTemplate . '.' . $ext;
+            if ($this->config->version === 'dev'){
+                $this->$resultProp .= '?t='.time();
             }
-            $this->result['singly'] = $this->config['singly'];
         }
+        return $this->config;
     }
 }

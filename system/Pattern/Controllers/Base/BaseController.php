@@ -23,9 +23,6 @@ use CodeHuiter\Services\Compressor;
  */
 class BaseController extends Controller
 {
-    /** @var array $config config[Config::CONFIG_KEY_MAIN] in configs */
-    public $config;
-
     /** @var array $data */
     protected $data;
 
@@ -35,7 +32,6 @@ class BaseController extends Controller
     public function __construct(Application $app)
     {
         parent::__construct($app);
-        $this->config = $this->app->getConfig(Config::CONFIG_KEY_MAIN);
 
         $this->init();
     }
@@ -79,7 +75,7 @@ class BaseController extends Controller
         }
 
         $this->benchmark->mark('RenderStart');
-        $this->data['template'] = ':' . $this->config['template'];
+        $this->data['template'] = ':' . $this->app->config->projectConfig->template;
         $this->data['content_tpl'] = $subTemplate;
         $this->response->render($this->data['template'] . '/main', $this->data, $return);
     }
@@ -138,14 +134,16 @@ class BaseController extends Controller
 
     protected function init()
     {
-        $this->runData = [
+        $this->lang->setLanguage($this->app->config->settingsConfig->language);
+        $this->data = [
             'bodyAjax' => $this->request->isBodyAJAX(),
-            'language' => $this->config['language'],
+            'language' => $this->app->config->settingsConfig->language,
+            'siteUrl' => $this->app->config->settingsConfig->siteUrl,
         ];
-        $this->lang->setLanguage($this->runData['language']);
-        $this->data = [];
-        foreach($this->config['data_default'] as $defaultField) {
-            $this->data[$defaultField] = $this->config[$defaultField];
+        foreach($this->app->config->projectConfig->dataDefault as $defaultField) {
+            $this->data[$defaultField] = $this->app->config->projectConfig->$defaultField;
         }
+
+        $this->lang->setLanguage($this->data['language']);
     }
 }

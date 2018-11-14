@@ -2,6 +2,7 @@
 
 namespace CodeHuiter\Pattern\Modules\Auth;
 
+use CodeHuiter\Config\AuthConfig;
 use CodeHuiter\Config\Config;
 use CodeHuiter\Config\PatternConfig;
 use CodeHuiter\Core\Application;
@@ -36,7 +37,7 @@ class AuthService
     /** @var UsersModel */
     public $user = null;
 
-    /** @var array */
+    /** @var AuthConfig  */
     public $config;
 
     protected $lastErrorMessage;
@@ -75,9 +76,9 @@ class AuthService
         $this->lang = $application->get(Config::SERVICE_KEY_LANG);
         $this->request = $application->get(Config::SERVICE_KEY_REQUEST);
         $this->response = $application->get(Config::SERVICE_KEY_RESPONSE);
-        $this->config = $application->getConfig(PatternConfig::CONFIG_KEY_AUTH);
+        $this->config = $application->config->authConfig;
 
-        $this->groups = array_merge($this->groups, ($this->config['groups'] ?? [])); // Additional groups
+        $this->groups = array_merge($this->groups, $this->config->groups); // Additional groups
     }
 
     /**
@@ -103,8 +104,8 @@ class AuthService
 
     public function getViewsPath()
     {
-        return ($this->config['viewsPath'])
-            ? $this->config['viewsPath']
+        return ($this->config->viewsPath)
+            ? $this->config->viewsPath
             : SYSTEM_PATH . self::MODULE_PATH . 'Views/';
     }
 
@@ -215,14 +216,14 @@ class AuthService
             return $userInfo;
         }
         if ($sig && $sig == $userInfo->sig && $sig !== 'NULL') {
-            if ($this->config['logout_if_ip_change'] && $userInfo->lastip != $this->request->getClientIP()) {
+            if ($this->config->logoutIfIpChange && $userInfo->lastip != $this->request->getClientIP()) {
                 return $this->setErrorMessage($this->lang->get('auth:incorrect_ip'));
             }
             if ($this->date->now > intval($userInfo->sigtime) + 3600 * 24) {
                 // При мультиконнекте продлевает старый sig иначе создает новый и меняет
                 $this->updateSig($userInfo);
             }
-            if ($this->date->now - $userInfo->lastact > $this->config['nonactive_update_time']) {
+            if ($this->date->now - $userInfo->lastact > $this->config->nonactiveUpdateTime) {
                 $userInfo->update(['lastact' => $this->date->now]);
             }
             return $userInfo;
@@ -275,7 +276,7 @@ class AuthService
     protected function updateSig(UsersModel $userInfo)
     {
         $oldSig = '';
-        if ($this->config['multiconnect_available']) {
+        if ($this->config->multiconnectAvailable) {
             $oldSig = $userInfo->sig;
         }
 
@@ -289,11 +290,11 @@ class AuthService
 
         $this->response->setCookie(
             'id', $userInfo->id,
-            $this->date->now + 3600 * 24 * $this->config['cookie_days'], '/', $this->config['cookie_domain']
+            $this->date->now + 3600 * 24 * $this->config->cookieDays, '/', $this->config->cookieDomain
         );
         $this->response->setCookie(
             'sig', $newSig,
-            $this->date->now + 3600 * 24 * $this->config['cookie_days'], '/', $this->config['cookie_domain']
+            $this->date->now + 3600 * 24 * $this->config->cookieDays, '/', $this->config->cookieDomain
         );
     }
 
@@ -308,11 +309,11 @@ class AuthService
         if ($withLogout) {
             $this->response->setCookie(
                 'id', $userInfo->id,
-                $this->date->now + 3600 * 24 * $this->config['cookie_days'], '/', $this->config['cookie_domain']
+                $this->date->now + 3600 * 24 * $this->config->cookieDays, '/', $this->config->cookieDomain
             );
             $this->response->setCookie(
                 'sig', $userInfo->id,
-                $this->date->now + 3600 * 24 * $this->config['cookie_days'], '/', $this->config['cookie_domain']
+                $this->date->now + 3600 * 24 * $this->config->cookieDays, '/', $this->config->cookieDomain
             );
         }
     }
@@ -326,7 +327,7 @@ class AuthService
      */
     protected function sigFunc($id, $login, $email, $passhash)
     {
-        return md5(($this->config['salt'] ?? '') . $id . $login . $email . $passhash . $this->date->now);
+        return md5($this->config->salt . $id . $login . $email . $passhash . $this->date->now);
     }
 
     /**
@@ -458,10 +459,10 @@ class AuthService
         $user->updateDataInfo($userDataInfo);
 
         $subject = $this->lang->get('auth_email:confirm_subject', [
-            '{#siteName}' => ($this->app->getConfig(Config::CONFIG_KEY_MAIN)['project_name'] ?? '')
+            '{#siteName}' => $this->app->config->projectConfig->projectName,
         ]);
         $content = $this->lang->get('auth_email:confirm_body', [
-            '{#siteUrl}' => ($this->app->getConfig(Config::CONFIG_KEY_MAIN)['site_url'] ?? ''),
+            '{#siteUrl}' => $this->app->config->settingsConfig->siteUrl,
             '{#userId}' => $user->id,
             '{#login}' => $user->login,
             '{#token}' => $userDataInfo['email_conf_token'],
@@ -585,7 +586,7 @@ class AuthService
             }
             $connectUi->update($updateData);
         } else {
-            if (($this->config['register_deny'] ?? null)) {
+            if (!$this->config->allowRegister) {
                 throw new TagException(
                     self::AUTH_EVENT_EXCEPTION_TAG,
                     $this->lang->get('auth_sign:register_denied'),

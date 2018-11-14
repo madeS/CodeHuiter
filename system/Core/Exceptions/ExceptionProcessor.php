@@ -30,9 +30,8 @@ class ExceptionProcessor
             /** @var Request $request */
             $request = $app->get(Config::SERVICE_KEY_REQUEST);
 
-            $frameworkConfig = $app->getConfig(Config::CONFIG_KEY_FRAMEWORK);
-            $show_debug_backtrace = $frameworkConfig['show_debug_backtrace'];
-            $show_errors = $frameworkConfig['show_errors'];
+            $show_debug_backtrace = $app->config->frameworkConfig->showDebugBacktrace;
+            $show_errors = $app->config->frameworkConfig->showErrors;
 
             if (!$request->isCli()) {
                 $dir = 'html';

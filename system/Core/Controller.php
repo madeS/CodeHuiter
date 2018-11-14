@@ -28,7 +28,7 @@ class Controller
     private static $instance;
 
     /** @var Application $app */
-    protected $app;
+    public $app;
 
     public function __construct(Application $app)
     {

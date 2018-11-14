@@ -8,12 +8,7 @@ class ProductionConfig extends DefaultConfig
     {
         parent::__construct();
 
-        $this->configs[self::CONFIG_KEY_FRAMEWORK]['show_errors'] = false;
+        $this->frameworkConfig->showErrors = false;
     }
 
-    protected function initErrorReporting()
-    {
-        error_reporting(E_ALL);
-        ini_set('display_errors', 0);
-    }
 }

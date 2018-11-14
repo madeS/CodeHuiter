@@ -2,11 +2,14 @@
 
 namespace CodeHuiter\Core\Log;
 
-use CodeHuiter\Config\Config;
+use CodeHuiter\Config\LogConfig;
 use CodeHuiter\Core\Application;
 
 abstract class AbstractLog
 {
+    /**
+     * @var LogConfig
+     */
     protected $config;
 
     protected $levels = [
@@ -32,19 +35,18 @@ abstract class AbstractLog
      */
     public function __construct(Application $application)
     {
-        $config = $application->getConfig(Config::CONFIG_KEY_LOG);
-        $this->config = $config;
-        $this->defaultLevel = $config['default_level'] ?? 'debug';
+        $this->config = $application->config->logConfig;
+        $this->defaultLevel = $this->config->defaultLevel ?? 'debug';
 
         $this->enableLevels = [];
-        if (is_array($config['threshold'])) {
-            foreach($config['threshold'] as $levelKey) {
+        if (is_array($this->config->threshold)) {
+            foreach($this->config->threshold as $levelKey) {
                 $this->enableLevels[] = $this->levels[$levelKey];
             }
         } else {
             foreach($this->levels as $levelKey => $levelValue) {
                 $this->enableLevels[] = $levelValue;
-                if ($levelKey === $config['threshold']) {
+                if ($levelKey === $this->config->threshold) {
                     break;
                 }
             }

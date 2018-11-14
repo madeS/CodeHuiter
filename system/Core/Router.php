@@ -3,6 +3,7 @@
 namespace CodeHuiter\Core;
 
 use CodeHuiter\Config\Config;
+use CodeHuiter\Config\RouterConfig;
 use CodeHuiter\Exceptions\CoreCodeHuiterException;
 use CodeHuiter\Exceptions\InvalidConfigException;
 use CodeHuiter\Exceptions\InvalidRequestException;
@@ -12,7 +13,7 @@ class Router
     /** @var Request $request */
     protected $request;
 
-    /** @var array */
+    /** @var RouterConfig  */
     protected $config;
 
     /** @var string */
@@ -44,7 +45,7 @@ class Router
      */
     public function __construct(Application $app)
     {
-        $this->config = $app->getConfig(Config::CONFIG_KEY_ROUTER);
+        $this->config = $app->config->routerConfig;
         $this->app = $app;
         $this->request = $app->get(Config::SERVICE_KEY_REQUEST);
         $this->benchmark = $app->get(Config::SERVICE_KEY_BENCHMARK);
@@ -99,15 +100,15 @@ class Router
                 );
             }
         } catch (InvalidRequestException $exception) {
-            if ($this->controller === $this->config['error_404']['controller']) {
+            if ($this->controller === $this->config->error404['controller']) {
                 throw new CoreCodeHuiterException(
                     "Can't found '{$this->controller}::{$this->controllerMethod}' for call error 404",
                     0,
                     $exception
                 );
             }
-            $this->setController($this->config['error_404']['controller'], true);
-            $this->setControllerMethod($this->config['error_404']['controller_method']);
+            $this->setController($this->config->error404['controller'], true);
+            $this->setControllerMethod($this->config->error404['controller_method']);
             $this->setControllerMethodParams([$exception]);
             $this->execute();
         }
@@ -121,13 +122,13 @@ class Router
     public function setRouting($routeKey, $params)
     {
         if (
-            !isset($this->config[$routeKey]['controller'])
-            || !isset($this->config[$routeKey]['controller_method'])
+            !isset($this->config->$routeKey['controller'])
+            || !isset($this->config->$routeKey['controller_method'])
         ) {
             throw new InvalidConfigException("Not correct exist config.router.{$routeKey} ");
         }
-        $this->setController($this->config[$routeKey]['controller'], true);
-        $this->setControllerMethod($this->config[$routeKey]['controller_method']);
+        $this->setController($this->confi->$routeKey['controller'], true);
+        $this->setControllerMethod($this->config->$routeKey['controller_method']);
         $this->setControllerMethodParams($params);
     }
 
@@ -202,12 +203,12 @@ class Router
         $uri = implode('/', $this->request->segments);
         $http_verb = $this->request->method;
 
-        $routes = $this->config['routes'];
-        if (isset($this->config['domain_routes']['all'])) {
-            $routes = array_merge($routes, $this->config['domain_routes']['all']);
+        $routes = $this->config->routes;
+        if (isset($this->config->domainRoutes['all'])) {
+            $routes = array_merge($routes, $this->config->domainRoutes['all']);
         }
-        if (isset($this->config['domain_routes'][$this->request->domain])) {
-            $routes = array_merge($routes, $this->config['domain_routes'][$this->request->domain]);
+        if (isset($this->config->domainRoutes[$this->request->domain])) {
+            $routes = array_merge($routes, $this->config->domainRoutes[$this->request->domain]);
         }
 
         // Loop through the route array looking for wildcards
@@ -338,7 +339,7 @@ class Router
     {
         $find = [];
         $replace = [];
-        foreach ($this->config['translate_uri'] as $key => $value) {
+        foreach ($this->config->translateUri as $key => $value) {
             $find[] = $key;
             $replace[] = $value;
         }

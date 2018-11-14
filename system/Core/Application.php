@@ -2,6 +2,7 @@
 
 namespace CodeHuiter\Core;
 
+use App\Config\DefaultConfig;
 use CodeHuiter\Config\Config;
 use CodeHuiter\Core\Exceptions\ExceptionProcessor;
 use CodeHuiter\Exceptions\AppContainerException;
@@ -32,9 +33,9 @@ class Application
     protected $environment;
 
     /**
-     * @var Config
+     * @var DefaultConfig
      */
-    protected $config;
+    public $config;
 
     /**
      * @var array
@@ -44,23 +45,6 @@ class Application
     public function getEnvironment(): ?string
     {
         return $this->environment;
-    }
-
-    /**
-     * @param string $key
-     * @return array
-     */
-    public function getConfig($key): array
-    {
-        return $this->config->configs[$key] ?? [];
-    }
-
-    /**
-     * @return Config
-     */
-    public function getConfigs(): Config
-    {
-        return $this->config;
     }
 
     /**
@@ -153,7 +137,4 @@ class Application
             \CodeHuiter\Core\Exceptions\ExceptionProcessor::defaultProcessException($ex);
         }
     }
-
 }
-
-

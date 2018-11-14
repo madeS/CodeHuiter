@@ -35,7 +35,7 @@ class Mailer extends AbstractEmail
     protected function getEmailSender()
     {
         if ($this->emailSender === null) {
-            $this->emailSender = new EmailSender($this->config);
+            $this->emailSender = new EmailSender($this->config->senderConfig);
         }
         return $this->emailSender;
     }
@@ -57,7 +57,7 @@ class Mailer extends AbstractEmail
                     'sended' => 0,
                 ];
                 $mailerId = MailerModel::insert($mailerData);
-                if (!empty($this->config['queue_force'])) {
+                if ($this->config->queueForce) {
                     return $this->sendFromQueue(1, $mailerId);
                 }
             }

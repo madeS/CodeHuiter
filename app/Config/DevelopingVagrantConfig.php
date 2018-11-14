@@ -8,16 +8,12 @@ class DevelopingVagrantConfig extends DefaultConfig
     {
         parent::__construct();
 
-        $this->configs[self::CONFIG_KEY_FRAMEWORK]['show_errors'] = true;
-        $this->configs[self::CONFIG_KEY_DB_DEFAULT] = array_merge(
-            $this->configs[self::CONFIG_KEY_DB_DEFAULT],
-            [
-                'dsn' => 'mysql:host=localhost;dbname=app_db',
-                'username' => 'appuser',
-                'password' => 'apppassword',
-            ]
-        );
+        $this->frameworkConfig->showErrors = true;
 
-        //$this->configs[self::SERVICE_KEY_COMPRESSOR]['version'] = '20181109143000';
+        $this->defaultDatabaseConfig->dsn = 'mysql:host=localhost;dbname=app_db';
+        $this->defaultDatabaseConfig->username = 'appuser';
+        $this->defaultDatabaseConfig->password = 'apppassword';
+
+        $this->compressorConfig->version = '20181109143000';
     }
 }

@@ -1,6 +1,7 @@
 <?php
 namespace CodeHuiter\Database;
 
+use CodeHuiter\Config\DatabaseConfig;
 use CodeHuiter\Core\Log\AbstractLog;
 
 abstract class AbstractDatabase
@@ -18,17 +19,17 @@ abstract class AbstractDatabase
 
     protected $isCalculateTime;
 
-    public function __construct(AbstractLog $log, $databaseConfig)
+    public function __construct(AbstractLog $log, DatabaseConfig $databaseConfig)
     {
         $this->log = $log;
-        $this->isLogIfLonger = $databaseConfig['log_if_longer'];
-        $this->isDebug = $databaseConfig['debug'];
+        $this->isLogIfLonger = $databaseConfig->logIfLonger;
+        $this->isDebug = $databaseConfig->debug;
         $this->isCalculateTime = ($this->isDebug === true) || ($this->isLogIfLonger !== false);
-        $this->isLogTrace = isset($databaseConfig['log_trace']) ? (bool)$databaseConfig['log_trace'] : true;
+        $this->isLogTrace = $databaseConfig->logTrace;
         $this->connect($databaseConfig);
     }
 
-    abstract protected function connect($config);
+    abstract protected function connect(DatabaseConfig $config);
 
     abstract public function disconnect();
 

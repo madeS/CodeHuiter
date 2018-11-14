@@ -3,6 +3,7 @@
 namespace CodeHuiter\Services;
 
 use CodeHuiter\Config\Config;
+use CodeHuiter\Config\DateConfig;
 use CodeHuiter\Core\Application;
 use CodeHuiter\Pattern\Modules\Auth\Models\UsersModel;
 
@@ -12,7 +13,7 @@ class DateService
     public $now = 0;
 
     /**
-     * @var array
+     * @var DateConfig
      */
     protected $config;
 
@@ -22,7 +23,7 @@ class DateService
 
     public function __construct(Application $application)
     {
-        $this->config = $application->getConfig(Config::CONFIG_KEY_DATE);
+        $this->config = $application->config->dateConfig;
         $this->now = time();
     }
 
@@ -68,7 +69,7 @@ class DateService
     {
         $append = '';
         if ($this->outTimezone === null) {
-            $this->outTimezone = $this->config['site_timezone'];
+            $this->outTimezone = $this->config->siteTimezone;
         }
 
         if (is_int($this->outTimezone)) {

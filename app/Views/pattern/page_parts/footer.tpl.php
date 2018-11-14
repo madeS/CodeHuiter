@@ -2,7 +2,7 @@
 ?>
 
 <div class="footer<?=(isset($wrap_classes))?' '.$wrap_classes:''?>">
-	<?php if($those->config['pageStyle'] == 'backed'):?>
+	<?php if($those->app->config->projectConfig->pageStyle == 'backed'):?>
 	<div class="page_container">
 		<div class="center_container">
 			<div class="information">
@@ -11,7 +11,7 @@
 				</div>
 
 				<div class="line">
-					© <?php echo $those->config['project_company']?>, <?=(date('Y') == $those->config['project_year'])?'':$those->config['project_year'].' - '?><?=date('Y')?>
+					© <?php echo $those->app->config->projectConfig->projectCompany?>, <?=(date('Y') == $those->app->config->projectConfig->projectYear)?'':$those->app->config->projectConfig->projectYear.' - '?><?=date('Y')?>
 				</div>
 			</div>
 		</div>
@@ -22,7 +22,7 @@
 					<span class="likea action btn" data-action="appPopup" data-popupuri="/auth/feedback"><?=$those->lang->get('feedback:open')?></span>
 				</div>
 				<div class="line">
-					<a href="<?php echo $those->config['developing_url']?>" class="dev" target="_blank" title="<?php echo $those->config['developing_title']?>">
+					<a href="<?php echo $those->app->config->projectConfig->developingUrl?>" class="dev" target="_blank" title="<?php echo $those->app->config->projectConfig->developingTitle?>">
 						<span class="ficon-wrenches"></span>
 						Разработка
 					</a>
@@ -49,7 +49,7 @@
 			<?php endif;?>
 		</div>
 		<div class="section">
-			&copy; <?php echo $those->config['project_company']?>, <?=(date('Y') == $those->config['project_year'])?'':$those->config['project_year'].' - '?><?=date('Y')?>
+			&copy; <?php echo $those->app->config->projectConfig->projectCompany?>, <?=(date('Y') == $those->app->config->projectConfig->projectYear)?'':$those->app->config->projectConfig->projectYear.' - '?><?=date('Y')?>
 		</div>
 		<div class="section">
 			<span class="likea action" data-action="appPopup" data-popupuri="/auth/feedback">
@@ -58,7 +58,7 @@
 			</span>
 		</div>
 		<div class="section">
-			<a href="<?php echo $those->config['developing_url']?>" class="dev" target="_blank" title="<?php echo $those->config['developing_title']?>">
+			<a href="<?php echo $those->app->config->projectConfig->developingUrl?>" class="dev" target="_blank" title="<?php echo $those->app->config->projectConfig->developingTitle?>">
 				<span class="ficon-wrenches"></span>
 				Разработка
 			</a>
@@ -68,6 +68,6 @@
 	<?php endif;?>
 </div>
 
-<?php if($those->config['pageStyle'] == 'backed'):?>
+<?php if($those->app->config->projectConfig->pageStyle == 'backed'):?>
 	</div>  <?/* centerwrap in header */?>
 <?php endif;?>

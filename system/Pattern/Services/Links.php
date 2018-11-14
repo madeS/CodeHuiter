@@ -2,20 +2,20 @@
 
 namespace CodeHuiter\Pattern\Services;
 
-use CodeHuiter\Config\PatternConfig;
+use CodeHuiter\Config\LinksConfig;
 use CodeHuiter\Core\Application;
 use CodeHuiter\Pattern\Modules\Auth\Models\UsersModel;
 
 class Links
 {
     /**
-     * @var array
+     * @var LinksConfig
      */
     protected $config;
 
     public function __construct(Application $application)
     {
-        $application->getConfig(PatternConfig::CONFIG_KEY_LINKS);
+        $this->config = $application->config->linksConfig;
     }
 
     /**
@@ -155,10 +155,10 @@ class Links
     {
         $args = func_get_args();
         if (!count($args)) return '[NO ARGS]';
-        if(!(isset($this->config['aliases'][$args[0]]) && $this->config['aliases'][$args[0]])){
+        if(!(isset($this->config->aliases[$args[0]]) && $this->config->aliases[$args[0]])){
             return '[ALIAS NO EXIST]';
         }
-        $ret = $this->config['aliases'][$args[0]];
+        $ret = $this->config->aliases[$args[0]];
         for ($i = 1; $i < count($args); $i++){
             $ret = preg_replace('/{#param}/', $args[$i], $ret, 1);
         }

@@ -11,8 +11,7 @@ class Queue
      */
     public function __construct(Application $app)
     {
-        //$this->lang = $app->get('lang');;
-        $app->getConfig('queue');
+
     }
 
 }

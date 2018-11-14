@@ -2,7 +2,7 @@
 
 namespace CodeHuiter\Core;
 
-use CodeHuiter\Config\Config;
+use CodeHuiter\Config\RequestConfig;
 use CodeHuiter\Exceptions\InvalidRequestException;
 use CodeHuiter\Exceptions\ServerConfigException;
 
@@ -21,6 +21,9 @@ class Request
 
     public $uri;
 
+    /**
+     * @var RequestConfig
+     */
     protected $config;
 
     /**
@@ -30,7 +33,7 @@ class Request
      */
     public function __construct(Application $application)
     {
-        $this->config = $application->getConfig(Config::CONFIG_KEY_REQUEST);
+        $this->config = $application->config->requestConfig;
         $this->initialize();
         $this->checkServer();
 
@@ -228,9 +231,9 @@ class Request
                 $uriSegment = trim(remove_invisible_characters($tok, FALSE));
                 if (
                     !empty($uriSegment)
-                    && !empty($this->config['permitted_uri_chars'])
+                    && !empty($this->config->permittedUriChars)
                     && !preg_match(
-                        '/^['.$this->config['permitted_uri_chars'].']+$/iu',
+                        '/^['.$this->config->permittedUriChars.']+$/iu',
                         $uriSegment
                     )
                 ) {

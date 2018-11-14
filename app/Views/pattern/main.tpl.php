@@ -2,7 +2,7 @@
 
 ?>
 
-<?php if(!$those->runData['bodyAjax']):?>
+<?php if(!$bodyAjax):?>
 <!DOCTYPE html>
 <html prefix="og: http://ogp.me/ns#">
 <head>
@@ -17,13 +17,13 @@
 
 <div id="body_cont" <?=($userInfo->id)?'data-timezoneoffset="'.$userInfo->timezone.'"':''?>>
 <?php else:?>
-        <?php echo (isset($seo) && $seo && $seo['title']) ? $seo['title'] : $head_title ?><ajaxbody_separator/>
+        <?php echo (isset($seo) && $seo && $seo['title']) ? $seo['title'] : $headTitle ?><ajaxbody_separator/>
 <?php endif;?>
 
 
 	<?php if(!isset($customTemplate)):?>
 		<?php $those->response->render($template . 'page_parts/header'); ?>
-		<div id="container" class="<?=($those->config['pageStyle'] === 'backed')?'':'centerwrap'?><?=(isset($wrap_classes))?' '.$wrap_classes:''?>">
+		<div id="container" class="<?=($those->app->config->projectConfig->pageStyle === 'backed')?'':'centerwrap'?><?=(isset($wrap_classes))?' '.$wrap_classes:''?>">
 	<?php endif;?>
 
 

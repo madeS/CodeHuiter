@@ -2,19 +2,19 @@
 
 namespace CodeHuiter\Pattern\Services;
 
-use CodeHuiter\Config\PatternConfig;
+use CodeHuiter\Config\MediaConfig;
 use CodeHuiter\Core\Application;
 
 class Media
 {
     /**
-     * @var array
+     * @var MediaConfig
      */
     private $config;
 
     public function __construct(Application $application)
     {
-        $this->config = $application->getConfig(PatternConfig::CONFIG_KEY_MEDIA);
+        $this->config = $application->config->mediaConfig;
     }
 
     /**
@@ -25,8 +25,8 @@ class Media
      * @return string
      */
     protected function serverStore($content, $path){
-        return $this->config['storage_map'][$content]['server_root']
-            . $this->config['storage_map'][$content]['store']
+        return $this->config->storageMap[$content]['server_root']
+            . $this->config->storageMap[$content]['store']
             . $path;
     }
 
@@ -38,8 +38,8 @@ class Media
      * @return string
      */
     public function store($content, $path){
-        return $this->config['storage_map'][$content]['site_url']
-            . $this->config['storage_map'][$content]['store']
+        return $this->config->storageMap[$content]['site_url']
+            . $this->config->storageMap[$content]['store']
             . $path;
 
     }

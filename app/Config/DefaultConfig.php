@@ -8,6 +8,6 @@ class DefaultConfig extends \CodeHuiter\Config\PatternConfig
     {
         parent::__construct();
 
-        $this->configs[self::CONFIG_KEY_MAIN]['domain'] = 'app.local';
+        $this->settingsConfig->domain = 'app.local';
     }
 }
