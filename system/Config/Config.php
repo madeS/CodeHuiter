@@ -72,7 +72,7 @@ abstract class Config
         $this->services[self::SERVICE_KEY_HTML_PARSER] = ['single' => true, 'class' => '\\CodeHuiter\\Services\\HtmlParser\\SimpleHtmlDomParser'];
 
         $this->services[self::SERVICE_KEY_DB] = ['single' => true, 'callback' => function(Application $app) {
-            return new \CodeHuiter\Database\Drivers\PDOMySQL(
+            return new \CodeHuiter\Database\Drivers\PDODriver(
                 $app->get(self::SERVICE_KEY_LOG), $app->config->defaultDatabaseConfig
             );
         }];
@@ -236,6 +236,8 @@ class DatabaseConfig
     public $persistent = true;
     public $username = 'appuser';
     public $password = 'apppassword';
+    public $charset = 'utf8mb4';
+    public $collate = 'utf8mb4_general_ci';
     public $debug = true; // Save in memory data of time executing for totally print page
     public $logIfLonger = 10; // Logging queries if execute time longer than X ms
     public $logTrace = true;

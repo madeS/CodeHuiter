@@ -4,7 +4,7 @@ namespace CodeHuiter\Database\Drivers;
 use CodeHuiter\Config\DatabaseConfig;
 use CodeHuiter\Database\AbstractDatabase;
 
-class PDOMySQL extends AbstractDatabase
+class PDODriver extends AbstractDatabase
 {
     /** @var \PDO $connection */
     protected $connection;
@@ -23,13 +23,18 @@ class PDOMySQL extends AbstractDatabase
     protected function connect(DatabaseConfig $config)
     {
         $this->config = $config;
-        $this->connection = new \PDO($config->dsn, $config->username, $config->password, [
+        $options = [
             \PDO::ATTR_PERSISTENT => $config->persistent,
             \PDO::ATTR_ERRMODE => \PDO::ERRMODE_WARNING,
-            \PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8mb4 COLLATE utf8mb4_general_ci",
-        ]);
+        ];
+        if ($config->charset && $config->collate) {
+            $options[\PDO::MYSQL_ATTR_INIT_COMMAND] = "SET NAMES {$config->charset} COLLATE {$config->collate}";
+        }
+        $this->connection = new \PDO($config->dsn, $config->username, $config->password, $options);
         if ($config->persistent) {
-            $this->connection->query("SET NAMES utf8mb4 COLLATE utf8mb4_general_ci");
+            if ($config->charset && $config->collate) {
+                $this->connection->query("SET NAMES {$config->charset} COLLATE {$config->collate}");
+            }
         }
     }
 
