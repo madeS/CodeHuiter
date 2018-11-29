@@ -108,7 +108,7 @@ abstract class AbstractDatabase
      * @param array $params Key-Value params
      * @param string|null $field field to extract or null for first value extract
      * @param string|bool $fieldAsKey Field as key in result
-     * @return string
+     * @return array
      */
     abstract public function selectField($query, $params = [], $field = null, $fieldAsKey = false);
 

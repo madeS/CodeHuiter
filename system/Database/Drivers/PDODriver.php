@@ -96,6 +96,8 @@ class PDODriver extends AbstractDatabase
             } else {
                 throw $exception;
             }
+        } catch (\Throwable $event) {
+            throw new \PDOException("{$event->getMessage()} \n with query: '$query' with params: " . json_encode($params), 0, $event);
         }
 
         $executeTime = $this->isCalculateTime ? microtime(true) : 0;
@@ -147,6 +149,8 @@ class PDODriver extends AbstractDatabase
             } else {
                 throw $exception;
             }
+        } catch (\Throwable $event) {
+            throw new \PDOException("{$event->getMessage()} \n with query: '$query' with params: " . json_encode($params), 0, $event);
         }
 
         $executeTime = $this->isCalculateTime ? microtime(true) : 0;
@@ -191,6 +195,8 @@ class PDODriver extends AbstractDatabase
             } else {
                 throw $exception;
             }
+        } catch (\Throwable $event) {
+            throw new \PDOException("{$event->getMessage()} \n with query: '$query' with params: " . json_encode($params), 0, $event);
         }
 
         $executeTime = $this->isCalculateTime ? microtime(true) : 0;
@@ -238,6 +244,8 @@ class PDODriver extends AbstractDatabase
             } else {
                 throw $exception;
             }
+        } catch (\Throwable $event) {
+            throw new \PDOException("{$event->getMessage()} \n with query: '$query' with params: " . json_encode($params), 0, $event);
         }
 
         $executeTime = $this->isCalculateTime ? microtime(true) : 0;
@@ -278,6 +286,8 @@ class PDODriver extends AbstractDatabase
             } else {
                 throw $exception;
             }
+        } catch (\Throwable $event) {
+            throw new \PDOException("{$event->getMessage()} \n with query: '$query' with params: " . json_encode($params), 0, $event);
         }
 
         $executeTime = $this->isCalculateTime ? microtime(true) : 0;
@@ -323,6 +333,8 @@ class PDODriver extends AbstractDatabase
             } else {
                 throw $exception;
             }
+        } catch (\Throwable $event) {
+            throw new \PDOException("{$event->getMessage()} \n with query: '$query' with params: " . json_encode($params), 0, $event);
         }
 
         $executeTime = $this->isCalculateTime ? microtime(true) : 0;
@@ -382,6 +394,8 @@ class PDODriver extends AbstractDatabase
                 } else {
                     throw $exception;
                 }
+            } catch (\Throwable $event) {
+                throw new \PDOException("{$event->getMessage()} \n with query: '$query' with params: " . json_encode($params), 0, $event);
             }
             // Format
             $result = $this->connection->lastInsertId();
@@ -404,6 +418,8 @@ class PDODriver extends AbstractDatabase
                 } else {
                     throw $exception;
                 }
+            } catch (\Throwable $event) {
+                throw new \PDOException("{$event->getMessage()} \n with query: '$query' with params: " . json_encode($params), 0, $event);
             }
             // Format
             $result = $statement->rowCount();
