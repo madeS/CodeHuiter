@@ -6,13 +6,13 @@
 <!DOCTYPE html>
 <html prefix="og: http://ogp.me/ns#">
 <head>
-	<?php $those->response->render($patternTemplate . 'main_parts/head') ?>
+	<?php require_once $patternTemplate . 'main_parts/head.tpl.php'; ?>
 	<?php if(isset($headAfterTpl) && $headAfterTpl):?>
 		<?php $those->response->render($template . $headAfterTpl); ?>
 	<?php endif;?>
 </head>
 <body>
-<?php $those->response->render($patternTemplate . 'main_parts/body_cont_before') ?>
+<?php require_once $patternTemplate . 'main_parts/body_cont_before.tpl.php'; ?>
 
 <div id="body_cont" <?=($userInfo->id)?'data-timezoneoffset="'.$userInfo->timezone.'"':''?>>
 <?php else:?>
@@ -26,20 +26,20 @@
 				<?php $those->response->render($template . $headerTpl); ?>
 			<?php endif; ?>
 		<?php else: ?>
-			<?php $those->response->render($patternTemplate . 'page_parts/header'); ?>
+			<?php require_once $patternTemplate . 'page_parts/header.tpl.php'; ?>
 		<?php endif; ?>
 
 		<div id="container" class="<?=($those->app->config->projectConfig->pageStyle === 'backed')?'':'centerwrap'?><?=(isset($wrap_classes))?' '.$wrap_classes:''?>">
 	<?php endif;?>
 
 		<?php if(isset($intervalstack) && $intervalstack):?>
-			<?php $those->response->render($patternTemplate . 'page_parts/intervalstack'); ?>
+			<?php require_once $patternTemplate . 'page_parts/intervalstack.tpl.php'; ?>
 		<?php endif;?>
 		<?php if(isset($keybinds) && $keybinds):?>
-			<?php $those->response->render($patternTemplate . 'page_parts/keybinds'); ?>
+			<?php require_once $patternTemplate . 'page_parts/keybinds.tpl.php'; ?>
 		<?php endif;?>
 		<?php if(isset($breadcrumbs)):?>
-			<?php $those->response->render($patternTemplate . 'page_parts/breadcrumbs'); ?>
+			<?php require_once $patternTemplate . 'page_parts/breadcrumbs.tpl.php'; ?>
 		<?php endif;?>
 
 		<?php if (isset($content_data)):?>
@@ -77,7 +77,7 @@
 				<?php $those->response->render($template . $footerTpl); ?>
 			<?php endif; ?>
 		<?php else: ?>
-			<?php $those->response->render($patternTemplate . 'page_parts/footer'); ?>
+			<?php require_once $patternTemplate . 'page_parts/footer.tpl.php'; ?>
 		<?php endif; ?>
 	<?php endif;?>
 
@@ -92,7 +92,7 @@
 <?php else:?>
 </div>
 
-	<?php $those->response->render($patternTemplate . 'main_parts/body_cont_after') ?>
+	<?php require_once $patternTemplate . 'main_parts/body_cont_after.tpl.php'; ?>
 	<?php if(isset($bodyAfterTpl) && $bodyAfterTpl):?>
 		<?php $those->response->render($template . $bodyAfterTpl); ?>
 	<?php endif;?>
