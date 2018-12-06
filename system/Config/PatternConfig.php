@@ -75,7 +75,9 @@ class PatternConfig extends Config
 
 class ProjectConfig
 {
-    public $template = 'pattern/';
+    public $template = 'myTemplate/';
+    public $headAfterTpl = 'head_after';
+    public $bodyAfterTpl = 'body_after';
     public $pageStyle = 'default'; //'backed';
 
     public $dataDefault = ['headTitle', 'headDescription', 'headKeywords', 'headImage',];

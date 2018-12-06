@@ -68,16 +68,20 @@ class BaseController extends Controller
         }
     }
 
-    protected function render($subTemplate, $return = false)
+    protected function render($contentTpl, $return = false)
     {
         if (!isset($this->data['userInfo'])) {
             $this->data['userInfo'] = $this->auth->getDefaultUser();
         }
 
         $this->benchmark->mark('RenderStart');
-        $this->data['template'] = ':' . $this->app->config->projectConfig->template;
-        $this->data['content_tpl'] = $subTemplate;
-        $this->response->render($this->data['template'] . '/main', $this->data, $return);
+        $this->data['patternTemplate'] = SYSTEM_PATH . 'Pattern/Views/';
+        $this->data['template'] = VIEW_PATH . $this->app->config->projectConfig->template;
+        $this->data['headAfterTpl'] = $this->app->config->projectConfig->headAfterTpl;
+        $this->data['bodyAfterTpl'] = $this->app->config->projectConfig->bodyAfterTpl;
+        $this->data['contentTpl'] = $contentTpl;
+
+        $this->response->render($this->data['patternTemplate'] . '/main', $this->data, $return);
     }
 
     protected function initWithAuth(

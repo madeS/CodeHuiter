@@ -1,4 +1,4 @@
-<?php if (false) require_once __DIR__ . '/../IDE_Helper.tpl.php';
+<?php if (false) require_once __DIR__ . '/IDE_Helper.tpl.php';
 
 ?>
 
@@ -6,14 +6,13 @@
 <!DOCTYPE html>
 <html prefix="og: http://ogp.me/ns#">
 <head>
-	<?php $those->response->render($template . 'main_parts/head') ?>
-	<?php if(isset($head_tpl) && $head_tpl):?>
-		<?php $those->response->render($template . $head_tpl); ?>
+	<?php $those->response->render($patternTemplate . 'main_parts/head') ?>
+	<?php if(isset($headAfterTpl) && $headAfterTpl):?>
+		<?php $those->response->render($template . $headAfterTpl); ?>
 	<?php endif;?>
-	<?php $those->response->render($template . 'main_parts/head_after.tpl.php'); ?>
 </head>
 <body>
-<?php $those->response->render($template . 'main_parts/body_cont_before') ?>
+<?php $those->response->render($patternTemplate . 'main_parts/body_cont_before') ?>
 
 <div id="body_cont" <?=($userInfo->id)?'data-timezoneoffset="'.$userInfo->timezone.'"':''?>>
 <?php else:?>
@@ -22,19 +21,25 @@
 
 
 	<?php if(!isset($customTemplate)):?>
-		<?php $those->response->render($template . 'page_parts/header'); ?>
+		<?php if (isset($headerTpl)): ?>
+			<?php if ($headerTpl): ?>
+				<?php $those->response->render($template . $headerTpl); ?>
+			<?php endif; ?>
+		<?php else: ?>
+			<?php $those->response->render($patternTemplate . 'page_parts/header'); ?>
+		<?php endif; ?>
+
 		<div id="container" class="<?=($those->app->config->projectConfig->pageStyle === 'backed')?'':'centerwrap'?><?=(isset($wrap_classes))?' '.$wrap_classes:''?>">
 	<?php endif;?>
 
-
-		<?php if(isset($breadcrumbs)):?>
-			<?php $those->response->render($template . 'page_parts/breadcrumbs'); ?>
-		<?php endif;?>
 		<?php if(isset($intervalstack) && $intervalstack):?>
-			<?php $those->response->render($template . 'page_parts/intervalstack'); ?>
+			<?php $those->response->render($patternTemplate . 'page_parts/intervalstack'); ?>
 		<?php endif;?>
 		<?php if(isset($keybinds) && $keybinds):?>
-			<?php $those->response->render($template . 'page_parts/keybinds'); ?>
+			<?php $those->response->render($patternTemplate . 'page_parts/keybinds'); ?>
+		<?php endif;?>
+		<?php if(isset($breadcrumbs)):?>
+			<?php $those->response->render($patternTemplate . 'page_parts/breadcrumbs'); ?>
 		<?php endif;?>
 
 		<?php if (isset($content_data)):?>
@@ -47,9 +52,9 @@
 			<?php endif;?>
 		<?php endif; ?>
 
-		<?php if (isset($content_tpl)):?>
-			<?php if (is_array($content_tpl)):?>
-				<?php foreach($content_tpl as $content_tpl_item):?>
+		<?php if (isset($contentTpl)):?>
+			<?php if (is_array($contentTpl)):?>
+				<?php foreach($contentTpl as $content_tpl_item):?>
 					<?php
 						if (strpos($content_tpl_item,':') === 0) $content_tpl_item = $template . substr($content_tpl_item,1);
 						$those->response->render($content_tpl_item);
@@ -58,15 +63,22 @@
 				<?php endforeach;?>
 			<?php else:?>
 				<?php
-					if (strpos($content_tpl,':') === 0) $content_tpl = $template . substr($content_tpl,1);
-					$those->response->render($content_tpl);
+					if (strpos($contentTpl,':') === 0) $contentTpl = $template . substr($contentTpl,1);
+					$those->response->render($contentTpl);
 				?>
 			<?php endif;?>
 		<?php endif; ?>
 
 	<?php if(!isset($customTemplate)):?>
 		</div>
-		<?php $those->response->render($template . 'page_parts/footer'); ?>
+
+		<?php if (isset($footerTpl)): ?>
+			<?php if ($footerTpl): ?>
+				<?php $those->response->render($template . $footerTpl); ?>
+			<?php endif; ?>
+		<?php else: ?>
+			<?php $those->response->render($patternTemplate . 'page_parts/footer'); ?>
+		<?php endif; ?>
 	<?php endif;?>
 
 	<div id="pageinfo" class="hidden" data-opened_at="<?php echo $those->date->now ?>"></div>
@@ -80,8 +92,10 @@
 <?php else:?>
 </div>
 
-	<?php $those->response->render($template . 'main_parts/body_cont_after') ?>
-	<?php $those->response->render($template . 'main_parts/body_after') ?>
+	<?php $those->response->render($patternTemplate . 'main_parts/body_cont_after') ?>
+	<?php if(isset($bodyAfterTpl) && $bodyAfterTpl):?>
+		<?php $those->response->render($template . $bodyAfterTpl); ?>
+	<?php endif;?>
 
 	<?php if(($_GET[\CodeHuiter\Core\Benchmark::GET_DEBUG_BENCH_ENABLE] ?? false)):?>
 		{#result_time_table}

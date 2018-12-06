@@ -3,19 +3,19 @@
 	<div class="social_login">
 		<h3><?php echo $those->lang->get('auth_ui:sign_in_with_social');?></h3>
 		<p><?php echo $those->lang->get('auth_ui:sign_in_by_2_clicks');?> <a href="http://ru.wikipedia.org/wiki/OAuth" target="_blank"><?php echo $those->lang->get('auth_ui:how_it_work');?></a></p>
-			<?php if($those->auth->config['vk_app_id']):?>
+			<?php if($those->auth->config->vkAppId):?>
 				<a class="sik-vk big hint hbottom action" data-title="<?php echo $those->lang->get('auth_ui:sign_in_with_vk');?>" href="/auth/vk" target="_blank" data-action="oauthOpen"><span class="ficon-vk"></span></a>
 			<?php endif;?>
-			<?php if($those->auth->config['instagram_app_id']):?>
+			<?php if($those->auth->config->instagramAppId):?>
 				<a class="sik-ig big hint hbottom action" data-title="<?php echo $those->lang->get('auth_ui:sign_in_with_ig');?>" href="/auth/instagram" target="_blank" data-action="oauthOpen"><span class="ficon-instagram"></span></a>
 			<?php endif;?>
-			<?php if($those->auth->config['facebook_app_id']):?>
+			<?php if($those->auth->config->facebookAppId):?>
 				<a class="sik-fb big hint hbottom action" data-title="<?php echo $those->lang->get('auth_ui:sign_in_with_fb');?>" href="/auth/facebook" target="_blank" data-action="oauthOpen"><span class="ficon-facebook"></span></a>
 			<?php endif;?>
-			<?php if($those->auth->config['twitter_consumer_key']):?>
+			<?php if($those->auth->config->twitterConsumerKey):?>
 				<a class="sik-tw big hint hbottom hlefted action" data-title="<?php echo $those->lang->get('auth_ui:sign_in_with_tw');?>" href="/auth/twitter" target="_blank" data-action="oauthOpen"><span class="ficon-twitter"></span></a>
 			<?php endif;?>
-			<?php if($those->auth->config['google_app_id']):?>
+			<?php if($those->auth->config->googleAppId):?>
 				<a class="sik-gl big hint hbottom hlefted action" data-title="<?php echo $those->lang->get('auth_ui:sign_in_with_gl');?>" href="/auth/google" target="_blank" data-action="oauthOpen"><span class="ficon-gplus"></span></a>
 			<?php endif;?>
 		<p class="margintop"><?php echo $those->lang->get('auth_ui:or_use_login_and_password');?></p>

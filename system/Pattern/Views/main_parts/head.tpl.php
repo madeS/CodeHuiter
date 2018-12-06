@@ -1,4 +1,4 @@
-<?php if (false) require_once __DIR__ . '/../../IDE_Helper.tpl.php';
+<?php if (false) require_once __DIR__ . '/../IDE_Helper.tpl.php';
 
 $compressorConfig = $those->compressor->checkCompress();
 ?>
@@ -11,7 +11,7 @@ $compressorConfig = $those->compressor->checkCompress();
 <title><?php echo (isset($seo) && $seo && $seo['title']) ? $seo['title'] : $headTitle ?></title>
 <!-- metas -->
 <meta name="description" content="<?php echo (isset($seo) && $seo && $seo['description']) ? $seo['description'] : $headDescription ?>"/>
-<meta name="keywords" content="<?php echo (isset($seo) && $seo && $seo['keywords']) ? $seo['keywords'] : $headKeywords?>"/>
+<meta name="keywords" content="<?php echo (isset($seo) && $seo && $seo['keywords']) ? $seo['keywords'] : $headKeywords ?>"/>
 <meta name="robots" content="<?php echo (isset($head_robots)) ? $head_robots : 'index, follow' ?>"/>
 <?php if (isset($head_revisit)):?>
     <meta name="revisit" content="<?php echo $head_revisit ?>">

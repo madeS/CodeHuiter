@@ -1,4 +1,4 @@
-<?php if (false) require_once __DIR__ . '/../../IDE_Helper.tpl.php';
+<?php if (false) require_once __DIR__ . '/../IDE_Helper.tpl.php';
 ?>
 
 <?php if($those->app->config->projectConfig->pageStyle == 'backed'):?>
@@ -62,9 +62,9 @@
 
 		<div class="profile">
 			<?php if($userInfo->id):?>
-				<?php $those->response->render($template . 'page_parts/header_profile_block')?>
+				<?php $those->response->render($patternTemplate . 'page_parts/header_profile_block')?>
 			<?php else:?>
-				<?php $those->response->render($template . 'page_parts/header_login_block')?>
+				<?php $those->response->render($patternTemplate . 'page_parts/header_login_block')?>
 			<?php endif;?>
 		</div>
 		<div class="clearline"></div>

@@ -1,4 +1,4 @@
-<?php if (false) require_once __DIR__ . '/../../IDE_Helper.tpl.php';
+<?php if (false) require_once __DIR__ . '/../../../system/Pattern/Views/IDE_Helper.tpl.php';
 ?>
 <?php /*
 <!-- Yandex.Metrika counter -->

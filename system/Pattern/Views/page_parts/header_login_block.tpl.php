@@ -1,4 +1,4 @@
-<?php if (false) require_once __DIR__ . '/../../IDE_Helper.tpl.php';
+<?php if (false) require_once __DIR__ . '/../IDE_Helper.tpl.php';
 ?>
 <div class="social_login">
 

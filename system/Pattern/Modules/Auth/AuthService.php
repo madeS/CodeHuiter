@@ -4,7 +4,6 @@ namespace CodeHuiter\Pattern\Modules\Auth;
 
 use CodeHuiter\Config\AuthConfig;
 use CodeHuiter\Config\Config;
-use CodeHuiter\Config\PatternConfig;
 use CodeHuiter\Core\Application;
 use CodeHuiter\Core\Request;
 use CodeHuiter\Core\Response;
