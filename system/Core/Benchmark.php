@@ -5,6 +5,7 @@ class Benchmark
 {
     const APP_START = 'AppStart';
 
+    private const CLASSES_CACHE_FILE = 'autoload/loadedClasses.php';
     public const BENCH_MODE_SCRIPT_START = 1;
     public const BENCH_MODE_APP_INIT = 2;
 
@@ -29,7 +30,7 @@ class Benchmark
     /** @var \Composer\Autoload\ClassLoader $autoloader */
     protected $autoloader;
 
-    protected $loadedClasses = [];
+    protected $loadedClasses = null;
 
     public $benchMode = 0;
 
@@ -48,9 +49,19 @@ class Benchmark
 
     public function loadClass($class)
     {
+        if ($this->loadedClasses === null) {
+            include_once CACHE_PATH . self::CLASSES_CACHE_FILE;
+            $this->loadedClasses = (isset($loadedClasses) && is_array($loadedClasses)) ? $loadedClasses : [];
+        }
         if (isset($this->loadedClasses[$class])) {
             include BASE_PATH . $this->loadedClasses[$class];
-            return true;
+            if (class_exists($class)) {
+                return true;
+            }
+            if (file_exists(CACHE_PATH . self::CLASSES_CACHE_FILE)) {
+                // Invalid cache file
+                unlink(CACHE_PATH . self::CLASSES_CACHE_FILE);
+            }
         }
         $explodedClass = explode('\\', $class);
         foreach (self::CLASS_PLACE as $classStart => $classRoot) {
@@ -60,13 +71,26 @@ class Benchmark
         }
         $file = implode(DIRECTORY_SEPARATOR, $explodedClass) . '.php';
 
+        $success = false;
         if (file_exists(BASE_PATH . $file)) {
-            $this->loadedClasses[$class] = $file;
-            include BASE_PATH . $this->loadedClasses[$class];
-            return true;
+            include BASE_PATH . $file;
+            if (class_exists($class)) {
+                $this->loadedClasses[$class] = $file;
+                $success = true;
+            } else {
+                $this->loadedClasses['INVALID_' . $class] = true;
+                $success = false;
+            }
+        } else {
+            $this->loadedClasses['UNKNOWN_' . $class] = true;
+            $success = false;
         }
 
-        $this->loadedClasses['UNKNOWN_' . $class] = true;
+        file_put_contents(
+            CACHE_PATH . self::CLASSES_CACHE_FILE,
+            "<?php\n\$loadedClasses = " . var_export($this->loadedClasses, true) . ";\n",
+            LOCK_EX
+        );
     }
 
     /**

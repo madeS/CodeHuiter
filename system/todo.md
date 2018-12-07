@@ -1,10 +1,48 @@
-# What we can to do for made this framework better
+### What we can to do for made this framework better
+
+#### High:
+
+[ ] AuthModule Registration
+
+[ ] AuthModule Check Email sending
+
+[ ] AuthModule Email confirmation
+
+[ ] AuthModule Login by registration
+
+[ ] AuthModule Login
+
+[ ] AuthModule Password remember
+
+[ ] AuthModule Login via VK
+
+[ ] AuthModule Login via FB
+
+[ ] AuthModule Login via TW
+
+[ ] AuthModule Login via GL
+
+[ ] AuthModule Login via IG
+
+[ ] AuthModule Check structure
+
+[ ] Dynamic Pages View
+
+[ ] Dynamic Pages Add
+
+[ ] Dynamic Pages Edit
+
+[ ] Dynamic Pages Delete
+
+[ ] Comments
+
+[ ] Media Photos
+
+[ ] Media Videos
+
+#### Normal:
 
 [V] Rewrite autoload of framework
-
-[ ] Create optimizator of used classes, like it resolved in Laravel `bootstrap/cache`
-
-[ ] Rewrite mjsa to madjs
 
 mjsaValidator - is_unique in database
 
@@ -28,9 +66,7 @@ imagegif($im, './php_interlaced.gif');
 ```
 
 
-# LOW
-
-[ ] EmailSender Config class instead config array
+#### LOW
 
 [ ] Script. Generate languages files for all project
 

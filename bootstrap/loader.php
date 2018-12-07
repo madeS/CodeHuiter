@@ -1,11 +1,13 @@
 <?php
 
 chdir(dirname(__FILE__));
-define('BASE_PATH', realpath('./..') . '/');
-define('SYSTEM_PATH', realpath('./../system') . '/');
-define('PUB_PATH', realpath('./../public_html') . '/');
-define('APP_PATH', realpath('./../app') . '/');
+define('BASE_PATH', realpath(__DIR__  . '/..') . '/');
+define('SYSTEM_PATH', BASE_PATH . 'system/');
+define('PUB_PATH', BASE_PATH . 'public_html/');
+define('APP_PATH', BASE_PATH . 'app/');
+define('STORAGE_PATH', BASE_PATH . 'storage/');
 define('VIEW_PATH', APP_PATH . 'Views/');
+define('CACHE_PATH', STORAGE_PATH . 'framework/cache/');
 
 require SYSTEM_PATH . 'Core/Benchmark.php';
 $benchmark = new \CodeHuiter\Core\Benchmark();
@@ -13,6 +15,7 @@ $benchmark = new \CodeHuiter\Core\Benchmark();
 if ($benchmark->benchMode == \CodeHuiter\Core\Benchmark::BENCH_MODE_SCRIPT_START) exit(0);
 
 /*
+maintenance
 header("Content-Type: text/html; charset=utf-8");
 
 //$_GET['codeerror'] = 503;
