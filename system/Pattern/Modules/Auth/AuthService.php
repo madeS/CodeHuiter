@@ -205,7 +205,7 @@ class AuthService
      */
     protected function getUserInfo($id, $sig)
     {
-        $userInfo = $this->getUserById($id);
+        $userInfo = $id ? $this->getUserById($id) : false;
         if (!$userInfo) {
             return $this->setErrorMessage($this->lang->get('auth_sign:incorrect_id'));
         }

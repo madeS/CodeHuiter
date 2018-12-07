@@ -3,6 +3,8 @@
 
 ## Bench Test History ###
 
+
+v0.1.37.56  - Memory: 501.83KB Real: 2,048.00KB Avg(249): 0.001410 / 0.001164 (CI3_BASE) = 1.21 (without db connection)
 v0.1.37.55  - Memory: 511.08KB Real: 2,048.00KB Avg(160): 0.002065 / 0.001054 (CI3_BASE) = 1.95
 v0.1.37.54  - Memory: 510.77KB Real: 2,048.00KB Avg(155): 0.002106 / 0.001054 (CI3_BASE) = 1.99
 v0.1.36.50  - Memory: 508.93KB Real: 2,048.00KB Avg(154): 0.002115 / 0.001191 (CI3_BASE) = 1.77
