@@ -396,7 +396,7 @@ class AuthService
                 $hasNonConfirmed = false;
                 foreach ($users as $testUser) {
                     if ($this->isValidPassword($testUser, $password)) {
-                        $this->sendEmailConfirm($user);
+                        $this->sendEmailConfirm($testUser);
                         $hasNonConfirmed = true;
                     }
                 }

@@ -65,6 +65,9 @@ imageinterlace($im, true);
 imagegif($im, './php_interlaced.gif');
 ```
 
+'INVALID_CodeHuiter\\Services\\HtmlParser\\HtmlParserInterface' => true,
+'UNKNOWN_App\\Controllers\\Favicon_dot_ico_Controller' => true,
+
 
 #### LOW
 

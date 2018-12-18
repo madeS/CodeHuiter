@@ -443,7 +443,7 @@ var mjsaClass = function ($){
                 if (msgs) {
                     for (i = 0; i < msgs.length; i++) {
                         if (i === 0) $form.html('');
-                        $form.append(msgs[i]);
+                        $form.html(msgs[i]);
                     }
                 }
                 return false;

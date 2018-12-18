@@ -119,13 +119,6 @@ class AuthController extends BaseController
                     $this->mjsa->incorrect('password');
                     break;
                 case AuthService::ERROR_LOGIN_EMAIL_CONF_SENT:
-                    $successMessage = $errorMessage;
-                    $errorMessage = '';
-                    $this->mjsa->formReplace($this->response->render(
-                        $this->auth->getViewsPath() . 'formMessage',
-                        ['message' => $successMessage, 'messageType' => 'success'],
-                        true
-                    ));
                     break;
                 default:
                     $errorMessage .= " Code [{$exception->getCode()}]";

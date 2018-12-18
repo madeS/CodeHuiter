@@ -62,7 +62,7 @@ class Compressor
 
             $this->config->$resultProp = $outputFileTemplate . '.' . $ext;
             if ($this->config->version === 'dev'){
-                $this->$resultProp .= '?t='.time();
+                $this->config->$resultProp .= '?t='.time();
             }
         }
         return $this->config;
