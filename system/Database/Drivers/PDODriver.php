@@ -656,17 +656,8 @@ class PDODriver extends AbstractDatabase
             $result['insert_values'] = implode(' , ', $sqlInsertValuesPartArray);
         }
 
-        if ($orderArray) {
-            self::sqlOrder($orderArray);
-        } else {
-            $result['order'] = '';
-        }
-
-        if ($limitArray) {
-            self::sqlLimit($limitArray);
-        } else {
-            $result['limit'] = '';
-        }
+        $result['order'] = $orderArray ? self::sqlOrder($orderArray) : '';
+        $result['limit'] = $limitArray ? self::sqlLimit($limitArray) : '';
 
         $result['params'] = $pdoParams;
 

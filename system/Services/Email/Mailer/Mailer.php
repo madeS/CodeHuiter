@@ -31,6 +31,7 @@ class Mailer extends AbstractEmail
 
     /**
      * @throws TagException
+     * @return EmailSender
      */
     protected function getEmailSender()
     {
@@ -99,7 +100,7 @@ class Mailer extends AbstractEmail
         } catch (TagException $exception) {
             $this->lastStatusMessage .= $exception->getMessage();
         }
-        $this->lastStatusMessage .= $this->emailSender->printDebugger();
+        $this->lastStatusMessage .= isset($sender) ? $sender->printDebugger() : '';
         $toEmailsString = '[' . implode(',', $emails) . ']';
         if (!$success) {
             $this->log->warning(

@@ -38,9 +38,6 @@ class EmailSender
          */
         'CRLF' => "\n", // CRLF character sequence http://www.ietf.org/rfc/rfc822.txt
 
-        'fromEmail' => '',
-        'fromName' => '',
-
         'SMTPUser' => '', // SMTP Username
         'SMTPPass' => '', // SMTP Password
         'SMTPHost' => '', // STMP Server host
@@ -57,16 +54,6 @@ class EmailSender
 
     /** @var array  */
     protected $config;
-
-    /**
-     * @var string
-     */
-    public $fromEmail;
-
-    /**
-     * @var string
-     */
-    public $fromName;
 
     /**
      * Subject header
@@ -212,8 +199,6 @@ class EmailSender
         $this->setProtocol($this->config['protocol']);
         $this->setCRLF($this->config['CRLF']);
         $this->setPriority($this->config['priority']);
-
-        $this->setFrom($this->config['fromEmail'], $this->config['fromName']);
     }
 
     /**
@@ -1154,9 +1139,6 @@ class EmailSender
      */
     public function send($autoClear = true)
     {
-        if (!isset($this->headers['From']) && !empty($this->fromEmail)) {
-            $this->setFrom($this->fromEmail, $this->fromName);
-        }
         if (! isset($this->headers['From'])) {
             $this->setErrorMessage($this->lang('email.noFrom'));
             return false;
