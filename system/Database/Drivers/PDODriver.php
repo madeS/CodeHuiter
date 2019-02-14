@@ -601,19 +601,23 @@ class PDODriver extends AbstractDatabase
             $sqlWherePartArray = [];
             foreach ($whereArray as $key => $value) {
                 if (is_array($value)) {
+                    $specialWhere = false;
                     if (isset($value['>'])) {
                         $sqlWherePartArray[] = " `{$key}` > :w_{$key} ";
                         $pdoParams[":w_{$key}"] = $value['>'];
+                        $specialWhere = true;
                     }
                     if (isset($value['<'])) {
                         $sqlWherePartArray[] = " `{$key}` < :w_{$key} ";
                         $pdoParams[":w_{$key}"] = $value['<'];
+                        $specialWhere = true;
                     }
                     if (isset($value['like'])) {
                         $sqlWherePartArray[] = " `{$key}` LIKE :w_{$key} ";
                         $pdoParams[":w_{$key}"] = $value['like'];
+                        $specialWhere = true;
                     }
-                    if (!isset($value['>']) && !isset($value['<'])) {
+                    if (!$specialWhere) {
                         $tmpSqlArr = [];
                         foreach ($value as $valueIndex => $valueItem) {
                             $tmpSqlArr[] = " :w_{$key}_{$valueIndex} ";

@@ -80,10 +80,11 @@ class Application
     }
 
     /**
+     * Get service by key
      * @param string $name Key of object
      * @return mixed
      */
-    public function get($name)
+    public function get(string $name)
     {
         if(!isset($this->config->services[$name])) {
             ExceptionProcessor::defaultProcessException(
@@ -113,8 +114,13 @@ class Application
 
         return $this->container[$name];
     }
-    
-    public function set($name, $instance): void
+
+    /**
+     * Set service
+     * @param string $name
+     * @param mixed $instance
+     */
+    public function set(string $name, $instance): void
     {
         $this->container[$name] = $instance;
     }

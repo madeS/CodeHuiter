@@ -86,7 +86,7 @@ class Model
         $filledPrimaryKeys = true;
         $whereArray = [];
         foreach (static::$primaryKeys as $field) {
-            if (!$field) {
+            if (!$this->$field) {
                 $filledPrimaryKeys = false;
             }
             $whereArray[$field] = $this->$field;

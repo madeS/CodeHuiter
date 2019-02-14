@@ -55,7 +55,7 @@ class Benchmark
         }
         if (isset($this->loadedClasses[$class])) {
             include BASE_PATH . $this->loadedClasses[$class];
-            if (class_exists($class)) {
+            if (class_exists($class) || interface_exists($class)) {
                 return true;
             }
             if (file_exists(CACHE_PATH . self::CLASSES_CACHE_FILE)) {
@@ -74,15 +74,15 @@ class Benchmark
         $success = false;
         if (file_exists(BASE_PATH . $file)) {
             include BASE_PATH . $file;
-            if (class_exists($class)) {
+            if (class_exists($class) || interface_exists($class)) {
                 $this->loadedClasses[$class] = $file;
                 $success = true;
             } else {
-                $this->loadedClasses['INVALID_' . $class] = true;
+                $this->loadedClasses['INVALID_' . $class] = $file;
                 $success = false;
             }
         } else {
-            $this->loadedClasses['UNKNOWN_' . $class] = true;
+            $this->loadedClasses['UNKNOWN_' . $class] = $file;
             $success = false;
         }
 
