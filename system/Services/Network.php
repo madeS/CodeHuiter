@@ -47,6 +47,7 @@ class Network
      * @param array $post_data Для POST array(key => value)
      * @param array $additionalHeaders Дополнительные заголовки array('Accept:application/json');
      * @param array $options
+     * <br/><b>fake</b> - true - Fake browser emulating
      * <br/><b>saveCookie</b> - true - Сохраняет полностью заголовоки
      * <br/><b>cookie</b> - будут установлены для запроса (обычно берётся из $this->lastResponseInfo['cookie'])
      * <br/><b>useragent</b> - UserAgent
@@ -77,7 +78,7 @@ class Network
         if ($method === self::METHOD_HEAD) {
             $saveHeader = true;
         }
-        $secure = (strpos($url, 'https:') !== false) ? true : false;
+        $secure = (strpos($url, 'https:') === 0) ? true : false;
         try {
             $ch = curl_init();
             curl_setopt($ch,CURLOPT_URL,$url);
@@ -162,5 +163,19 @@ class Network
             $this->log->warning('Curl Connection Error: ' . $ex->getMessage(), $ex);
             return null;
         }
+    }
+
+    /**
+     * Build headers from array('Accept' => 'application/json') to array('Accept: application/json')
+     * @param array $keyValueArray
+     * @return array
+     */
+    public function buildHeaders(array $keyValueArray): array
+    {
+        $result = [];
+        foreach ($keyValueArray as $key => $value) {
+            $result[] = $key . ': ' . $value;
+        }
+        return $result;
     }
 }
