@@ -4,10 +4,10 @@ namespace CodeHuiter\Core\Exceptions;
 
 use CodeHuiter\Config\Config;
 use CodeHuiter\Core\Application;
+use CodeHuiter\Core\Log\AbstractLog;
 use CodeHuiter\Core\Request;
 use CodeHuiter\Core\Response;
 use CodeHuiter\Exceptions\PhpErrorException;
-use CodeHuiter\Services\Log\Log;
 
 /**
  * Class for Fatal framework errors
@@ -47,7 +47,7 @@ class ExceptionProcessor
                     header('HTTP/1.1' . ' ' . 500 . ' ' . Response::$httpCodes[500], TRUE, 500);
                 }
             }
-            /** @var Log $log */
+            /** @var AbstractLog $log */
             $log = $app->get(Config::SERVICE_KEY_LOG);
             $log->error($exception->getMessage(), ['trace' => $exception->getTraceAsString()], 'exceptions');
 

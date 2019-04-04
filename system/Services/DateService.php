@@ -2,10 +2,9 @@
 
 namespace CodeHuiter\Services;
 
-use CodeHuiter\Config\Config;
 use CodeHuiter\Config\DateConfig;
 use CodeHuiter\Core\Application;
-use CodeHuiter\Pattern\Modules\Auth\Models\UsersModel;
+use CodeHuiter\Pattern\Modules\Auth\Models\UserInterface;
 
 class DateService
 {
@@ -52,10 +51,10 @@ class DateService
         return $this;
     }
 
-    public function forUser(UsersModel $user = null)
+    public function forUser(UserInterface $user = null)
     {
-        if ($user && $user->timezone !== '') {
-            $this->outTimezone = intval($user->timezone) * 60;
+        if ($user && $user->getTimezone() !== '') {
+            $this->outTimezone = intval($user->getTimezone()) * 60;
         }
         return $this;
     }

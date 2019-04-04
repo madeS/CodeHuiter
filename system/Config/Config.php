@@ -6,6 +6,11 @@ use CodeHuiter\Core\Application;
 
 abstract class Config
 {
+    public const OPT_KEY_SINGLE = 'single';
+    public const OPT_KEY_CLASS_APP = 'class_app';
+    public const OPT_KEY_CLASS = 'class';
+    public const OPT_KEY_CALLBACK = 'callback';
+
     public const SERVICE_KEY_REQUEST = 'request';
     public const SERVICE_KEY_RESPONSE = 'response';
     public const SERVICE_KEY_ROUTER = 'router';
@@ -57,33 +62,33 @@ abstract class Config
         $this->dateConfig = new DateConfig();
         $this->defaultDatabaseConfig = new DatabaseConfig();
 
-        $this->services[self::SERVICE_KEY_BENCHMARK] = ['single' => true, 'class' => '\\CodeHuiter\\Core\\Benchmark'];
-        $this->services[self::SERVICE_KEY_REQUEST] = ['single' => true, 'class_app' => '\\CodeHuiter\\Core\\Request'];
-        $this->services[self::SERVICE_KEY_RESPONSE] = ['single' => true, 'class_app' => '\\CodeHuiter\\Core\\Response'];
-        $this->services[self::SERVICE_KEY_ROUTER] = ['single' => true, 'class_app' => '\\CodeHuiter\\Core\\Router'];
-        $this->services[self::SERVICE_KEY_LOG] = ['single' => true, 'class_app' => '\\CodeHuiter\\Services\\Log\\Log'];
-        $this->services[self::SERVICE_KEY_CONSOLE] = ['single' => true, 'class_app' => '\\CodeHuiter\\Services\\Console'];
-        $this->services[self::SERVICE_KEY_DEBUG] = ['single' => true, 'class' => '\\CodeHuiter\\Services\\Debug'];
-        $this->services[self::SERVICE_KEY_EMAIL] = ['single' => true, 'class_app' => '\\CodeHuiter\\Services\\Email\\Mailer\\Mailer'];
-        $this->services[self::SERVICE_KEY_DATE] = ['single' => true, 'class_app' => '\\CodeHuiter\\Services\\DateService'];
-        $this->services[self::SERVICE_KEY_LANG] = ['single' => true, 'class' => '\\CodeHuiter\\Services\\Language'];
-        $this->services[self::SERVICE_KEY_MIME_TYPES] = ['single' => true, 'class' => '\\CodeHuiter\\Config\\Data\\MimeTypes'];
-        $this->services[self::SERVICE_KEY_NETWORK] = ['single' => true, 'class_app' => '\\CodeHuiter\\Services\\Network'];
-        $this->services[self::SERVICE_KEY_HTML_PARSER] = ['single' => true, 'class' => '\\CodeHuiter\\Services\\HtmlParser\\SimpleHtmlDomParser'];
+        $this->services[self::SERVICE_KEY_BENCHMARK] = [self::OPT_KEY_CLASS => '\\CodeHuiter\\Core\\Benchmark', self::OPT_KEY_SINGLE => true];
+        $this->services[self::SERVICE_KEY_REQUEST] = [self::OPT_KEY_CLASS_APP => '\\CodeHuiter\\Core\\Request', self::OPT_KEY_SINGLE => true];
+        $this->services[self::SERVICE_KEY_RESPONSE] = [self::OPT_KEY_CLASS_APP => '\\CodeHuiter\\Core\\Response', self::OPT_KEY_SINGLE => true];
+        $this->services[self::SERVICE_KEY_ROUTER] = [self::OPT_KEY_CLASS_APP => '\\CodeHuiter\\Core\\Router', self::OPT_KEY_SINGLE => true];
+        $this->services[self::SERVICE_KEY_LOG] = [self::OPT_KEY_CLASS_APP => '\\CodeHuiter\\Services\\Log\\Log', self::OPT_KEY_SINGLE => true];
+        $this->services[self::SERVICE_KEY_CONSOLE] = [self::OPT_KEY_CLASS_APP => '\\CodeHuiter\\Services\\Console', self::OPT_KEY_SINGLE => true];
+        $this->services[self::SERVICE_KEY_DEBUG] = [self::OPT_KEY_CLASS => '\\CodeHuiter\\Services\\Debug', self::OPT_KEY_SINGLE => true];
+        $this->services[self::SERVICE_KEY_EMAIL] = [self::OPT_KEY_CLASS_APP => '\\CodeHuiter\\Services\\Email\\Mailer\\Mailer', self::OPT_KEY_SINGLE => true];
+        $this->services[self::SERVICE_KEY_DATE] = [self::OPT_KEY_CLASS_APP => '\\CodeHuiter\\Services\\DateService', self::OPT_KEY_SINGLE => true];
+        $this->services[self::SERVICE_KEY_LANG] = [self::OPT_KEY_CLASS => '\\CodeHuiter\\Services\\Language', self::OPT_KEY_SINGLE => true];
+        $this->services[self::SERVICE_KEY_MIME_TYPES] = [self::OPT_KEY_CLASS => '\\CodeHuiter\\Config\\Data\\MimeTypes', self::OPT_KEY_SINGLE => true];
+        $this->services[self::SERVICE_KEY_NETWORK] = [self::OPT_KEY_CLASS_APP => '\\CodeHuiter\\Services\\Network', self::OPT_KEY_SINGLE => true];
+        $this->services[self::SERVICE_KEY_HTML_PARSER] = [self::OPT_KEY_CLASS => '\\CodeHuiter\\Services\\HtmlParser\\SimpleHtmlDomParser', self::OPT_KEY_SINGLE => true];
 
-        $this->services[self::SERVICE_KEY_DB] = ['single' => true, 'callback' => function(Application $app) {
+        $this->services[self::SERVICE_KEY_DB] = [self::OPT_KEY_SINGLE => true, self::OPT_KEY_CALLBACK => function(Application $app) {
             return new \CodeHuiter\Database\Drivers\PDODriver(
                 $app->get(self::SERVICE_KEY_LOG), $app->config->defaultDatabaseConfig
             );
         }];
     }
 
-    public function initialize()
+    public function initialize(Application $application)
     {
         foreach ($this as $key => $value) {
             $config = $this->$key;
             if ($config instanceof InitializedConfig) {
-                $config->initialize();
+                $config->initialize($application);
             }
         }
     }
@@ -92,7 +97,7 @@ abstract class Config
 
 interface InitializedConfig
 {
-    public function initialize();
+    public function initialize(Application $application);
 }
 
 class SettingsConfig implements InitializedConfig
@@ -108,7 +113,7 @@ class SettingsConfig implements InitializedConfig
     /** @var string */
     public $siteUrl = '';
 
-    public function initialize()
+    public function initialize(Application $application)
     {
         $this->siteUrl = $this->protocol . '://' .  $this->domain;
     }
@@ -121,7 +126,7 @@ class FrameworkConfig implements InitializedConfig
     /** @var bool  */
     public $showErrors = true;
 
-    public function initialize()
+    public function initialize(Application $application)
     {
         if (!isset($_SERVER['DOCUMENT_ROOT'])) {
             $_SERVER['DOCUMENT_ROOT'] = PUB_PATH;

@@ -4,7 +4,6 @@ namespace CodeHuiter\Database;
 
 use CodeHuiter\Config\Config;
 use CodeHuiter\Core\Application;
-use CodeHuiter\Exceptions\AppContainerException;
 use CodeHuiter\Services\DateService;
 
 class Model
@@ -52,11 +51,13 @@ class Model
     /**
      * @param array $where Where Key-Value array
      * @param array $opt [order => [[ field=>string, reverse=>bool ],...]]
-     * @return self
+     * @return self|null
      */
     public static function getOneWhere($where = [], $opt = [])
     {
-        return static::getDb()->selectWhereOneObject(static::class, static::$table, $where, $opt);
+        /** @var self|null $model */
+        $model = static::getDb()->selectWhereOneObject(static::class, static::$table, $where, $opt);
+        return $model;
     }
 
     /**
@@ -66,7 +67,9 @@ class Model
      */
     public static function getWhere($where = [], $opt = [])
     {
-        return static::getDb()->selectWhereObjects(static::class, static::$table, $where, $opt);
+        /** @var self[] $model */
+        $model = static::getDb()->selectWhereObjects(static::class, static::$table, $where, $opt);
+        return $model;
     }
 
     /**
@@ -78,10 +81,24 @@ class Model
         return static::getDb()->insert(static::$table, $set);
     }
 
+    /** @var array  */
+    protected $_touchedFields = [];
+
     /**
+     * @param string $fieldName
+     */
+    protected function touch(string $fieldName): void
+    {
+        if (!in_array($fieldName, $this->_touchedFields, true)) {
+            $this->_touchedFields[] = $fieldName;
+        }
+    }
+
+    /**
+     * @param bool $onlyTouched
      * @return self
      */
-    public function save()
+    public function save(bool $onlyTouched = false)
     {
         $filledPrimaryKeys = true;
         $whereArray = [];
@@ -93,8 +110,12 @@ class Model
         }
 
         $setArray = [];
-        foreach (static::$fields as $field) {
+        $fields = $onlyTouched ? $this->_touchedFields : static::$fields;
+        foreach ($fields as $field) {
             $setArray[$field] = $this->$field;
+        }
+        if (!$setArray) {
+            return $this;
         }
 
         $db = static::getDb();
@@ -109,11 +130,15 @@ class Model
             $whereArray[$field] = $lastInsertId;
             break;
         }
-
-        return $db->selectWhereOneObject(static::class, static::$table, $whereArray);
+        /** @var self $object */
+        $object = $db->selectWhereOneObject(static::class, static::$table, $whereArray);
+        return $object;
     }
 
-    public function update($setArray)
+    /**
+     * @param array $setArray
+     */
+    public function update(array $setArray): void
     {
         $whereArray = [];
         foreach (static::$primaryKeys as $field) {
@@ -125,4 +150,18 @@ class Model
         }
     }
 
+    /**
+     * @return void
+     */
+    public function delete(): void
+    {
+        $whereArray = [];
+        foreach (static::$primaryKeys as $field) {
+            $whereArray[$field] = $this->$field;
+        }
+        if ($whereArray) {
+            $db = static::getDb();
+            $db->delete(static::$table, $whereArray);
+        }
+    }
 }

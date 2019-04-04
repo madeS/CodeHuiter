@@ -25,7 +25,7 @@ class PDODriver extends AbstractDatabase
         $this->config = $config;
         $options = [
             \PDO::ATTR_PERSISTENT => $config->persistent,
-            \PDO::ATTR_ERRMODE => \PDO::ERRMODE_WARNING,
+            \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
         ];
         if ($config->charset && $config->collate) {
             $options[\PDO::MYSQL_ATTR_INIT_COMMAND] = "SET NAMES {$config->charset} COLLATE {$config->collate}";
@@ -173,6 +173,7 @@ class PDODriver extends AbstractDatabase
             }
         }
 
+        if (!$result) $result = null;
         return $result;
     }
 
@@ -263,7 +264,7 @@ class PDODriver extends AbstractDatabase
                 $this->logQueryBenchmark($query, $params, $executeTime - $startTime, $finishTime - $executeTime);
             }
         }
-
+        if (!$result) $result = null;
         return $result;
     }
 
@@ -295,10 +296,13 @@ class PDODriver extends AbstractDatabase
         // Format
         $statement->setFetchMode(\PDO::FETCH_BOTH);
         $ret = $statement->fetch();
-        if ($field === null) {
-            $result = $ret[0];
-        } else {
-            $result = $ret[$field];
+        $result = null;
+        if ($ret) {
+            if ($field === null) {
+                $result = $ret[0];
+            } else {
+                $result = $ret[$field];
+            }
         }
 
         if ($this->isCalculateTime) {

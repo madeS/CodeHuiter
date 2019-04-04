@@ -199,7 +199,7 @@ var mjsaClass = function ($){
         var innerOptions = $.extend(self.clone(options), {
             success: function(html, textStatus, XMLHttpRequest) {
                 self.ajax._repeat = 3;
-                debugger;
+                //debugger;
                 if (options.success !== undefined) options.success(html, textStatus, XMLHttpRequest);
             },
             error: function(jqXHR, textStatus, errorThrown) {

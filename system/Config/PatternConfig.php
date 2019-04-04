@@ -23,6 +23,8 @@ class PatternConfig extends Config
     public const SERVICE_KEY_MEDIA = 'media';
     public const SERVICE_KEY_AUTH = 'auth';
 
+    public const SERVICE_USER_REPOSITORY = 'userRepository';
+
     public function __construct()
     {
         parent::__construct();
@@ -65,11 +67,13 @@ class PatternConfig extends Config
         $this->authConfig = new AuthConfig();
         $this->authConfig->cookieDomain = '.' . $this->settingsConfig->domain;
 
-        $this->services[self::SERVICE_KEY_MJSA] = ['single' => true, 'class_app' => '\\CodeHuiter\\Services\\Mjsa'];
-        $this->services[self::SERVICE_KEY_COMPRESSOR] = ['single' => true, 'class_app' => '\\CodeHuiter\\Services\\Compressor'];
-        $this->services[self::SERVICE_KEY_LINKS] = ['single' => true, 'class_app' => '\\App\\Services\\Links'];
-        $this->services[self::SERVICE_KEY_MEDIA] = ['single' => true, 'class_app' => '\\CodeHuiter\\Pattern\\Services\\Media'];
-        $this->services[self::SERVICE_KEY_AUTH] = ['single' => true, 'class_app' => '\\CodeHuiter\\Pattern\\Modules\\Auth\\AuthService'];
+        $this->services[self::SERVICE_KEY_MJSA] = [self::OPT_KEY_SINGLE => true, self::OPT_KEY_CLASS_APP => '\\CodeHuiter\\Services\\Mjsa'];
+        $this->services[self::SERVICE_KEY_COMPRESSOR] = [self::OPT_KEY_SINGLE => true, self::OPT_KEY_CLASS_APP => '\\CodeHuiter\\Services\\Compressor'];
+        $this->services[self::SERVICE_KEY_LINKS] = [self::OPT_KEY_SINGLE => true, self::OPT_KEY_CLASS_APP => '\\App\\Services\\Links'];
+        $this->services[self::SERVICE_KEY_MEDIA] = [self::OPT_KEY_SINGLE => true, self::OPT_KEY_CLASS_APP => '\\CodeHuiter\\Pattern\\Services\\Media'];
+        $this->services[self::SERVICE_KEY_AUTH] = [self::OPT_KEY_SINGLE => true, self::OPT_KEY_CLASS_APP => '\\CodeHuiter\\Pattern\\Modules\\Auth\\AuthService'];
+
+        $this->services[self::SERVICE_USER_REPOSITORY] = [self::OPT_KEY_SINGLE => true, self::OPT_KEY_CLASS_APP => '\\CodeHuiter\\Pattern\\Modules\\Auth\\Models\\UserModelRepository'];
     }
 }
 
@@ -167,6 +171,7 @@ class MediaConfig
 class AuthConfig
 {
     public $salt = '';
+    public $passFuncMethod = 'normal';
     public $logoutIfIpChange = false;       // не принимает sig  с другого ip, выкидывает с профиля, если ip сменился
     public $multiconnectAvailable = false;  // разрешает логиниться с нескольких браузеров, устройств.
     public $onlineTime = 180;               // Человек считается онлайн, количество секунд.

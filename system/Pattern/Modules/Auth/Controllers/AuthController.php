@@ -14,7 +14,7 @@ class AuthController extends BaseController
     public function index()
     {
         $this->initWithAuth(false);
-        if ($this->auth->user->id) {
+        if ($this->auth->user->getId()) {
             $redirectUrl = $this->request->getGet('url');
             if ($redirectUrl) {
                 if (strpos($redirectUrl, 'http') === 0) {
@@ -44,7 +44,7 @@ class AuthController extends BaseController
     public function register()
     {
         $this->initWithAuth(false);
-        $connectUi = ($this->auth->user->id) ? $this->auth->user : null;
+        $connectUi = ($this->auth->user->getId()) ? $this->auth->user : null;
 
         $data = $this->auth->registerByEmailValidator($this->mjsa, $_POST, [], $connectUi);
         if (!$data) {
@@ -55,7 +55,8 @@ class AuthController extends BaseController
             $this->auth->registerByEmail($data['email'], $data['password'], $data['login'], $connectUi);
         } catch (TagException $exception) {
             if ($exception->getTag() !== AuthService::AUTH_EVENT_EXCEPTION_TAG) {
-                throw $exception;
+                $this->app->fireException($exception);
+                return false;
             }
             $successMessage = '';
             $errorMessage = $exception->getMessage();
@@ -94,6 +95,7 @@ class AuthController extends BaseController
 
         $this->mjsa->closePopups();
         $this->mjsa->reload();
+        return false;
     }
 
     public function login()
@@ -107,7 +109,8 @@ class AuthController extends BaseController
             $this->auth->loginByPassword($data['logemail'], $data['password']);
         } catch (TagException $exception) {
             if ($exception->getTag() !== AuthService::AUTH_EVENT_EXCEPTION_TAG) {
-               throw $exception;
+                $this->app->fireException($exception);
+                return false;
             }
             $successMessage = '';
             $errorMessage = $exception->getMessage();
@@ -136,6 +139,7 @@ class AuthController extends BaseController
             . 'if ($(".regauth_form_container .continue_url").val()) location.reload();'
             . 'else mjsa.bodyUpdate();'
             . '</script>';
+        return false;
     }
 
     public function logout()

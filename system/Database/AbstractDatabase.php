@@ -64,7 +64,7 @@ abstract class AbstractDatabase
     }
 
     /**
-     * @param string $className ClassName or False for stdObject
+     * @param string $className ClassName for stdObject
      * @param string $query SQL query @lang MySQL
      * @param array $params Key-Value params
      * @param bool $fieldAsKey Field as key in result
@@ -81,17 +81,17 @@ abstract class AbstractDatabase
     abstract public function select($query, $params = [], $fieldAsKey = false);
 
     /**
-     * @param string $className ClassName or False for stdObject
+     * @param string $className ClassName or null for stdObject
      * @param string $query SQL query @lang MySQL
      * @param array $params Key-Value params
-     * @return \stdClass
+     * @return \stdClass|null
      */
     abstract public function selectOneObject($className, $query, $params = []);
 
     /**
      * @param string $query SQL query @lang MySQL
      * @param array $params Key-Value params
-     * @return array
+     * @return array|null
      */
     abstract public function selectOne($query, $params = []);
 
@@ -99,7 +99,7 @@ abstract class AbstractDatabase
      * @param string $query SQL query @lang MySQL
      * @param array $params Key-Value params
      * @param string|null $field field to extract or null for first value extract
-     * @return string
+     * @return string|null
      */
     abstract public function selectOneField($query, $params = [], $field = null);
 
@@ -133,7 +133,7 @@ abstract class AbstractDatabase
      * @param string $table Table name
      * @param array $where Where Key-Value array
      * @param array $opt [order => [[ field=>string, reverse=>bool ],...]]
-     * @return \stdClass|false
+     * @return \stdClass|null
      */
     abstract public function selectWhereOneObject($className, $table, $where, $opt = []);
 
@@ -149,7 +149,7 @@ abstract class AbstractDatabase
      * @param string $table Table name
      * @param array $where Where Key-Value array
      * @param array $opt [order => [[ field=>string, reverse=>bool ],...]]
-     * @return array|false
+     * @return array|null
      */
     abstract public function selectWhereOne($table, $where, $opt = []);
 

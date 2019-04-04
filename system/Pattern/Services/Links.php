@@ -3,19 +3,38 @@
 namespace CodeHuiter\Pattern\Services;
 
 use CodeHuiter\Config\LinksConfig;
+use CodeHuiter\Config\PatternConfig;
 use CodeHuiter\Core\Application;
-use CodeHuiter\Pattern\Modules\Auth\Models\UsersModel;
+use CodeHuiter\Exceptions\InvalidFlowException;
+use CodeHuiter\Pattern\Modules\Auth\Models\UserInterface;
+use CodeHuiter\Pattern\Modules\Auth\Models\UserRepositoryInterface;
 
 class Links
 {
-    /**
-     * @var LinksConfig
-     */
+    /** @var Application */
+    protected $app;
+
+    /** @var LinksConfig  */
     protected $config;
 
+    /** @var UserRepositoryInterface */
+    protected $userRepository;
+
+    /**
+     * @param Application $application
+     */
     public function __construct(Application $application)
     {
+        $this->app = $application;
         $this->config = $application->config->linksConfig;
+    }
+
+    /**
+     * @return UserRepositoryInterface
+     */
+    private function getUserRepository(): UserRepositoryInterface
+    {
+        return $this->app->get(PatternConfig::SERVICE_USER_REPOSITORY);
     }
 
     /**
@@ -32,21 +51,26 @@ class Links
     }
 
     /**
-     * @param UsersModel $user
+     * @param UserInterface $user
      * @return null|string|string[]
      */
     public function user($user)
     {
-        return $this->url('user_view',$user->id);
+        return $this->url('user_view',$user->getId());
     }
 
     public function userSettings($type = '')
     {
-        if ($type){ }
         return $this->url('user_settings');
     }
 
-    public function messages($type = '',$userOrRoom = false)
+    /**
+     * @param string $type
+     * @param bool $userOrRoom
+     * @return null|string|string[]
+     * @throws InvalidFlowException
+     */
+    public function messages($type = '', $userOrRoom = false)
     {
         if ($type && $userOrRoom){
             if ($type === 'user'){
@@ -54,32 +78,32 @@ class Links
             } elseif ($type === 'room') {
                 return $this->url('messages_room',$userOrRoom['id']);
             }
-
         } else {
             return $this->url('messages');
         }
+        throw new InvalidFlowException('Unknown type for message url');
     }
 
     /**
-     * @param UsersModel|bool $user
+     * @param UserInterface|bool $user
      * @return null|string|string[]
      */
     public function userMedias($user = false){
         if ($user){
-            return $this->url('user_medias',$user->id);
+            return $this->url('user_medias',$user->getId());
         } else {
             return $this->url('user_medias');
         }
     }
 
     /**
-     * @param UsersModel|bool $user
+     * @param UserInterface|bool $user
      * @return null|string|string[]
      */
     public function userAlbums($user = false)
     {
         if ($user){
-            return $this->url('user_albums',$user->id);
+            return $this->url('user_albums',$user->getId());
         } else {
             return $this->url('users_albums');
         }
@@ -96,28 +120,34 @@ class Links
     }
 
     /**
-     * @param UsersModel|bool $user
+     * @param UserInterface|bool $user
      * @return null|string|string[]
      */
     public function userVideos($user = false)
     {
         if ($user){
-            return $this->url('user_videos',$user->id);
+            return $this->url('user_videos', $user->getId());
         } else {
             return $this->url('users_videos');
         }
     }
 
-    public function notification($type,$object_id)
+    /**
+     * @param $type
+     * @param $object_id
+     * @return null|string|string[]
+     * @throws InvalidFlowException
+     */
+    public function notification($type, $object_id)
     {
         if ($type === 'new_subscriber'){
-            $user = new UsersModel();
-            $user->id = $object_id;
+            $user = $this->getUserRepository()->newInstance();
+            $user->setId($object_id);
             return $this->user($user);
         }
         if ($type === 'new_message') {
             $room = array('id' => $object_id);
-            return $this->messages('room',$room);
+            return $this->messages('room', $room);
         }
         return 'UNKNOWN_NOTIFICATION_LINK';
     }

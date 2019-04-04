@@ -14,7 +14,7 @@
 <body>
 <?php require_once $patternTemplate . 'main_parts/body_cont_before.tpl.php'; ?>
 
-<div id="body_cont" <?=($userInfo->id)?'data-timezoneoffset="'.$userInfo->timezone.'"':''?>>
+<div id="body_cont" <?=($userInfo->getId())?'data-timezoneoffset="'.$userInfo->getTimezone().'"':''?>>
 <?php else:?>
         <?php echo (isset($seo) && $seo && $seo['title']) ? $seo['title'] : $headTitle ?><ajaxbody_separator/>
 <?php endif;?>

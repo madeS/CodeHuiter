@@ -9,7 +9,7 @@ use CodeHuiter\Core\Exceptions\ExceptionProcessor;
 use CodeHuiter\Exceptions\CodeHuiterException;
 use CodeHuiter\Exceptions\ErrorException;
 use CodeHuiter\Pattern\Modules\Auth\AuthService;
-use CodeHuiter\Pattern\Modules\Auth\Models\UsersModel;
+use CodeHuiter\Pattern\Modules\Auth\Models\UserInterface;
 use CodeHuiter\Services\Compressor;
 
 /**
@@ -94,7 +94,7 @@ class BaseController extends Controller
     ) {
         $those = $this;
         $success = $this->auth->initUser($require, $requiredGroups , ([
-            AuthService::GROUP_AUTH_SUCCESS => function(/** @noinspection PhpUnusedParameterInspection */UsersModel $user) use ($those) {
+            AuthService::GROUP_AUTH_SUCCESS => function(/** @noinspection PhpUnusedParameterInspection */UserInterface $user) use ($those) {
                 // User Not authed
                 if ($those->request->isMjsaAJAX()) {
                     $this->data['in_popup'] = true;
@@ -108,7 +108,7 @@ class BaseController extends Controller
                     $those->response->location($those->auth->config['url_auth'] . $addUrl, true);
                 }
             },
-            AuthService::GROUP_NOT_BANNED => function(/** @noinspection PhpUnusedParameterInspection */UsersModel $user) use ($those) {
+            AuthService::GROUP_NOT_BANNED => function(/** @noinspection PhpUnusedParameterInspection */UserInterface $user) use ($those) {
                 // User banned
                 if ($those->request->isMjsaAJAX()) {
                     $this->mjsa->events()
@@ -119,7 +119,7 @@ class BaseController extends Controller
                     $those->response->location($those->auth->config['url_ban'], true);
                 }
             },
-            AuthService::GROUP_ACTIVE => function(/** @noinspection PhpUnusedParameterInspection */UsersModel $user) use ($those) {
+            AuthService::GROUP_ACTIVE => function(/** @noinspection PhpUnusedParameterInspection */UserInterface $user) use ($those) {
                 // User banned
                 if ($those->request->isMjsaAJAX()) {
                     $this->mjsa->events()

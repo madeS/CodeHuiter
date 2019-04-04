@@ -4,7 +4,11 @@ namespace CodeHuiter\Core;
 
 use App\Config\DefaultConfig;
 use CodeHuiter\Config\Config;
+use CodeHuiter\Core\Event\ApplicationEvent;
+use CodeHuiter\Core\Event\ApplicationEventSubscription;
 use CodeHuiter\Core\Exceptions\ExceptionProcessor;
+use CodeHuiter\Core\Exceptions\ExceptionThrower;
+use CodeHuiter\Core\Exceptions\ExceptionThrowerInterface;
 use CodeHuiter\Exceptions\AppContainerException;
 use CodeHuiter\Exceptions\CodeHuiterException;
 
@@ -17,7 +21,6 @@ class Application
 
     /**
      * @return Application
-     * @throws AppContainerException
      */
     public static function getInstance(): Application
     {
@@ -42,14 +45,13 @@ class Application
      */
     protected $container = [];
 
-    public function getEnvironment(): ?string
-    {
-        return $this->environment;
-    }
+    /**
+     * @var array
+     */
+    protected $subscriptions = [];
 
     /**
      * Application constructor.
-     * @throws AppContainerException
      */
     protected function __construct()
     {
@@ -57,26 +59,12 @@ class Application
 
         $configClassName = "\\App\\Config\\{$this->environment}Config";
         $this->config = new $configClassName();
-        $this->config->initialize();
+        $this->config->initialize($this);
     }
 
-    /**
-     * @param string $fileName
-     * @param null $default
-     * @return mixed|null
-     * @throws AppContainerException
-     */
-    protected function requireVarIfFileExist($fileName, $default = null)
+    public function getEnvironment(): string
     {
-        if (file_exists($fileName) && is_file($fileName)) {
-            $result = require $fileName;
-            if (gettype($result) !== gettype($default)) {
-                throw new AppContainerException('Invalid type returned from ['.$fileName.'] Returned: ['.gettype($result).'], Expected: ['.gettype($default).']');
-            }
-            return $result;
-        } else {
-            return $default;
-        }
+        return $this->environment;
     }
 
     /**
@@ -116,6 +104,15 @@ class Application
     }
 
     /**
+     * @param string $name
+     * @return bool
+     */
+    public function serviceExist(string $name): bool
+    {
+        return isset($this->config->services[$name]);
+    }
+
+    /**
      * Set service
      * @param string $name
      * @param mixed $instance
@@ -123,6 +120,40 @@ class Application
     public function set(string $name, $instance): void
     {
         $this->container[$name] = $instance;
+    }
+
+    /**
+     * @param ApplicationEvent $event
+     */
+    public function fireEvent(ApplicationEvent $event): void
+    {
+        $eventClass = get_class($event);
+        if (!isset($this->subscriptions[$eventClass])) {
+            return;
+        }
+        /** @var ApplicationEventSubscription $subscription */
+        foreach ($this->subscriptions[$eventClass] as $subscription) {
+            $subscriber = $subscription->getSubscriber($this);
+            if ($subscriber) {
+                $subscriber->catchEvent($event);
+            }
+        }
+    }
+
+    /**
+     * @param $handler
+     * @param string $event
+     * @param int $priority
+     */
+    public function subscribe($handler, string $event, int $priority = 1) : void
+    {
+        if (!isset($this->subscriptions[$event])) {
+            $this->subscriptions[$event] = [];
+        }
+        $this->subscriptions[$event][] = new ApplicationEventSubscription($handler, $priority);
+        usort($this->subscriptions[$event], function (ApplicationEventSubscription $a, ApplicationEventSubscription $b) {
+            return !($a->priority <=> $b->priority);
+        });
     }
 
     /**
@@ -140,7 +171,43 @@ class Application
             $response->send();
 
         } catch (CodeHuiterException $ex) {
-            \CodeHuiter\Core\Exceptions\ExceptionProcessor::defaultProcessException($ex);
+            ExceptionProcessor::defaultProcessException($ex);
+        }
+    }
+
+    /**
+     * @param \Exception $exception
+     */
+    public function fireException(\Exception $exception): void
+    {
+        $this->getThrower()->fire($exception);
+    }
+
+    /**
+     * @return ExceptionThrowerInterface
+     */
+    protected function getThrower(): ExceptionThrowerInterface
+    {
+        return new ExceptionThrower();
+    }
+
+    /**
+     * @param string $fileName
+     * @param null $default
+     * @return mixed|null
+     */
+    protected function requireVarIfFileExist($fileName, $default = null)
+    {
+        if (file_exists($fileName) && is_file($fileName)) {
+            $result = require $fileName;
+            if (gettype($result) !== gettype($default)) {
+                $this->fireException(new AppContainerException(
+                    'Invalid type returned from ['.$fileName.'] Returned: ['.gettype($result).'], Expected: ['.gettype($default).']'
+                ));
+            }
+            return $result;
+        } else {
+            return $default;
         }
     }
 }

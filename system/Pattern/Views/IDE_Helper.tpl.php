@@ -36,7 +36,7 @@ $headKeywords = '';
 $headImage = '';
 
 
-/** @var \CodeHuiter\Pattern\Modules\Auth\Models\UsersModel|false $userInfo */
+/** @var \CodeHuiter\Pattern\Modules\Auth\Models\UserInterface|null $userInfo */
 $userInfo = false;
 
 
