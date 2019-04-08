@@ -127,7 +127,7 @@ class Router
         ) {
             throw new InvalidConfigException("Not correct exist config.router.{$routeKey} ");
         }
-        $this->setController($this->confi->$routeKey['controller'], true);
+        $this->setController($this->config->$routeKey['controller'], true);
         $this->setControllerMethod($this->config->$routeKey['controller_method']);
         $this->setControllerMethodParams($params);
     }
@@ -189,7 +189,7 @@ class Router
             ? $controllerMethodParams : [];
 
         foreach($this->controllerMethodParams as $key => $value) {
-            $this->controllerMethodParams[$key] =  urldecode($value);
+            $this->controllerMethodParams[$key] = urldecode($value);
         }
     }
 

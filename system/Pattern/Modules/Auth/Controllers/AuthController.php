@@ -2,6 +2,7 @@
 
 namespace CodeHuiter\Pattern\Modules\Auth\Controllers;
 
+use CodeHuiter\Core\Response;
 use CodeHuiter\Exceptions\TagException;
 use CodeHuiter\Pattern\Controllers\Base\BaseController;
 use CodeHuiter\Pattern\Modules\Auth\AuthService;
@@ -44,15 +45,15 @@ class AuthController extends BaseController
     public function register()
     {
         $this->initWithAuth(false);
-        $connectUi = ($this->auth->user->getId()) ? $this->auth->user : null;
+        $targetUi = ($this->auth->user->getId()) ? $this->auth->user : null;
 
-        $data = $this->auth->registerByEmailValidator($this->mjsa, $_POST, [], $connectUi);
+        $data = $this->auth->registerByEmailValidator($this->mjsa, $_POST, [], $targetUi);
         if (!$data) {
             return false;
         }
 
         try {
-            $this->auth->registerByEmail($data['email'], $data['password'], $data['login'], $connectUi);
+            $this->auth->registerByEmail($data['email'], $data['password'], $data['login'], $targetUi);
         } catch (TagException $exception) {
             if ($exception->getTag() !== AuthService::AUTH_EVENT_EXCEPTION_TAG) {
                 $this->app->fireException($exception);
@@ -149,10 +150,43 @@ class AuthController extends BaseController
         $this->response->location($_SERVER['HTTP_REFERER'],true);
     }
 
+    public function confirm_email()
+    {
+        $this->initWithAuth(false);
+        $success = $this->auth->confirmToken(
+            $this->request->getGet('user_id', ''),
+            $this->request->getGet('token', ''),
+            'email',
+            true
+        );
+        if (!$success) {
+            $this->errorPageByCode(Response::HTTP_CODE_FORBIDDEN, $this->auth->getErrorMessage());
+        } else {
+            $this->response->location($this->links->userSettings());
+        }
+    }
 
-
-
-
+    public function send_password_recovery()
+    {
+        $this->initWithAuth(false);
+        $result = $this->auth->sendPasswordRecoveryByLogemail(
+            $this->request->getPost('logemail', '')
+        );
+        if ($result->isSuccess()) {
+            $this->mjsa->formReplace($this->response->render(
+                $this->auth->getViewsPath() . 'formMessage',
+                ['message' => $this->lang->get('auth_sign:recovery_link_sent'), 'messageType' => 'success'],
+                true
+            ));
+        } else {
+            if ($result->isIncorrectField()) {
+                foreach ($result->getFields() as $field) {
+                    $this->mjsa->incorrect($field);
+                }
+            }
+            $this->mjsa->errorMessage($result->getMessage());
+        }
+    }
 
 
 
@@ -224,45 +258,6 @@ class AuthController extends BaseController
         $this->mm->mjsaPrintEvent(array(
             'success' => lang('musers:user_info_changed'), 'reload' => true, 'closePopups' => true,
         ));
-    }
-
-    public function email_conf_sended(){
-        $this->initWithAuth(false);
-        $this->data['h1'] = '';
-        $this->data['h2'] = lang('mauth.email_token.title');
-        $this->data['p'] = array(
-            lang('mauth.email_token.p1'),
-            lang('mauth.email_token.p2')
-        );
-        $this->data['content_tpl'] = 'mop/text_page.tpl.php';
-        $this->load->view('main.tpl.php',$this->data);
-    }
-
-    public function send_password_recovery(){
-        $this->initWithAuth(false);
-        $sended = $this->mauth->sendPasswordRecovery(
-            false,
-            $this->mm->g($_POST['logemail'])
-        );
-        if (!$sended){
-            return $this->mm->mjsaPrintError($this->mauth->getErrorMessage());
-
-        }
-        return $this->mm->mjsaPrintEvent(array(
-            'redirect' => '/auth/password_rec_sended',
-        ));
-    }
-
-    public function password_rec_sended(){
-        $this->initWithAuth(false);
-        $this->data['h1'] = '';
-        $this->data['h2'] = lang('mauth.pass_token.title');
-        $this->data['p'] = array(
-            lang('mauth.pass_token.p1'),
-            lang('mauth.pass_token.p2')
-        );
-        $this->data['content_tpl'] = 'mop/text_page.tpl.php';
-        $this->load->view('main.tpl.php',$this->data);
     }
 
     public function recovery_password_email(){

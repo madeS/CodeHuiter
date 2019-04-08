@@ -36,12 +36,12 @@ class BaseController extends Controller
         $this->init();
     }
 
-    protected function error404()
+    protected function errorPageByCode($code = 404, $message)
     {
         try {
-            $this->log->warning('Page 404 showed with uri ['.$this->request->uri.']', [], 'exceptions');
+            $this->log->warning('Page '. $code .' showed with uri ['.$this->request->uri.']', [], 'exceptions');
 
-            $this->router->setRouting('error_404', []);
+            $this->router->setRouting('error' . $code, [$message]);
             $this->router->execute();
         } catch (CodeHuiterException $exception) {
             $this->error500('', $exception);
@@ -60,7 +60,7 @@ class BaseController extends Controller
             if ($exception === null) {
                 $exception = new ErrorException($message);
             }
-            $this->router->setRouting('error_500', [$exception]);
+            $this->router->setRouting('error500', [$exception]);
             $this->router->execute();
         } catch (CodeHuiterException $exceptionInner) {
             // Use default framework exception (FATAL)

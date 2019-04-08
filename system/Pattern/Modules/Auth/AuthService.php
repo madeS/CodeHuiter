@@ -14,6 +14,7 @@ use CodeHuiter\Pattern\Modules\Auth\Events\GroupsChangedEvent;
 use CodeHuiter\Pattern\Modules\Auth\Events\JoinAccountsEvent;
 use CodeHuiter\Pattern\Modules\Auth\Models\UserInterface;
 use CodeHuiter\Pattern\Modules\Auth\Models\UserRepositoryInterface;
+use CodeHuiter\Pattern\Result\ClientResult;
 use CodeHuiter\Services\DateService;
 use CodeHuiter\Services\Email\AbstractEmail;
 use CodeHuiter\Services\Language;
@@ -66,6 +67,7 @@ class AuthService
     public const ERROR_REGISTER_EMAIL_TAKEN = 4;
     public const ERROR_REGISTER_LOGIN_TAKEN = 5;
     public const ERROR_REGISTER_DENIED = 6;
+    public const ERROR_RECOVERY_EMAIL_NOT_FOUND = 7;
 
     protected $groups = [
         self::GROUP_NOT_BANNED,
@@ -452,13 +454,14 @@ class AuthService
 
     /**
      * @param UserInterface $user
-     * @return bool
+     * @return ClientResult
      */
     protected function sendEmailConfirm(UserInterface $user)
     {
         $userDataInfo = $user->getDataInfo();
-        if (!isset($userDataInfo['email_conf_token'])) {
-            $userDataInfo['email_conf_token'] = $this->sigFunc($user->getId(), $user->getLogin(), $user->getEmail(), 'email_conf_token');
+        $key = $this->getDataInfoTokenKey('email');
+        if (!isset($userDataInfo[$key])) {
+            $userDataInfo[$key] = $this->sigFunc($user->getId(), $user->getLogin(), $user->getEmail(), $key);
         }
         $user->setDataInfo($userDataInfo);
         $user->saveUser();
@@ -470,12 +473,67 @@ class AuthService
             '{#siteUrl}' => $this->app->config->settingsConfig->siteUrl,
             '{#userId}' => $user->getId(),
             '{#login}' => $user->getLogin(),
-            '{#token}' => $userDataInfo['email_conf_token'],
+            '{#token}' => $userDataInfo[$key],
         ]);
-        return $this->getEmail()->sendFromSite($subject, $content, [$user->getEmail()]);
+        if ($this->getEmail()->sendFromSite($subject, $content, [$user->getEmail()])) {
+            return ClientResult::createSuccess();
+        } else {
+            return ClientResult::createError($this->getEmail()->getLastStatusMessage());
+        }
     }
 
     // @todo when user change email, save old email to datainfo
+
+    /**
+     * @param string $logemail
+     * @return ClientResult
+     */
+    public function sendPasswordRecoveryByLogemail(string $logemail): ClientResult
+    {
+        if ($logemail === '') {
+            return ClientResult::createIncorrectField('logemail', $this->lang->get('auth_sign:password_recovery_email_need'));
+        }
+
+        $user = $this->userRepository->findOne([
+            'email' => $logemail,
+            'email_conf' => (int)true,
+        ]);
+
+        if (!$user) {
+            return ClientResult::createIncorrectField('logemail', $this->lang->get('auth_sign:user_not_found'));
+        }
+        return $this->sendPasswordRecovery($user);
+    }
+
+    /**
+     * @param UserInterface $user
+     * @return ClientResult
+     */
+    protected function sendPasswordRecovery(UserInterface $user): ClientResult
+    {
+        $userDataInfo = $user->getDataInfo();
+        $key = $this->getDataInfoTokenKey('email');
+        if (!isset($userDataInfo[$key])) {
+            $userDataInfo[$key] = $this->sigFunc($user->getId() ,$user->getLogin(), $user->getEmail(), $key);
+        }
+        $user->setDataInfo($userDataInfo);
+        $user->saveUser();
+
+        $subject = $this->lang->get('auth_email:recovery_subject', [
+            '{#siteName}' => $this->app->config->projectConfig->projectName,
+        ]);
+        $content = $this->lang->get('auth_email:recovery_body', [
+            '{#siteUrl}' => $this->app->config->settingsConfig->siteUrl,
+            '{#userId}' => $user->getId(),
+            '{#login}' => $user->getLogin(),
+            '{#token}' => $userDataInfo[$key],
+        ]);
+        if ($this->getEmail()->sendFromSite($subject, $content, [$user->getEmail()])) {
+            return ClientResult::createSuccess();
+        } else {
+            return ClientResult::createError($this->getEmail()->getLastStatusMessage());
+        }
+    }
 
 
     /**
@@ -524,7 +582,7 @@ class AuthService
     {
         $foundSameEmailUser = false;
         if ($email) {
-            $foundSameEmailUser = $this->userRepository->findOne(['email' => $email, 'email_conf' => 1]);
+            $foundSameEmailUser = $this->userRepository->findOne(['email' => $email, 'email_conf' => (int)true]);
             if ($connectUi && $foundSameEmailUser && ($foundSameEmailUser->id == $connectUi->getId())) {
                 $foundSameEmailUser = false;
             }
@@ -533,7 +591,7 @@ class AuthService
         if ($login) {
             $foundSameLoginUser = $this->userRepository->findOne(['login' => $login]);
             if (!$foundSameLoginUser) {
-                $foundSameLoginUser = $this->userRepository->findOne(['email' => $login, 'email_conf' => 1]);
+                $foundSameLoginUser = $this->userRepository->findOne(['email' => $login, 'email_conf' => (int)true]);
             }
             if ($connectUi && $foundSameLoginUser && ($foundSameLoginUser->getId() == $connectUi->getId())) {
                 $foundSameLoginUser = false;
@@ -605,6 +663,7 @@ class AuthService
             $user->setLogin($login);
             $user->setPassHash($passHash);
             $user->setLastActive($this->date->now);
+            $user->addGroup(self::GROUP_NOT_BANNED);
             $user->saveUser();
 
             $isNeedToConfirmEmail = true;
@@ -626,6 +685,74 @@ class AuthService
         return true;
     }
 
+    private function getDataInfoTokenKey($tokenType)
+    {
+        return $tokenType . '_conf_token';
+    }
+
+    /**
+     * @param string $userId
+     * @param string $token
+     * @param string $tokenType
+     * @param bool $resetToken
+     * @return bool
+     */
+    public function confirmToken(string $userId, string $token, $tokenType = 'email', $resetToken = true)
+    {
+        $tokenKey = $this->getDataInfoTokenKey($tokenType);
+        if (!$tokenKey) {
+            $this->app->fireException(new InvalidFlowException(
+                sprintf('Incorrect token type %s', $tokenType)
+            ));
+        }
+        $user = $this->userRepository->findOne(['id' => $userId]);
+        if (!$user) {
+            return $this->setErrorMessage($this->lang->get('auth_sign:incorrect_id'));
+        }
+        if (!in_array(self::GROUP_NOT_BANNED, $user->getGroups())) {
+            return $this->setErrorMessage($this->lang->get('auth_sign:user_banned'));
+        }
+
+        $userDataInfo = $user->getDataInfo();
+        $userToken = ($userDataInfo[$tokenKey] ?? '');
+
+        if ($userToken && $userToken === $token) {
+            if ($resetToken) {
+                $userDataInfo[$tokenKey] = '';
+                $user->setDataInfo($userDataInfo);
+            }
+            if ($tokenType === 'email') {
+                $usersWithSameEmail = $this->userRepository->find([
+                    'email' => $user->getEmail(),
+                    'email_conf' => (int)true,
+                ]);
+                if ($usersWithSameEmail) {
+                    return $this->setErrorMessage($this->lang->get('auth_sign:already_email_confirmed'));
+                }
+                $user->addGroup(self::GROUP_ACTIVE);
+                $user->setEmailConfirmed(true);
+                $user->saveUser();
+
+                $withSameEmailUnconfirmedUsers = $this->userRepository->find([
+                    'email' => $user->getEmail(),
+                    'email_conf' => (int)false,
+                ]);
+                foreach ($withSameEmailUnconfirmedUsers as $withSameEmailUnconfirmedUser) {
+                    if (!in_array(self::GROUP_ACTIVE, $withSameEmailUnconfirmedUser->getGroups())) {
+                        $withSameEmailUnconfirmedUser->deleteUser();
+                    }
+                }
+
+                $this->updateSig($user);
+            }
+            $user->saveUser();
+
+            return true;
+        } else {
+            return $this->setErrorMessage($this->lang->get('auth_sign:token_is_incorrect'));
+        }
+    }
+
     /**
      * @param UserInterface $targetUser
      * @param UserInterface $donorUser
@@ -634,8 +761,6 @@ class AuthService
     {
         $this->app->fireEvent(new JoinAccountsEvent($donorUser, $targetUser));
     }
-
-
 }
 
 

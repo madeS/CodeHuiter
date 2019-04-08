@@ -6,9 +6,18 @@ use CodeHuiter\Core\Controller;
 
 class Error_Controller extends Controller
 {
-    public function error404()
+    public function error403($message)
+    {
+        echo 'This is error 403';
+
+        echo 'Additional Message: ' . $message;
+    }
+
+    public function error404($message)
     {
         echo 'This is error 404';
+
+        echo 'Additional Message: ' . $message;
     }
 
     public function error500($exception)

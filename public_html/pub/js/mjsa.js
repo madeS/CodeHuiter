@@ -1291,14 +1291,13 @@ var mjsaClass = function ($){
     };
     this.popups.close = function(name) {
         var selector = self.popups._getSelector(name);
-        var options = $(selector).data('options');
-        if (!options) return false;
         if (!self.popups._openedPopups[name]) return false;
         self.popups._openedPopups[name] = undefined;
         $(selector).find('.toggle_popup_scroll').hide();
         self.popups._loading(name,false);
         self.popups._shadow(name,false);
-        if (options.callClose !== undefined) {
+        var options = $(selector).data('options');
+        if (options && options.callClose !== undefined) {
             options.callClose();
         }
         //$(selector).find('.popup_scroll_content').html('');

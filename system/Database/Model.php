@@ -121,7 +121,7 @@ class Model
         $db = static::getDb();
 
         if ($filledPrimaryKeys && $db->selectWhereOneObject(static::class, static::$table, $whereArray)) {
-            $db->update(static::$table, $setArray, $whereArray);
+            $db->update(static::$table, $whereArray, $setArray);
             return $this;
         }
 

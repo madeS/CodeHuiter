@@ -170,6 +170,7 @@ class ResponseConfig
 
 class RouterConfig
 {
+    public $error403 = ['controller' => '\\App\\Controllers\\Errors\\Error_Controller', 'controller_method' => 'error403'];
     public $error404 = ['controller' => '\\App\\Controllers\\Errors\\Error_Controller', 'controller_method' => 'error404'];
     public $error500 = ['controller' => '\\App\\Controllers\\Errors\\Error_Controller', 'controller_method' => 'error500'];
     public $translateUri = [

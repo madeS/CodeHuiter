@@ -2,10 +2,12 @@
 
 namespace CodeHuiter\Pattern\Modules\Auth\Models;
 
+use CodeHuiter\Core\Application;
 use CodeHuiter\Database\Model;
 use CodeHuiter\Modifiers\ArrayModifier;
 use CodeHuiter\Modifiers\StringModifier;
 use CodeHuiter\Pattern\Modules\Auth\AuthService;
+use CodeHuiter\Pattern\Modules\Auth\Events\UserDeletingEvent;
 
 class UserModel extends Model implements UserInterface
 {
@@ -364,4 +366,10 @@ class UserModel extends Model implements UserInterface
         return $user;
     }
 
+    /** @inheritdoc */
+    public function deleteUser(): void
+    {
+        Application::getInstance()->fireEvent(new UserDeletingEvent($this));
+        $this->delete();
+    }
 }

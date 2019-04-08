@@ -232,7 +232,10 @@ class Response
         return false;
     }
 
-
+    public const HTTP_CODE_FORBIDDEN = 403;
+    public const HTTP_CODE_NOT_FOUND = 404;
+    public const HTTP_CODE_MOVED_PERMANENTLY = 301;
+    public const HTTP_CODE_MOVED_FOUND = 302;
     public static $httpCodes = [
         100	=> 'Continue',
         101	=> 'Switching Protocols',
