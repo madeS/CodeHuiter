@@ -4,9 +4,10 @@ namespace CodeHuiter\Pattern\Result;
 
 class ClientResult
 {
-    public const SUCCESS = 1;
-    public const INCORRECT_FIELD = 2;
-    public const ERROR = 3;
+    private const SUCCESS = 1;
+    private const INCORRECT_FIELD = 2;
+    private const ERROR = 3;
+    private const SPECIFIC = 4;
 
     /**
      * @var int
@@ -57,11 +58,31 @@ class ClientResult
 
     /**
      * @param string $message
+     * @param string[] $fields
+     * @return ClientResult
+     */
+    public static function createIncorrectFields(string $message, array $fields): ClientResult
+    {
+        return new ClientResult(self::INCORRECT_FIELD, $message, $fields);
+    }
+
+    /**
+     * @param string $message
      * @return ClientResult
      */
     public static function createError(string $message): ClientResult
     {
         return new ClientResult(self::ERROR, $message, []);
+    }
+
+    /**
+     * @param string $message
+     * @param array $fields
+     * @return ClientResult
+     */
+    public static function createSpecific(string $message, array $fields = []): ClientResult
+    {
+        return new ClientResult(self::SPECIFIC, $message, $fields);
     }
 
     /**
@@ -80,6 +101,11 @@ class ClientResult
     public function isError(): bool
     {
         return $this->type === self::ERROR;
+    }
+
+    public function isSpecific(): bool
+    {
+        return $this->type === self::SPECIFIC;
     }
 
     /**

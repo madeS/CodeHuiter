@@ -9,7 +9,6 @@ use CodeHuiter\Core\Application;
 use CodeHuiter\Core\Request;
 use CodeHuiter\Core\Response;
 use CodeHuiter\Exceptions\InvalidFlowException;
-use CodeHuiter\Exceptions\TagException;
 use CodeHuiter\Pattern\Modules\Auth\Events\GroupsChangedEvent;
 use CodeHuiter\Pattern\Modules\Auth\Events\JoinAccountsEvent;
 use CodeHuiter\Pattern\Modules\Auth\Models\UserInterface;
@@ -59,15 +58,6 @@ class AuthService
     public const GROUP_MODERATOR = 5;      // Tagged as Moderator
     public const GROUP_ADMIN = 6;          // Tagged as Admin
     public const GROUP_SUPER_ADMIN = 7;    // Tagged as Super Admin
-
-    public const AUTH_EVENT_EXCEPTION_TAG = 'AuthEventResultException';
-    public const ERROR_LOGIN_LOGEMAIL_NOT_FOUND = 1;
-    public const ERROR_LOGIN_EMAIL_CONF_SENT = 2;
-    public const ERROR_LOGIN_PASSWORD_WRONG = 3;
-    public const ERROR_REGISTER_EMAIL_TAKEN = 4;
-    public const ERROR_REGISTER_LOGIN_TAKEN = 5;
-    public const ERROR_REGISTER_DENIED = 6;
-    public const ERROR_RECOVERY_EMAIL_NOT_FOUND = 7;
 
     protected $groups = [
         self::GROUP_NOT_BANNED,
@@ -381,14 +371,11 @@ class AuthService
     /**
      * @param string $logemail
      * @param string $password
-     * @return bool True or TagException if some event happens
-     * @throws TagException <pre>
-     * ERROR_LOGIN_LOGEMAIL_NOT_FOUND
-     * ERROR_LOGIN_PASSWORD_WRONG
-     * ERROR_LOGIN_EMAIL_CONF_SENT
-     * </pre>
+     * @param string $logemailKey
+     * @param string $passwordKey
+     * @return ClientResult
      */
-    public function loginByPassword($logemail, $password)
+    public function loginByPassword($logemail, $password, $logemailKey = 'logemail', $passwordKey = 'password')
     {
         $user = $this->userRepository->findOne(['login' => $logemail]);
         if (!$user) {
@@ -406,50 +393,31 @@ class AuthService
                     }
                 }
                 if ($hasNonConfirmed) {
-                    throw new TagException(
-                        self::AUTH_EVENT_EXCEPTION_TAG,
-                        $this->lang->get('auth_sign:email_conf_sent'),
-                        self::ERROR_LOGIN_EMAIL_CONF_SENT
-                    );
+                    return ClientResult::createSpecific($this->lang->get('auth_sign:email_conf_sent'), ['confirmation' => true]);
                 }
-                throw new TagException(
-                    self::AUTH_EVENT_EXCEPTION_TAG,
-                    $this->lang->get('auth_sign:password_wrong'),
-                    self::ERROR_LOGIN_PASSWORD_WRONG
-                );
+                return ClientResult::createIncorrectField($this->lang->get('auth_sign:password_wrong'), $passwordKey);
             }
-            throw new TagException(
-                self::AUTH_EVENT_EXCEPTION_TAG,
-                $this->lang->get('auth_sign:user_not_found'),
-                self::ERROR_LOGIN_LOGEMAIL_NOT_FOUND
-            );
+            return ClientResult::createIncorrectField($this->lang->get('auth_sign:user_not_found'), $logemailKey);
         }
         // Has user
-        if ($this->isValidPassword($user, $password)) {
-            if ($this->userNotInGroups($user,[self::GROUP_NOT_DELETED])) {
-                // Deleted user authed. restore him
-                $previousGroups = $user->getGroups();
-                $user->addGroup(self::GROUP_NOT_DELETED);
-                $this->app->fireEvent(new GroupsChangedEvent($user, $previousGroups));
-            }
-            if ($this->userNotInGroups($user,[self::GROUP_ACTIVE])) {
-                // Cant login by email while email is not confirmed
-                $this->sendEmailConfirm($user);
-                throw new TagException(
-                    self::AUTH_EVENT_EXCEPTION_TAG,
-                    $this->lang->get('auth_sign:email_conf_sent'),
-                    self::ERROR_LOGIN_EMAIL_CONF_SENT
-                );
-            }
-            $this->user = $user;
-            $this->updateSig($user);
-            return true;
+        if (!$this->isValidPassword($user, $password)) {
+            return ClientResult::createIncorrectField($this->lang->get('auth_sign:password_wrong'), $passwordKey);
         }
-        throw new TagException(
-            self::AUTH_EVENT_EXCEPTION_TAG,
-            $this->lang->get('auth_sign:password_wrong'),
-            self::ERROR_LOGIN_PASSWORD_WRONG
-        );
+
+        if ($this->userNotInGroups($user,[self::GROUP_NOT_DELETED])) {
+            // Deleted user authed. restore him
+            $previousGroups = $user->getGroups();
+            $user->addGroup(self::GROUP_NOT_DELETED);
+            $this->app->fireEvent(new GroupsChangedEvent($user, $previousGroups));
+        }
+        if ($this->userNotInGroups($user,[self::GROUP_ACTIVE])) {
+            // Cant login by email while email is not confirmed
+            $this->sendEmailConfirm($user);
+            return ClientResult::createSpecific($this->lang->get('auth_sign:email_conf_sent'), ['confirmation' => true]);
+        }
+        $this->user = $user;
+        $this->updateSig($user);
+        return ClientResult::createSuccess();
     }
 
     /**
@@ -486,12 +454,13 @@ class AuthService
 
     /**
      * @param string $logemail
+     * @param string $logemailKey
      * @return ClientResult
      */
-    public function sendPasswordRecoveryByLogemail(string $logemail): ClientResult
+    public function sendPasswordRecoveryByLogemail(string $logemail, $logemailKey = 'logemail'): ClientResult
     {
         if ($logemail === '') {
-            return ClientResult::createIncorrectField('logemail', $this->lang->get('auth_sign:password_recovery_email_need'));
+            return ClientResult::createIncorrectField($logemailKey, $this->lang->get('auth_sign:password_recovery_email_need'));
         }
 
         $user = $this->userRepository->findOne([
@@ -500,7 +469,7 @@ class AuthService
         ]);
 
         if (!$user) {
-            return ClientResult::createIncorrectField('logemail', $this->lang->get('auth_sign:user_not_found'));
+            return ClientResult::createIncorrectField($logemailKey, $this->lang->get('auth_sign:user_not_found'));
         }
         return $this->sendPasswordRecovery($user);
     }
@@ -568,22 +537,26 @@ class AuthService
      * @param string $email
      * @param string $password
      * @param string $login
-     * @param UserInterface|null $connectUi
-     * @return bool TRUE or Event Exception
-     * @throws TagException <pre>
-     * ERROR_REGISTER_EMAIL_TAKEN
-     * ERROR_REGISTER_LOGIN_TAKEN
-     * ERROR_REGISTER_DENIED
-     * ERROR_LOGIN_PASSWORD_WRONG
-     * ERROR_LOGIN_EMAIL_CONF_SENT
-     * </pre>
+     * @param UserInterface|null $targetUi
+     * @param string $emailKey
+     * @param string $passwordKey
+     * @param string $loginKey
+     * @return ClientResult
      */
-    public function registerByEmail($email, $password, $login = '', $connectUi = null)
+    public function registerByEmail(
+        string $email,
+        string $password,
+        string $login,
+        ?UserInterface$targetUi,
+        string $emailKey = 'email',
+        string $passwordKey = 'password',
+        string $loginKey = 'login'
+    ): ClientResult
     {
         $foundSameEmailUser = false;
         if ($email) {
             $foundSameEmailUser = $this->userRepository->findOne(['email' => $email, 'email_conf' => (int)true]);
-            if ($connectUi && $foundSameEmailUser && ($foundSameEmailUser->id == $connectUi->getId())) {
+            if ($targetUi && $foundSameEmailUser && ($foundSameEmailUser->id == $targetUi->getId())) {
                 $foundSameEmailUser = false;
             }
         }
@@ -593,69 +566,53 @@ class AuthService
             if (!$foundSameLoginUser) {
                 $foundSameLoginUser = $this->userRepository->findOne(['email' => $login, 'email_conf' => (int)true]);
             }
-            if ($connectUi && $foundSameLoginUser && ($foundSameLoginUser->getId() == $connectUi->getId())) {
+            if ($targetUi && $foundSameLoginUser && ($foundSameLoginUser->getId() == $targetUi->getId())) {
                 $foundSameLoginUser = false;
             }
         }
 
         if ($foundSameEmailUser) {
             if (!$this->isValidPassword($foundSameEmailUser, $password)) {
-                throw new TagException(
-                    self::AUTH_EVENT_EXCEPTION_TAG,
-                    $this->lang->get('auth_sign:email_taken'),
-                    self::ERROR_REGISTER_EMAIL_TAKEN
-                );
+                return ClientResult::createIncorrectField($this->lang->get('auth_sign:email_taken'), $emailKey);
             }
-            if ($connectUi) {
-                $this->joinAccounts($connectUi, $foundSameEmailUser);
-                return true;
+            if ($targetUi) {
+                $this->joinAccounts($targetUi, $foundSameEmailUser);
+                return ClientResult::createSuccess();
             }
-            return $this->loginByPassword($email, $password);
+            return $this->loginByPassword($email, $password, 'email');
         }
         if ($foundSameLoginUser) {
             if (!$this->isValidPassword($foundSameLoginUser, $password)) {
-                throw new TagException(
-                    self::AUTH_EVENT_EXCEPTION_TAG,
-                    $this->lang->get('auth_sign:login_taken'),
-                    self::ERROR_REGISTER_LOGIN_TAKEN
-                );
+                return ClientResult::createIncorrectField($this->lang->get('auth_sign:login_taken'), $loginKey);
             }
-            if ($connectUi) {
-                $this->joinAccounts($connectUi, $foundSameEmailUser);
-                return true;
+            if ($targetUi) {
+                $this->joinAccounts($targetUi, $foundSameEmailUser);
+                return ClientResult::createSuccess();
             }
-            return $this->loginByPassword($login, $password);
+            return $this->loginByPassword($login, $password, 'login');
         }
 
         $isNeedToConfirmEmail = false;
         $passHash = $this->passFunc($login, $email, $password, $this->config->passFuncMethod);
-        if ($connectUi) {
+        if ($targetUi) {
             // Add Email or Login
-            if (!$this->isValidPassword($connectUi, $password)) {
-                throw new TagException(
-                    self::AUTH_EVENT_EXCEPTION_TAG,
-                    $this->lang->get('auth_sign:password_wrong'),
-                    self::ERROR_LOGIN_PASSWORD_WRONG
-                );
+            if (!$this->isValidPassword($targetUi, $password)) {
+                return ClientResult::createIncorrectField($this->lang->get('auth_sign:password_wrong'), $passwordKey);
             }
 
-            $connectUi->setEmail($email);
-            $connectUi->setLogin($login);
-            $connectUi->setPassHash($passHash);
+            $targetUi->setEmail($email);
+            $targetUi->setLogin($login);
+            $targetUi->setPassHash($passHash);
 
-            if ($email !== $connectUi->getEmail()) {
-                $connectUi->setEmailConfirmed(false);
+            if ($email !== $targetUi->getEmail()) {
+                $targetUi->setEmailConfirmed(false);
                 $isNeedToConfirmEmail = true;
             }
 
-            $connectUi->saveUser();
+            $targetUi->saveUser();
         } else {
             if (!$this->config->allowRegister) {
-                throw new TagException(
-                    self::AUTH_EVENT_EXCEPTION_TAG,
-                    $this->lang->get('auth_sign:register_denied'),
-                    self::ERROR_REGISTER_DENIED
-                );
+                return ClientResult::createError($this->lang->get('auth_sign:register_denied'));
             }
 
             $user = $this->userRepository->newInstance();
@@ -671,18 +628,16 @@ class AuthService
 
         $correctUser = $this->userRepository->findOne([ 'email' => $email, 'login' => $login, 'passhash' => $passHash ]);
         if (!$correctUser) {
-            throw new TagException('OOPS_SOMETHING_HAPPENS', 'Cant find user after his update with: ' . print_r([ 'email' => $email, 'login' => $login, 'passhash' => $passHash ], true));
+            return ClientResult::createError(
+                'Cant find user after his update with: ' . print_r([ 'email' => $email, 'login' => $login, 'passhash' => $passHash ], true)
+            );
         }
         if ($isNeedToConfirmEmail) {
             $this->sendEmailConfirm($correctUser);
-            throw new TagException(
-                self::AUTH_EVENT_EXCEPTION_TAG,
-                $this->lang->get('auth_sign:email_conf_sent'),
-                self::ERROR_LOGIN_EMAIL_CONF_SENT
-            );
+            return ClientResult::createSpecific($this->lang->get('auth_sign:email_conf_sent'), ['confirmation' => true]);
         }
         $this->user = $correctUser;
-        return true;
+        return ClientResult::createSuccess();
     }
 
     private function getDataInfoTokenKey($tokenType)

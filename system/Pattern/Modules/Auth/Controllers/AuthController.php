@@ -3,9 +3,7 @@
 namespace CodeHuiter\Pattern\Modules\Auth\Controllers;
 
 use CodeHuiter\Core\Response;
-use CodeHuiter\Exceptions\TagException;
 use CodeHuiter\Pattern\Controllers\Base\BaseController;
-use CodeHuiter\Pattern\Modules\Auth\AuthService;
 
 class AuthController extends BaseController
 {
@@ -51,52 +49,25 @@ class AuthController extends BaseController
         if (!$data) {
             return false;
         }
-
-        try {
-            $this->auth->registerByEmail($data['email'], $data['password'], $data['login'], $targetUi);
-        } catch (TagException $exception) {
-            if ($exception->getTag() !== AuthService::AUTH_EVENT_EXCEPTION_TAG) {
-                $this->app->fireException($exception);
-                return false;
+        $result = $this->auth->registerByEmail($data['email'], $data['password'], $data['login'], $targetUi);
+        if ($result->isSuccess()) {
+            $this->mjsa->successMessage($result->getMessage());
+            $this->mjsa->closePopups();
+            $this->mjsa->reload();
+        } elseif ($result->isSpecific() && isset($result->getFields()['confirmation'])) {
+            $this->mjsa->formReplace($this->response->render(
+                $this->auth->getViewsPath() . 'formMessage',
+                ['message' => $result->getMessage(), 'messageType' => 'success'],
+                true
+            ));
+        } else {
+            if ($result->isIncorrectField()) {
+                foreach ($result->getFields() as $field) {
+                    $this->mjsa->incorrect($field);
+                }
             }
-            $successMessage = '';
-            $errorMessage = $exception->getMessage();
-            switch ($exception->getCode()) {
-                case AuthService::ERROR_REGISTER_EMAIL_TAKEN:
-                    $this->mjsa->incorrect('email');
-                    break;
-                case AuthService::ERROR_REGISTER_LOGIN_TAKEN:
-                    $this->mjsa->incorrect('login');
-                    break;
-                case AuthService::ERROR_REGISTER_DENIED:
-                    break;
-                case AuthService::ERROR_LOGIN_PASSWORD_WRONG:
-                    $this->mjsa->incorrect('password');
-                    break;
-                case AuthService::ERROR_LOGIN_EMAIL_CONF_SENT:
-                    $successMessage = $errorMessage;
-                    $errorMessage = '';
-                    $this->mjsa->formReplace($this->response->render(
-                        $this->auth->getViewsPath() . 'formMessage',
-                        ['message' => $successMessage, 'messageType' => 'success'],
-                        true
-                    ));
-                    break;
-                default:
-                    $errorMessage .= " Code [{$exception->getCode()}]";
-            }
-            if ($errorMessage) {
-                $this->mjsa->errorMessage($errorMessage);
-            }
-            if ($successMessage) {
-                $this->mjsa->successMessage($successMessage);
-            }
-            return false;
+            $this->mjsa->errorMessage($result->getMessage());
         }
-
-        $this->mjsa->closePopups();
-        $this->mjsa->reload();
-        return false;
     }
 
     public function login()
@@ -106,41 +77,28 @@ class AuthController extends BaseController
         if (!$data) {
             return false;
         }
-        try {
-            $this->auth->loginByPassword($data['logemail'], $data['password']);
-        } catch (TagException $exception) {
-            if ($exception->getTag() !== AuthService::AUTH_EVENT_EXCEPTION_TAG) {
-                $this->app->fireException($exception);
-                return false;
+        $result = $this->auth->loginByPassword($data['logemail'], $data['password']);
+        if ($result->isSuccess()) {
+            $this->mjsa->successMessage($result->getMessage());
+            $this->mjsa->closePopups();
+            echo '<script>'
+                . 'if ($(".regauth_form_container .continue_url").val()) location.reload();'
+                . 'else mjsa.bodyUpdate();'
+                . '</script>';
+        } elseif ($result->isSpecific() && isset($result->getFields()['confirmation'])) {
+            $this->mjsa->formReplace($this->response->render(
+                $this->auth->getViewsPath() . 'formMessage',
+                ['message' => $result->getMessage(), 'messageType' => 'success'],
+                true
+            ));
+        } else {
+            if ($result->isIncorrectField()) {
+                foreach ($result->getFields() as $field) {
+                    $this->mjsa->incorrect($field);
+                }
             }
-            $successMessage = '';
-            $errorMessage = $exception->getMessage();
-            switch ($exception->getCode()) {
-                case AuthService::ERROR_LOGIN_LOGEMAIL_NOT_FOUND:
-                    $this->mjsa->incorrect('logemail');
-                    break;
-                case AuthService::ERROR_LOGIN_PASSWORD_WRONG:
-                    $this->mjsa->incorrect('password');
-                    break;
-                case AuthService::ERROR_LOGIN_EMAIL_CONF_SENT:
-                    break;
-                default:
-                    $errorMessage .= " Code [{$exception->getCode()}]";
-            }
-            if ($errorMessage) {
-                $this->mjsa->errorMessage($errorMessage);
-            }
-            if ($successMessage) {
-                $this->mjsa->successMessage($successMessage);
-            }
-            return false;
+            $this->mjsa->errorMessage($result->getMessage());
         }
-        $this->mjsa->closePopups();
-        echo '<script>'
-            . 'if ($(".regauth_form_container .continue_url").val()) location.reload();'
-            . 'else mjsa.bodyUpdate();'
-            . '</script>';
-        return false;
     }
 
     public function logout()

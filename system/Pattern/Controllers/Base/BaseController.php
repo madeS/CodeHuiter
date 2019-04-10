@@ -105,7 +105,7 @@ class BaseController extends Controller
                     );
                 } else {
                     $addUrl = ($those->request->uri) ? '?url=' . urlencode($those->request->uri) : '';
-                    $those->response->location($those->auth->config['url_auth'] . $addUrl, true);
+                    $those->response->location($those->auth->config->urlAuth . $addUrl, true);
                 }
             },
             AuthService::GROUP_NOT_BANNED => function(/** @noinspection PhpUnusedParameterInspection */UserInterface $user) use ($those) {
@@ -116,7 +116,7 @@ class BaseController extends Controller
                         ->closePopups()
                         ->send();
                 } else {
-                    $those->response->location($those->auth->config['url_ban'], true);
+                    $those->response->location($those->auth->config->urlBan, true);
                 }
             },
             AuthService::GROUP_ACTIVE => function(/** @noinspection PhpUnusedParameterInspection */UserInterface $user) use ($those) {
