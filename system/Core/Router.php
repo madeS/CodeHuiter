@@ -4,6 +4,7 @@ namespace CodeHuiter\Core;
 
 use CodeHuiter\Config\Config;
 use CodeHuiter\Config\RouterConfig;
+use CodeHuiter\Core\Log\AbstractLog;
 use CodeHuiter\Exceptions\CoreCodeHuiterException;
 use CodeHuiter\Exceptions\InvalidConfigException;
 use CodeHuiter\Exceptions\InvalidRequestException;
@@ -40,6 +41,9 @@ class Router
     /** @var Benchmark $benchmark  */
     protected $benchmark;
 
+    /** @var AbstractLog */
+    protected $log;
+
     /**
      * @param Application $app
      */
@@ -49,6 +53,7 @@ class Router
         $this->app = $app;
         $this->request = $app->get(Config::SERVICE_KEY_REQUEST);
         $this->benchmark = $app->get(Config::SERVICE_KEY_BENCHMARK);
+        $this->log = $app->get(Config::SERVICE_KEY_LOG);
 
         $segments = $this->checkRoutingRewriteSegments();
         if ($segments === null) {
@@ -100,6 +105,9 @@ class Router
                 );
             }
         } catch (InvalidRequestException $exception) {
+
+            $this->log->notice('Page not found: ' . $this->request->uri);
+
             if ($this->controller === $this->config->error404['controller']) {
                 throw new CoreCodeHuiterException(
                     "Can't found '{$this->controller}::{$this->controllerMethod}' for call error 404",

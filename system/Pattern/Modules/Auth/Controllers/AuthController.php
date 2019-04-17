@@ -13,7 +13,7 @@ class AuthController extends BaseController
     public function index()
     {
         $this->initWithAuth(false);
-        if ($this->auth->user->getId()) {
+        if ($this->auth->user->exist()) {
             $redirectUrl = $this->request->getGet('url');
             if ($redirectUrl) {
                 if (strpos($redirectUrl, 'http') === 0) {
@@ -43,7 +43,7 @@ class AuthController extends BaseController
     public function register()
     {
         $this->initWithAuth(false);
-        $targetUi = ($this->auth->user->getId()) ? $this->auth->user : null;
+        $targetUi = ($this->auth->user->exist()) ? $this->auth->user : null;
 
         $data = $this->auth->registerByEmailValidator($this->mjsa, $_POST, [], $targetUi);
         if (!$data) {
@@ -79,7 +79,6 @@ class AuthController extends BaseController
         }
         $result = $this->auth->loginByPassword($data['logemail'], $data['password']);
         if ($result->isSuccess()) {
-            $this->mjsa->successMessage($result->getMessage());
             $this->mjsa->closePopups();
             echo '<script>'
                 . 'if ($(".regauth_form_container .continue_url").val()) location.reload();'
@@ -104,13 +103,14 @@ class AuthController extends BaseController
     public function logout()
     {
         $this->initWithAuth(false);
-        $this->auth->resetSig($this->auth->user);
-        $this->response->location($_SERVER['HTTP_REFERER'],true);
+        if ($this->auth->user->exist()) {
+            $this->auth->resetSig($this->auth->user, true);
+        }
+        $this->response->location($_SERVER['HTTP_REFERER'] ?? $this->links->main(),true);
     }
 
     public function confirm_email()
     {
-        $this->initWithAuth(false);
         $success = $this->auth->confirmToken(
             $this->request->getGet('user_id', ''),
             $this->request->getGet('token', ''),
@@ -120,7 +120,7 @@ class AuthController extends BaseController
         if (!$success) {
             $this->errorPageByCode(Response::HTTP_CODE_FORBIDDEN, $this->auth->getErrorMessage());
         } else {
-            $this->response->location($this->links->userSettings());
+            $this->response->location($this->links->userSettings(), true);
         }
     }
 
@@ -145,6 +145,33 @@ class AuthController extends BaseController
             $this->mjsa->errorMessage($result->getMessage());
         }
     }
+
+    public function sync_timezone()
+    {
+        $this->initWithAuth(false);
+        if (!$this->auth->user->exist()) {
+            return;
+        }
+        $timzoneOffset = $this->auth->setTimezone($this->auth->user, $this->request->getPost('offset', 0));
+        if($timzoneOffset === null){
+            return;
+        }
+        $timeStr = $this->date->fromTime()->forUser($this->auth->user)->toFormat('H:i:s',false,true);
+        $this->mjsa->successMessage(
+            $this->lang->get('auth_actions:timezone_synced', ['{#time}' => $timeStr])
+        );
+
+        echo '<script>'
+            . '$("#body_cont").attr("data-timezoneoffset","'.$timzoneOffset.'");'
+            . '$(".nowtime").html("'.$timeStr.'");'
+            . '</script>';
+    }
+
+
+
+
+
+
 
 
 
@@ -440,24 +467,7 @@ class AuthController extends BaseController
         ));
     }
 
-    public function sync_timezone(){
-        $this->initWithAuth(false);
-        if (!$this->data['ui']['level']){
-            return $this->mm->mjsaPrintError('|{"stop":true}');
-        }
-        $success = $this->mauth->setTimezone($this->data['ui'], $this->mm->g($_POST['offset']));
-        if($success === false){
-            return $this->mm->mjsaPrintError('|{"stop":true}');
-        }
-        $timestr = $this->mm->date("H:i:s",array('utc_append'=>true),array('timezone'=>$success));
-        $this->mm->mjsaPrintEvent(array(
-            'success' => lang('musers:timezone_synced').' '.$timestr
-        ));
-        echo '<script>
-			$("#body_cont").attr("data-timezoneoffset","'.$success.'");
-			$(".nowtime").html("'.$timestr.'")
-			</script>';
-    }
+
 
     public function register__(){
         $this->initWithAuth(false);

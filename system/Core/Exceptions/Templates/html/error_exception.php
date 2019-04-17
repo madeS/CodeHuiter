@@ -32,19 +32,24 @@
 
 <?php if ($show_debug_backtrace): ?>
 
-	<p>Backtrace:</p>
+<p>Backtrace:</p>
+<table>
+	<tr>
+		<th style="padding: 2px 10px">File</th>
+		<th style="padding: 2px 10px">Line</th>
+		<th style="padding: 2px 10px">Function</th>
+	</tr>
 	<?php foreach ($exception->getTrace() as $error): ?>
-
 		<?php if (isset($error['file'])): ?>
-
-			<p style="margin-left:10px">
-			File: <?php echo str_replace(BASE_PATH,'BASE_PATH/',$error['file']); ?><br />
-			Line: <?php echo $error['line']; ?><br />
-			Function: <?php echo $error['function']; ?>
-			</p>
+			<tr>
+				<td style="padding: 2px 10px"><?php echo str_replace(BASE_PATH,'BASE_PATH/',$error['file']); ?></td>
+				<td style="padding: 2px 10px"><?php echo $error['line']; ?></td>
+				<td style="padding: 2px 10px"><?php echo $error['function']; ?></td>
+			</tr>
 		<?php endif ?>
+    <?php endforeach ?>
+</table>
 
-	<?php endforeach ?>
 
 <?php endif ?>
 

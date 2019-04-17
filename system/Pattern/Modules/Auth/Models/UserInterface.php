@@ -4,10 +4,12 @@ namespace CodeHuiter\Pattern\Modules\Auth\Models;
 
 interface UserInterface
 {
+    public function exist(): bool;
+
     /**
      * @return int
      */
-    public function getId();
+    public function getId(): int;
 
     /**
      * @param int $id
@@ -60,6 +62,11 @@ interface UserInterface
     public function getTimezone(): string;
 
     /**
+     * @param string $timezone
+     */
+    public function setTimezone(string $timezone): void;
+
+    /**
      * @return string
      */
     public function getSignature(): string;
@@ -98,6 +105,36 @@ interface UserInterface
      * @param string $ip
      */
     public function setLastIp(string $ip): void;
+
+    /**
+     * @return int
+     */
+    public function getNotificationsCount(): int;
+
+    /**
+     * @param int $notifications_count
+     */
+    public function setNotificationsCount(int $notifications_count): void;
+
+    /**
+     * @return int
+     */
+    public function getNotificationsLast(): int;
+
+    /**
+     * @param int $notifications_last
+     */
+    public function setNotificationsLast(int $notifications_last): void;
+
+    /**
+     * @return string
+     */
+    public function getPicturePreview(): string;
+
+    /**
+     * @param string $picture_preview
+     */
+    public function setPicturePreview(string $picture_preview): void;
 
     /**
      * @return array

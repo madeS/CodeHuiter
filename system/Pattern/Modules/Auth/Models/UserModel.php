@@ -60,42 +60,26 @@ class UserModel extends Model implements UserInterface
 
     /** @var int */
     protected $id;
-    /** @var string */
     protected $login = '';
-    /** @var string */
     protected $passhash = '';
-    /** @var string */
     protected $sig = '';
-    /** @var string  */
     protected $token = '';
     /** @var string */
     protected $regtime;
-    /** @var int */
     protected $sigtime = 0;
-    /** @var int */
     protected $lastact = 0;
-    /** @var string json */
     protected $groups = '[]';
-    /** @var string */
     protected $lastip = '';
-    /** @var string */
     protected $timezone = '0';
-    /** @var int */
     protected $has_picture = 0;
-    /** @var int  */
     protected $picture_id = 0;
-    /** @var string  */
     protected $picture_orig = '';
-    /** @var string  */
-    protected $picture = '';
-    /** @var string  */
-    protected $picture_preview = '';
-    /** @var int  */
+    protected $picture = 'default/profile_nopicture.png';
+    protected $picture_preview = 'default/profile_nopicture_preview.png';
     protected $rating = 0;
-    /** @var string */
-    protected $email;
-    /** @var int */
+    protected $email = '';
     protected $email_conf = 0;
+    /** TODO remove deprecated field */
     /** @var @deprecated (show social account - 1)*/
     protected $settings = 0;
     protected $vk_id = '';
@@ -124,6 +108,11 @@ class UserModel extends Model implements UserInterface
     protected $dataInfoDecoded = null;
     /** @var array|null */
     protected $groupsDecoded = null;
+
+    public function exist(): bool
+    {
+        return (int)$this->id > 0;
+    }
 
     /** @inheritdoc */
     public function getId(): int
@@ -196,6 +185,13 @@ class UserModel extends Model implements UserInterface
     }
 
     /** @inheritdoc */
+    public function setTimezone(string $timezone): void
+    {
+        $this->timezone = $timezone;
+        $this->touch('timezone');
+    }
+
+    /** @inheritdoc */
     public function getSignature(): string
     {
         return $this->sig;
@@ -246,6 +242,47 @@ class UserModel extends Model implements UserInterface
         $this->lastip = $ip;
         $this->touch('lastip');
     }
+
+    /** @inheritdoc */
+    public function getNotificationsCount(): int
+    {
+        return $this->notifications_count;
+    }
+
+    /** @inheritdoc */
+    public function setNotificationsCount(int $notifications_count): void
+    {
+        $this->notifications_count = $notifications_count;
+        $this->touch('notifications_count');
+    }
+
+    /** @inheritdoc */
+    public function getNotificationsLast(): int
+    {
+        return $this->notifications_last;
+    }
+
+    /** @inheritdoc */
+    public function setNotificationsLast(int $notifications_last): void
+    {
+        $this->notifications_last = $notifications_last;
+        $this->touch('notifications_last');
+    }
+
+    /** @inheritdoc */
+    public function getPicturePreview(): string
+    {
+        return $this->picture_preview;
+    }
+
+    /** @inheritdoc */
+    public function setPicturePreview(string $picture_preview): void
+    {
+        $this->picture_preview = $picture_preview;
+        $this->touch('picture_preview');
+    }
+
+
 
     /**
      * @return array
@@ -306,9 +343,8 @@ class UserModel extends Model implements UserInterface
         $this->groupsDecoded = null;
 
         if ($withSave) {
-            return;
+            $this->update(['groups' => $this->groups]);
         }
-        $this->update(['groups' => $this->groups]);
     }
 
     public function addGroup(int $group): void

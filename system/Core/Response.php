@@ -149,10 +149,6 @@ class Response
         }
     }
 
-    public function profilerEnable($isEnable = true)
-    {
-        $this->config->profiler = $isEnable;
-    }
 
     public function send()
     {

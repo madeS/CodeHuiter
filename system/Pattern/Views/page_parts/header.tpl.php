@@ -12,7 +12,7 @@
 	<div class="header">
 		<a class="logo bodyajax noa" href="<?php echo $those->links->main()?>"><?php echo $those->app->config->projectConfig->projectLogo?></a>
 		<div class="profile">
-			<?php if($userInfo->getId()):?>
+			<?php if($userInfo->exist()):?>
 				<div class="profile_block" id="profile_panel">
 					<?php $this->load->view('mop/header_profile_block.tpl.php')?>
 				</div>
@@ -61,7 +61,7 @@
 
 
 		<div class="profile">
-			<?php if($userInfo->getId()):?>
+			<?php if($userInfo->exist()):?>
 				<?php $those->response->render($patternTemplate . 'page_parts/header_profile_block')?>
 			<?php else:?>
 				<?php $those->response->render($patternTemplate . 'page_parts/header_login_block')?>

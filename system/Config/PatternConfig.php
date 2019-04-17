@@ -185,6 +185,7 @@ class AuthConfig
     public $urlAuth = '/auth';
     public $urlBan = '/auth/banned';
     public $urlActive = '/auth/email_conf_sended';
+    public $urlLogout = '/auth/logout';
     public $authEmailConfSended = '/auth/email_conf_sended';
 
     public $facebookAppId = '600000000000121';

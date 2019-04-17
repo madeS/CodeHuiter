@@ -54,7 +54,7 @@ class DateService
     public function forUser(UserInterface $user = null)
     {
         if ($user && $user->getTimezone() !== '') {
-            $this->outTimezone = intval($user->getTimezone()) * 60;
+            $this->outTimezone = intval($user->getTimezone());
         }
         return $this;
     }
@@ -87,9 +87,9 @@ class DateService
         }
 
         if ($isFormat) {
-            return strftime($format, $this->stateTime);
+            return strftime($format, $this->stateTime) . $append;
         }
-        return date($format, $this->stateTime);
+        return date($format, $this->stateTime) . $append;
     }
 
     /** secondsToTimeSimple

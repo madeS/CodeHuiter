@@ -94,10 +94,10 @@ class PDODriver extends AbstractDatabase
                 $statement->execute($params);
                 $query = 'reconnected: ' . $query;
             } else {
-                throw $exception;
+                throw $this->pdoException($exception, $query, $params);
             }
         } catch (\Throwable $event) {
-            throw new \PDOException("{$event->getMessage()} \n with query: '$query' with params: " . json_encode($params), 0, $event);
+            throw $this->pdoException($event, $query, $params);
         }
 
         $executeTime = $this->isCalculateTime ? microtime(true) : 0;
@@ -147,10 +147,10 @@ class PDODriver extends AbstractDatabase
                 $statement->execute($params);
                 $query = 'reconnected: ' . $query;
             } else {
-                throw $exception;
+                throw $this->pdoException($exception, $query, $params);
             }
         } catch (\Throwable $event) {
-            throw new \PDOException("{$event->getMessage()} \n with query: '$query' with params: " . json_encode($params), 0, $event);
+            throw $this->pdoException($event, $query, $params);
         }
 
         $executeTime = $this->isCalculateTime ? microtime(true) : 0;
@@ -194,10 +194,10 @@ class PDODriver extends AbstractDatabase
                 $statement->execute($params);
                 $query = 'reconnected: ' . $query;
             } else {
-                throw $exception;
+                throw $this->pdoException($exception, $query, $params);
             }
         } catch (\Throwable $event) {
-            throw new \PDOException("{$event->getMessage()} \n with query: '$query' with params: " . json_encode($params), 0, $event);
+            throw $this->pdoException($event, $query, $params);
         }
 
         $executeTime = $this->isCalculateTime ? microtime(true) : 0;
@@ -243,10 +243,10 @@ class PDODriver extends AbstractDatabase
                 $statement->execute($params);
                 $query = 'reconnected: ' . $query;
             } else {
-                throw $exception;
+                throw $this->pdoException($exception, $query, $params);
             }
         } catch (\Throwable $event) {
-            throw new \PDOException("{$event->getMessage()} \n with query: '$query' with params: " . json_encode($params), 0, $event);
+            throw $this->pdoException($event, $query, $params);
         }
 
         $executeTime = $this->isCalculateTime ? microtime(true) : 0;
@@ -285,10 +285,10 @@ class PDODriver extends AbstractDatabase
                 $statement->execute($params);
                 $query = 'reconnected: ' . $query;
             } else {
-                throw $exception;
+                throw $this->pdoException($exception, $query, $params);
             }
         } catch (\Throwable $event) {
-            throw new \PDOException("{$event->getMessage()} \n with query: '$query' with params: " . json_encode($params), 0, $event);
+            throw $this->pdoException($event, $query, $params);
         }
 
         $executeTime = $this->isCalculateTime ? microtime(true) : 0;
@@ -335,10 +335,10 @@ class PDODriver extends AbstractDatabase
                 $statement->execute($params);
                 $query = 'reconnected: ' . $query;
             } else {
-                throw $exception;
+                throw $this->pdoException($exception, $query, $params);
             }
         } catch (\Throwable $event) {
-            throw new \PDOException("{$event->getMessage()} \n with query: '$query' with params: " . json_encode($params), 0, $event);
+            throw $this->pdoException($event, $query, $params);
         }
 
         $executeTime = $this->isCalculateTime ? microtime(true) : 0;
@@ -396,10 +396,10 @@ class PDODriver extends AbstractDatabase
                     $statement->execute($params);
                     $query = 'reconnected: ' . $query;
                 } else {
-                    throw $exception;
+                    throw $this->pdoException($exception, $query, $params);
                 }
             } catch (\Throwable $event) {
-                throw new \PDOException("{$event->getMessage()} \n with query: '$query' with params: " . json_encode($params), 0, $event);
+                throw $this->pdoException($event, $query, $params);
             }
             // Format
             $result = $this->connection->lastInsertId();
@@ -420,10 +420,10 @@ class PDODriver extends AbstractDatabase
                     $statement->execute($params);
                     $query = 'reconnected: ' . $query;
                 } else {
-                    throw $exception;
+                    throw $this->pdoException($exception, $query, $params);
                 }
             } catch (\Throwable $event) {
-                throw new \PDOException("{$event->getMessage()} \n with query: '$query' with params: " . json_encode($params), 0, $event);
+                throw $this->pdoException($event, $query, $params);
             }
             // Format
             $result = $statement->rowCount();
@@ -581,6 +581,11 @@ class PDODriver extends AbstractDatabase
     {
         $this->connection->rollBack();
         $this->inTransaction = false;
+    }
+
+    private function pdoException(\Throwable $exception, string $query, array $params)
+    {
+        return new \PDOException("{$exception->getMessage()} \n with query: '$query' with params: " . json_encode($params), 0, $exception);
     }
 
     /**

@@ -2,7 +2,6 @@
 
 namespace CodeHuiter\Pattern\Controllers\Base;
 
-use CodeHuiter\Config\Config;
 use CodeHuiter\Core\Application;
 use CodeHuiter\Core\Controller;
 use CodeHuiter\Core\Exceptions\ExceptionProcessor;
@@ -36,7 +35,7 @@ class BaseController extends Controller
         $this->init();
     }
 
-    protected function errorPageByCode($code = 404, $message)
+    protected function errorPageByCode($code = 404, $message = '')
     {
         try {
             $this->log->warning('Page '. $code .' showed with uri ['.$this->request->uri.']', [], 'exceptions');
@@ -116,6 +115,7 @@ class BaseController extends Controller
                         ->closePopups()
                         ->send();
                 } else {
+                    /** TODO Implement this page */
                     $those->response->location($those->auth->config->urlBan, true);
                 }
             },
@@ -127,12 +127,13 @@ class BaseController extends Controller
                         ->closePopups()
                         ->send();
                 } else {
-                    $those->response->location($those->auth->config['url_active'], true);
+                    /** TODO Implement this page */
+                    $those->response->location($those->auth->config->urlActive, true);
                 }
             },
         ] + $customActions));
 
-        $this->data['userInfo'] = ($success) ? $this->auth->user : false;
+        $this->data['userInfo'] = ($success) ? $this->auth->user : $this->auth->getDefaultUser();
         return $success;
     }
 

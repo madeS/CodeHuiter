@@ -125,7 +125,7 @@ class AuthService
         ],
         $customActions = []
     ) {
-        if (!$this->user || !$this->user->getId()) {
+        if (!$this->user || !$this->user->exist()) {
             // Not login? Try to recognize user.
             if (!$this->checkUser()) {
                 //  User not login
@@ -191,7 +191,13 @@ class AuthService
      */
     protected function checkUser()
     {
-        $ui = $this->getUserInfo($this->request->getCookie('id'), $this->request->getCookie('sig'));
+        $id = $this->request->getCookie('id');
+        $sig = $this->request->getCookie('sig');
+        if (!$id || !$sig) {
+            $this->user = $this->getDefaultUser();
+            return false;
+        }
+        $ui = $this->getUserInfo($id, $sig);
         if (!$ui) {
             $this->user = $this->getDefaultUser();
             return false;
@@ -291,11 +297,11 @@ class AuthService
 
         if ($withLogout) {
             $this->response->setCookie(
-                'id', $userInfo->getId(),
+                'id', null,
                 $this->date->now + 3600 * 24 * $this->config->cookieDays, '/', $this->config->cookieDomain
             );
             $this->response->setCookie(
-                'sig', $userInfo->getId(),
+                'sig', null,
                 $this->date->now + 3600 * 24 * $this->config->cookieDays, '/', $this->config->cookieDomain
             );
         }
@@ -509,10 +515,10 @@ class AuthService
      * @param Mjsa $mjsa
      * @param array $input
      * @param array $additionalValidator
-     * @param UserInterface $connectUi
+     * @param UserInterface|null $connectUi
      * @return array|bool validatedData or false if not valid
      */
-    public function registerByEmailValidator(Mjsa $mjsa, $input, $additionalValidator = [], $connectUi)
+    public function registerByEmailValidator(Mjsa $mjsa, $input, $additionalValidator = [], $connectUi = null)
     {
         return $mjsa->validator($input, array_merge([
             'email' => [
@@ -715,6 +721,24 @@ class AuthService
     protected function joinAccounts(UserInterface $targetUser, UserInterface $donorUser): void
     {
         $this->app->fireEvent(new JoinAccountsEvent($donorUser, $targetUser));
+    }
+
+    /**
+     * @param UserInterface $user
+     * @param mixed $js_timezoneOffset
+     * @return int|null
+     */
+    public function setTimezone(UserInterface $user, $js_timezoneOffset): ?int
+    {
+        $timezoneOffset = intval($js_timezoneOffset);
+
+        if ((int)$user->getTimezone() === $timezoneOffset) {
+            return null;
+        }
+        $user->setTimezone($timezoneOffset);
+        $user->saveUser();
+
+        return $user->getTimezone();
     }
 }
 

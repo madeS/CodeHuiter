@@ -5,7 +5,9 @@
     "homepage": "https://andrei.bogarevich.com",
     "license": "MIT",
     "require": {
-        "php": ">=7.1"
+        "php": ">=7.1",
+        "ext-pdo": "*",
+        "ext-json": "*"
     },
     "suggest": {
         "paragonie/random_compat": "Provides better randomness in PHP 5.x"

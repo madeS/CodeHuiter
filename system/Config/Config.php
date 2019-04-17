@@ -213,7 +213,7 @@ class LogConfig
 {
     /** @var array|string */
     public $threshold = 'notice';
-    public $directory = BASE_PATH . 'public_html/pub/logs/';
+    public $directory = STORAGE_PATH . 'framework/logs/';
     public $byFile = '{#tag}_{#level}';
     public $datePrepend = 'Y-m';
     public $filePermission = 0777;
