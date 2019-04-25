@@ -2,8 +2,10 @@
 
 namespace CodeHuiter\Pattern\Modules\Auth\Controllers;
 
+use CodeHuiter\Config\PatternConfig;
 use CodeHuiter\Core\Response;
 use CodeHuiter\Pattern\Controllers\Base\BaseController;
+use CodeHuiter\Pattern\Modules\Auth\Models\UserRepositoryInterface;
 
 class AuthController extends BaseController
 {
@@ -37,13 +39,12 @@ class AuthController extends BaseController
         } else {
             $this->render($this->auth->getViewsPath() . 'login');
         }
-        return;
     }
 
-    public function register()
+    public function register_submit()
     {
         $this->initWithAuth(false);
-        $targetUi = ($this->auth->user->exist()) ? $this->auth->user : null;
+        $targetUi = $this->auth->user->exist() ? $this->auth->user : null;
 
         $data = $this->auth->registerByEmailValidator($this->mjsa, $_POST, [], $targetUi);
         if (!$data) {
@@ -51,7 +52,7 @@ class AuthController extends BaseController
         }
         $result = $this->auth->registerByEmail($data['email'], $data['password'], $data['login'], $targetUi);
         if ($result->isSuccess()) {
-            $this->mjsa->successMessage($result->getMessage());
+            //$this->mjsa->successMessage($result->getMessage());
             $this->mjsa->closePopups();
             $this->mjsa->reload();
         } elseif ($result->isSpecific() && isset($result->getFields()['confirmation'])) {
@@ -70,7 +71,7 @@ class AuthController extends BaseController
         }
     }
 
-    public function login()
+    public function login_submit()
     {
         $this->initWithAuth(false);
         $data = $this->auth->loginByPasswordValidator($this->mjsa, $_POST);
@@ -124,7 +125,7 @@ class AuthController extends BaseController
         }
     }
 
-    public function send_password_recovery()
+    public function password_recovery_submit()
     {
         $this->initWithAuth(false);
         $result = $this->auth->sendPasswordRecoveryByLogemail(
@@ -144,6 +145,13 @@ class AuthController extends BaseController
             }
             $this->mjsa->errorMessage($result->getMessage());
         }
+    }
+
+    public function password_change()
+    {
+        $this->initWithAuth(false);
+        $this->data['user'] = $this->getUserRepository()->getById((int)$this->request->getGet('user_id', ''));
+        $this->render($this->auth->getViewsPath() . 'password_change');
     }
 
     public function sync_timezone()
@@ -168,8 +176,13 @@ class AuthController extends BaseController
     }
 
 
-
-
+    /**
+     * @return UserRepositoryInterface
+     */
+    private function getUserRepository(): UserRepositoryInterface
+    {
+        return $this->app->get(PatternConfig::SERVICE_USER_REPOSITORY);
+    }
 
 
 

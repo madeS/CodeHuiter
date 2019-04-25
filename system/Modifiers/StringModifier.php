@@ -50,6 +50,16 @@ class StringModifier
         return mb_strpos($haystack, $needle, $offset, self::CHARSET);
     }
 
+    public static function toHtml(string $string): string
+    {
+        return htmlspecialchars($string);
+    }
+
+    public static function fromHtml(string $string): string
+    {
+        // TODO high
+    }
+
     public static function filterChars($textPattern, $filterOption)
     {
         $result = $textPattern;

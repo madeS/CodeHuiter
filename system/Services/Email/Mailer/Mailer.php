@@ -44,7 +44,7 @@ class Mailer extends AbstractEmail
     /**
      * @inheritdoc
      */
-    public function send($subject, $content, $from, $emails, $ccEmails, $queued)
+    public function send($subject, $content, $from, $emails, $ccEmails, $queued, bool $force)
     {
         if ($queued) {
             foreach ($emails as $email) {
@@ -58,14 +58,14 @@ class Mailer extends AbstractEmail
                     'sended' => 0,
                 ];
                 $mailerId = MailerModel::insert($mailerData);
-                if ($this->config->queueForce) {
+                if ($this->config->queueForce || $force) {
                     return $this->sendFromQueue(1, $mailerId);
                 }
             }
             return true;
-        } else {
-            return $this->innerSend($subject, $content, $from, $emails, $ccEmails);
         }
+
+        return $this->innerSend($subject, $content, $from, $emails, $ccEmails);
     }
 
     /**

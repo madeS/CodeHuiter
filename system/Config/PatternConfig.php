@@ -182,6 +182,8 @@ class AuthConfig
     public $viewsPath = '';                 //':', - for cusom auth views
     public $groups = [];
 
+    public $emailQueued = true;
+
     public $urlAuth = '/auth';
     public $urlBan = '/auth/banned';
     public $urlActive = '/auth/email_conf_sended';

@@ -9,8 +9,17 @@ class UserModelRepository extends AbstractRepository implements UserRepositoryIn
      */
     public function newInstance(): UserInterface
     {
-        $item =  new UserModel();
-        return $item;
+        return new UserModel();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getById(int $id): UserInterface
+    {
+        /** @var UserModel|null $model */
+        $model = UserModel::getOneWhere(['id' => $id]);
+        return $model;
     }
 
     /**
@@ -30,5 +39,4 @@ class UserModelRepository extends AbstractRepository implements UserRepositoryIn
         $model = UserModel::getOneWhere($where, $opt);
         return $model;
     }
-
 }

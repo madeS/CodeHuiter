@@ -5,11 +5,16 @@ namespace CodeHuiter\Services;
 use CodeHuiter\Config\DateConfig;
 use CodeHuiter\Core\Application;
 use CodeHuiter\Pattern\Modules\Auth\Models\UserInterface;
+use DateInterval;
+use DateTime;
 
 class DateService
 {
-    /** @var int  */
+    /** @var int */
     public $now = 0;
+
+    /** @var Application */
+    public $app;
 
     /**
      * @var DateConfig
@@ -73,12 +78,12 @@ class DateService
 
         if (is_int($this->outTimezone)) {
             date_default_timezone_set('UTC');
-            $this->stateTime -= intval($this->outTimezone) * 60;
+            $this->stateTime -= (int)$this->outTimezone * 60;
             if ($utcAppend) {
                 $times = $this->secondsToTimeSimple(- $this->outTimezone * 60);
                 $append = ' UTC';
                 $append .= (($times[2]>0) ? '+' . $times[2] : '-' . abs($times[2]));
-                $append .= (($times[1])?':'.abs($times[1]):'');
+                $append .= ($times[1] ? ':' . abs($times[1]) : '');
             }
         } elseif (is_string($this->outTimezone) && $this->outTimezone) {
             date_default_timezone_set($this->outTimezone);
@@ -102,7 +107,8 @@ class DateService
      * $times[3] - дни
      * $times[4] - года
      */
-    protected function secondsToTimeSimple($seconds){
+    protected function secondsToTimeSimple($seconds)
+    {
         if ($seconds < 0) { $seconds = - $seconds; }
         $times = array(0,0,0,0,0);
         $periods = array(60, 3600, 86400, 31536000);
@@ -121,6 +127,22 @@ class DateService
 
     public function sqlTime($time){
         return $this->fromTime($time)->forTimezone('UTC')->toFormat('Y-m-d H:i:s');
+    }
+
+    /**
+     * Modify timestamp for days
+     * @param int $timeStamp
+     * @param $days
+     * @return int
+     */
+    public function addDays(int $timeStamp, int $days): int
+    {
+        try {
+            return (new DateTime())->setTimestamp($timeStamp)->add(new DateInterval("P{$days}D"))->getTimestamp();
+        } catch (\Exception $exception) {
+            $this->app->fireException($exception);
+            return $timeStamp + 60 * 60 * 2 * 12 * $days;
+        }
     }
 
 }

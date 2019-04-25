@@ -41,12 +41,13 @@ abstract class AbstractEmail
      * @param array $emails [email1, email2, email3]
      * @param array $ccEmails [email1, email2, email3]
      * @param bool $queued
+     * @param bool $force
      * @return bool
      */
-    public function sendFromSite($subject, $content, $emails, $ccEmails = [], $queued = true)
+    public function sendFromSite($subject, $content, $emails, $ccEmails = [], $queued = true, bool $force = false)
     {
         $from = [$this->config->siteRobotEmail => $this->config->siteRobotName];
-        return $this->send($subject, $content, $from, $emails, $ccEmails, $queued);
+        return $this->send($subject, $content, $from, $emails, $ccEmails, $queued, $force);
     }
 
     /**
@@ -56,7 +57,8 @@ abstract class AbstractEmail
      * @param array $emails [email1, email2, email3]
      * @param array $ccEmails [email1, email2, email3]
      * @param bool $queued
+     * @param bool $force
      * @return bool
      */
-    abstract public function send($subject, $content, $from, $emails, $ccEmails, $queued);
+    abstract public function send($subject, $content, $from, $emails, $ccEmails, $queued, bool $force);
 }

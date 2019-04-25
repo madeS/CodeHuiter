@@ -32,9 +32,9 @@
 		<div class="row in_error"></div>
 		<div class="row">
 			<span class="label">&nbsp;</span><input type="button" 
-			data-action="appSubmit" data-uri="/auth/login"
+			data-action="appSubmit" data-uri="/auth/login_submit"
 			class="btn green m_form_submit action" value="<?php echo $those->lang->get('auth_ui:sign_in:submit');?>" />
-			<a href="#" data-action="appSubmit" data-submituri="/auth/send_password_recovery"
+			<a href="#" data-action="appSubmit" data-uri="/auth/password_recovery_submit"
 			   class="whatpass action"><?php echo $those->lang->get('auth_ui:sign_in:forgot_password');?></a>
 		</div>
 	</div>
@@ -53,7 +53,7 @@
 		<div class="row in_error"></div>
 		<div class="row">
 			<span class="label">&nbsp;</span><input type="button" 
-			data-action="appSubmit" data-uri="/auth/register"
+			data-action="appSubmit" data-uri="/auth/register_submit"
 			class="btn m_form_submit action" value="<?php echo $those->lang->get('auth_ui:sign_up:submit');?>" />
 		</div>
 	</div>

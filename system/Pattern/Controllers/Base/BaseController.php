@@ -84,7 +84,7 @@ class BaseController extends Controller
     }
 
     protected function initWithAuth(
-        $require = false,
+        $require,
         $requiredGroups = [
             AuthService::GROUP_NOT_BANNED,
             AuthService::GROUP_ACTIVE,

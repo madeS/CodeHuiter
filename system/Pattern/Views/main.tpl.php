@@ -85,7 +85,10 @@
 
 	<!-- TODO config show only if superuser ??? -->
 	<div id="debug_info">
-
+        <?php if(($_GET[\CodeHuiter\Core\Benchmark::GET_DEBUG_BENCH_ENABLE] ?? false)):?>
+			{#result_time_table}
+			{#result_class_table}
+        <?php endif;?>
 	</div>
 
 <?php if($those->runData['bodyAjax']):?>
@@ -95,11 +98,6 @@
 	<?php require_once $patternTemplate . 'main_parts/body_cont_after.tpl.php'; ?>
 	<?php if(isset($bodyAfterTpl) && $bodyAfterTpl):?>
 		<?php $those->response->render($template . $bodyAfterTpl); ?>
-	<?php endif;?>
-
-	<?php if(($_GET[\CodeHuiter\Core\Benchmark::GET_DEBUG_BENCH_ENABLE] ?? false)):?>
-		{#result_time_table}
-		{#result_class_table}
 	<?php endif;?>
 
 </body>

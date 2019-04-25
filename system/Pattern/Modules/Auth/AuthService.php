@@ -146,21 +146,21 @@ class AuthService
         $needAccessGroups = $this->userNotInGroups($this->user, $requiredGroups);
         if ($needAccessGroups) {
             // Have not required group
-            if (in_array(self::GROUP_NOT_BANNED, $needAccessGroups)) {
+            if (in_array(self::GROUP_NOT_BANNED, $needAccessGroups, true)) {
                 // User is banned
                 if (isset($customActions[self::GROUP_NOT_BANNED])) {
                     // User ban action
                     $customActions[self::GROUP_NOT_BANNED]($this->user);
                 }
-                return $this->setErrorMessage($this->lang->get('auth:user_is_banned'));
+                return $this->setErrorMessage($this->lang->get('auth_sign:user_is_banned'));
             }
-            if (in_array(self::GROUP_ACTIVE, $needAccessGroups)) {
+            if (in_array(self::GROUP_ACTIVE, $needAccessGroups, true)) {
                 // User is banned
                 if (isset($customActions[self::GROUP_ACTIVE])) {
                     // User ban action
                     $customActions[self::GROUP_ACTIVE]($this->user);
                 }
-                return $this->setErrorMessage($this->lang->get('auth:user_is_not_active'));
+                return $this->setErrorMessage($this->lang->get('auth_sign:user_is_not_active'));
             }
         }
         return true;
@@ -169,10 +169,10 @@ class AuthService
 
     /**
      * @param UserInterface $user
-     * @param array $requiredGroups
-     * @return array
+     * @param int[] $requiredGroups
+     * @return int[]
      */
-    protected function userNotInGroups(UserInterface $user, array $requiredGroups)
+    protected function userNotInGroups(UserInterface $user, array $requiredGroups): array
     {
         $result = [];
         foreach ($requiredGroups as $requiredGroup) {
@@ -189,7 +189,7 @@ class AuthService
      * If not success
      * @return bool
      */
-    protected function checkUser()
+    protected function checkUser(): bool
     {
         $id = $this->request->getCookie('id');
         $sig = $this->request->getCookie('sig');
@@ -201,10 +201,9 @@ class AuthService
         if (!$ui) {
             $this->user = $this->getDefaultUser();
             return false;
-        } else {
-            $this->user = $ui;
-            return true;
         }
+        $this->user = $ui;
+        return true;
     }
 
     /**
@@ -223,34 +222,37 @@ class AuthService
             $userInfo->setGroups(array_merge($userInfo->getGroups(), $this->groups), false);
             return $userInfo;
         }
-        if ($sig && $sig == $userInfo->getSignature() && $sig !== 'NULL') {
-            if ($this->config->logoutIfIpChange && $userInfo->getLastIp() != $this->request->getClientIP()) {
-                return $this->setErrorMessage($this->lang->get('auth:incorrect_ip'));
-            }
-            if ($this->date->now > intval($userInfo->getSignatureTime()) + 3600 * 24) {
-                // При мультиконнекте продлевает старый sig иначе создает новый и меняет
-                $this->updateSig($userInfo);
-            }
-            if ($this->date->now - $userInfo->getLastActive() > $this->config->nonactiveUpdateTime) {
-                $userInfo->setLastActive($this->date->now);
-                $userInfo->saveUser();
-            }
-            return $userInfo;
-        } else {
+        if (!$sig || $sig === 'NULL' || $sig !== $userInfo->getSignature()) {
             return $this->setErrorMessage($this->lang->get('auth_ui:incorrect_sig'));
         }
+
+        if ($this->config->logoutIfIpChange && $userInfo->getLastIp() !== $this->request->getClientIP()) {
+            return $this->setErrorMessage($this->lang->get('auth:incorrect_ip'));
+        }
+        if ($this->date->now > $this->date->addDays($userInfo->getSignatureTime(), 1)) {
+            // При мультиконнекте продлевает старый sig иначе создает новый и меняет
+            $this->updateSig($userInfo);
+        }
+        if ($this->date->now - $userInfo->getLastActive() > $this->config->nonactiveUpdateTime) {
+            $userInfo->setLastActive($this->date->now);
+            $userInfo->saveUser();
+        }
+        return $userInfo;
     }
 
     /**
      * @param int $id
-     * @return UserInterface
+     * @return UserInterface|null
      */
-    protected function getUserById($id)
+    protected function getUserById($id): ?UserInterface
     {
         return $this->userRepository->findOne(['id' => $id]);
     }
 
-    public function getDefaultUser()
+    /**
+     * @return UserInterface
+     */
+    public function getDefaultUser(): UserInterface
     {
         return $this->userRepository->newInstance();
     }
@@ -258,7 +260,7 @@ class AuthService
     /**
      * @param UserInterface $userInfo
      */
-    protected function updateSig(UserInterface $userInfo)
+    protected function updateSig(UserInterface $userInfo): void
     {
         $oldSig = '';
         if ($this->config->multiconnectAvailable) {
@@ -278,11 +280,11 @@ class AuthService
 
         $this->response->setCookie(
             'id', $userInfo->getId(),
-            $this->date->now + 3600 * 24 * $this->config->cookieDays, '/', $this->config->cookieDomain
+            $this->date->addDays($this->date->now, $this->config->cookieDays), '/', $this->config->cookieDomain
         );
         $this->response->setCookie(
             'sig', $newSig,
-            $this->date->now + 3600 * 24 * $this->config->cookieDays, '/', $this->config->cookieDomain
+            $this->date->addDays($this->date->now, $this->config->cookieDays), '/', $this->config->cookieDomain
         );
     }
 
@@ -290,7 +292,7 @@ class AuthService
      * @param UserInterface $userInfo
      * @param bool $withLogout
      */
-    public function resetSig(UserInterface $userInfo, $withLogout = true)
+    public function resetSig(UserInterface $userInfo, $withLogout = true): void
     {
         $userInfo->setSignature('');
         $userInfo->saveUser();
@@ -298,11 +300,11 @@ class AuthService
         if ($withLogout) {
             $this->response->setCookie(
                 'id', null,
-                $this->date->now + 3600 * 24 * $this->config->cookieDays, '/', $this->config->cookieDomain
+                $this->date->addDays($this->date->now, $this->config->cookieDays), '/', $this->config->cookieDomain
             );
             $this->response->setCookie(
                 'sig', null,
-                $this->date->now + 3600 * 24 * $this->config->cookieDays, '/', $this->config->cookieDomain
+                $this->date->addDays($this->date->now, $this->config->cookieDays), '/', $this->config->cookieDomain
             );
         }
     }
@@ -311,12 +313,12 @@ class AuthService
      * @param $id
      * @param $login
      * @param $email
-     * @param $passhash
+     * @param $passHash
      * @return string
      */
-    protected function sigFunc($id, $login, $email, $passhash)
+    protected function sigFunc($id, $login, $email, $passHash): string
     {
-        return md5($this->config->salt . $id . $login . $email . $passhash . $this->date->now);
+        return md5($this->config->salt . $id . $login . $email . $passHash . $this->date->now);
     }
 
     /**
@@ -332,10 +334,10 @@ class AuthService
             $login = mb_strtolower($login);
             $email = mb_strtolower($email);
             return md5($login.$email.$pass);
-        } else {
-            $this->app->fireException(new InvalidFlowException('Invalid PassFuncMethod'));
-            return '';
         }
+
+        $this->app->fireException(new InvalidFlowException('Invalid PassFuncMethod'));
+        return '';
     }
 
     /**
@@ -358,7 +360,7 @@ class AuthService
     }
 
 
-    public function loginByPasswordValidator(Mjsa $mjsa, $input)
+    public function loginByPasswordValidator(Mjsa $mjsa, $input): ?array
     {
         return $mjsa->validator($input, array_merge([
             'logemail' => [
@@ -381,7 +383,7 @@ class AuthService
      * @param string $passwordKey
      * @return ClientResult
      */
-    public function loginByPassword($logemail, $password, $logemailKey = 'logemail', $passwordKey = 'password')
+    public function loginByPassword($logemail, $password, $logemailKey = 'logemail', $passwordKey = 'password'): ClientResult
     {
         $user = $this->userRepository->findOne(['login' => $logemail]);
         if (!$user) {
@@ -430,7 +432,7 @@ class AuthService
      * @param UserInterface $user
      * @return ClientResult
      */
-    protected function sendEmailConfirm(UserInterface $user)
+    protected function sendEmailConfirm(UserInterface $user): ClientResult
     {
         $userDataInfo = $user->getDataInfo();
         $key = $this->getDataInfoTokenKey('email');
@@ -449,11 +451,10 @@ class AuthService
             '{#login}' => $user->getLogin(),
             '{#token}' => $userDataInfo[$key],
         ]);
-        if ($this->getEmail()->sendFromSite($subject, $content, [$user->getEmail()])) {
-            return ClientResult::createSuccess();
-        } else {
-            return ClientResult::createError($this->getEmail()->getLastStatusMessage());
+        if (!$this->getEmail()->sendFromSite($subject, $content, [$user->getEmail()], [], $this->config->emailQueued)) {
+            return ClientResult::createError($this->lang->get('auth_sign:error_email_not_sent'));
         }
+        return ClientResult::createSuccess();
     }
 
     // @todo when user change email, save old email to datainfo
@@ -466,7 +467,7 @@ class AuthService
     public function sendPasswordRecoveryByLogemail(string $logemail, $logemailKey = 'logemail'): ClientResult
     {
         if ($logemail === '') {
-            return ClientResult::createIncorrectField($logemailKey, $this->lang->get('auth_sign:password_recovery_email_need'));
+            return ClientResult::createIncorrectField($this->lang->get('auth_sign:password_recovery_email_need'), $logemailKey);
         }
 
         $user = $this->userRepository->findOne([
@@ -475,7 +476,7 @@ class AuthService
         ]);
 
         if (!$user) {
-            return ClientResult::createIncorrectField($logemailKey, $this->lang->get('auth_sign:user_not_found'));
+            return ClientResult::createIncorrectField($this->lang->get('auth_sign:password_recovery_email_not_found'), $logemailKey);
         }
         return $this->sendPasswordRecovery($user);
     }
@@ -498,18 +499,17 @@ class AuthService
             '{#siteName}' => $this->app->config->projectConfig->projectName,
         ]);
         $content = $this->lang->get('auth_email:recovery_body', [
+            '{#siteName}' => $this->app->config->projectConfig->projectName,
             '{#siteUrl}' => $this->app->config->settingsConfig->siteUrl,
             '{#userId}' => $user->getId(),
             '{#login}' => $user->getLogin(),
             '{#token}' => $userDataInfo[$key],
         ]);
-        if ($this->getEmail()->sendFromSite($subject, $content, [$user->getEmail()])) {
-            return ClientResult::createSuccess();
-        } else {
-            return ClientResult::createError($this->getEmail()->getLastStatusMessage());
+        if (!$this->getEmail()->sendFromSite($subject, $content, [$user->getEmail()], [], $this->config->emailQueued)) {
+            return ClientResult::createError($this->lang->get('auth_sign:error_email_not_sent'));
         }
+        return ClientResult::createSuccess();
     }
-
 
     /**
      * @param Mjsa $mjsa
@@ -518,7 +518,7 @@ class AuthService
      * @param UserInterface|null $connectUi
      * @return array|bool validatedData or false if not valid
      */
-    public function registerByEmailValidator(Mjsa $mjsa, $input, $additionalValidator = [], $connectUi = null)
+    public function registerByEmailValidator(Mjsa $mjsa, $input, $additionalValidator = [], $connectUi = null): ?array
     {
         return $mjsa->validator($input, array_merge([
             'email' => [
@@ -562,7 +562,7 @@ class AuthService
         $foundSameEmailUser = false;
         if ($email) {
             $foundSameEmailUser = $this->userRepository->findOne(['email' => $email, 'email_conf' => (int)true]);
-            if ($targetUi && $foundSameEmailUser && ($foundSameEmailUser->id == $targetUi->getId())) {
+            if ($targetUi && $foundSameEmailUser && ($foundSameEmailUser->getId() === $targetUi->getId())) {
                 $foundSameEmailUser = false;
             }
         }
@@ -572,7 +572,7 @@ class AuthService
             if (!$foundSameLoginUser) {
                 $foundSameLoginUser = $this->userRepository->findOne(['email' => $login, 'email_conf' => (int)true]);
             }
-            if ($targetUi && $foundSameLoginUser && ($foundSameLoginUser->getId() == $targetUi->getId())) {
+            if ($targetUi && $foundSameLoginUser && ($foundSameLoginUser->getId() === $targetUi->getId())) {
                 $foundSameLoginUser = false;
             }
         }
@@ -646,7 +646,7 @@ class AuthService
         return ClientResult::createSuccess();
     }
 
-    private function getDataInfoTokenKey($tokenType)
+    private function getDataInfoTokenKey($tokenType): string
     {
         return $tokenType . '_conf_token';
     }
@@ -670,48 +670,48 @@ class AuthService
         if (!$user) {
             return $this->setErrorMessage($this->lang->get('auth_sign:incorrect_id'));
         }
-        if (!in_array(self::GROUP_NOT_BANNED, $user->getGroups())) {
+        if (!in_array(self::GROUP_NOT_BANNED, $user->getGroups(), true)) {
             return $this->setErrorMessage($this->lang->get('auth_sign:user_banned'));
         }
 
         $userDataInfo = $user->getDataInfo();
         $userToken = ($userDataInfo[$tokenKey] ?? '');
 
-        if ($userToken && $userToken === $token) {
-            if ($resetToken) {
-                $userDataInfo[$tokenKey] = '';
-                $user->setDataInfo($userDataInfo);
-            }
-            if ($tokenType === 'email') {
-                $usersWithSameEmail = $this->userRepository->find([
-                    'email' => $user->getEmail(),
-                    'email_conf' => (int)true,
-                ]);
-                if ($usersWithSameEmail) {
-                    return $this->setErrorMessage($this->lang->get('auth_sign:already_email_confirmed'));
-                }
-                $user->addGroup(self::GROUP_ACTIVE);
-                $user->setEmailConfirmed(true);
-                $user->saveUser();
-
-                $withSameEmailUnconfirmedUsers = $this->userRepository->find([
-                    'email' => $user->getEmail(),
-                    'email_conf' => (int)false,
-                ]);
-                foreach ($withSameEmailUnconfirmedUsers as $withSameEmailUnconfirmedUser) {
-                    if (!in_array(self::GROUP_ACTIVE, $withSameEmailUnconfirmedUser->getGroups())) {
-                        $withSameEmailUnconfirmedUser->deleteUser();
-                    }
-                }
-
-                $this->updateSig($user);
-            }
-            $user->saveUser();
-
-            return true;
-        } else {
+        if (!$userToken || $userToken !== $token) {
             return $this->setErrorMessage($this->lang->get('auth_sign:token_is_incorrect'));
         }
+
+        if ($resetToken) {
+            $userDataInfo[$tokenKey] = '';
+            $user->setDataInfo($userDataInfo);
+        }
+        if ($tokenType === 'email') {
+            $usersWithSameEmail = $this->userRepository->find([
+                'email' => $user->getEmail(),
+                'email_conf' => (int)true,
+            ]);
+            if ($usersWithSameEmail) {
+                return $this->setErrorMessage($this->lang->get('auth_sign:already_email_confirmed'));
+            }
+            $user->addGroup(self::GROUP_ACTIVE);
+            $user->setEmailConfirmed(true);
+            $user->saveUser();
+
+            $withSameEmailUnconfirmedUsers = $this->userRepository->find([
+                'email' => $user->getEmail(),
+                'email_conf' => (int)false,
+            ]);
+            foreach ($withSameEmailUnconfirmedUsers as $withSameEmailUnconfirmedUser) {
+                if (!in_array(self::GROUP_ACTIVE, $withSameEmailUnconfirmedUser->getGroups())) {
+                    $withSameEmailUnconfirmedUser->deleteUser();
+                }
+            }
+
+            $this->updateSig($user);
+        }
+        $user->saveUser();
+
+        return true;
     }
 
     /**
@@ -898,7 +898,7 @@ class Mauth {
             if ($this->logout_if_ip_change){
                 if ($ui['lastip'] != $this->mm->g($_SERVER['REMOTE_ADDR'])) return $this->setErrorMessage(lang('mauth.auth:incorrect_ip'));
             }
-            if ($this->time > intval($ui['sigtime'])+3600*24) $this->updateSig($ui); // При мультиконнекте продлевает старый sig иначе создает новый и меняет
+            if ($this->time > intval($ui['sigtime'])+3600*12*2) $this->updateSig($ui); // При мультиконнекте продлевает старый sig иначе создает новый и меняет
             if ($ui['unactive'] > $this->unactive_update_time) $this->updateUserRow($id,array('lastact' => ''.$this->time)); // раз в минуту обновит последнее время посещения
             if ($ui['level'] == $this->unactive_level) { // user disactive // i think it dont need whet it has on login by pass and login by oauth
                 $ui = $this->userUnactiveRestore($ui);

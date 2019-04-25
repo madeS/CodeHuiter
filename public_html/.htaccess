@@ -68,7 +68,7 @@ php_value max_input_time 200
 <IfModule mod_rewrite.c>
     RewriteEngine on
     RewriteBase /
-    RewriteCond $1 !^(index\.php|pub|user_dok|upload|domains|temp|sitemap\.xml|robots\.txt)
+    RewriteCond $1 !^(index\.php|pub|user_dok|upload|domains|temp|sitemap\.xml|favicon\.ico|robots\.txt)
     RewriteCond %{REQUEST_URI} !\.(css¦js¦jpg¦gif¦png¦woff¦ttf¦svg¦eot¦ico)$
 	#RewriteCond %{REQUEST_URI} !\.(css|js|jpg|gif|png|woff|ttf|svg|eot)$
     RewriteCond %{REQUEST_FILENAME} !-f

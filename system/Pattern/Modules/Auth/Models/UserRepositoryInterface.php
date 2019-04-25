@@ -10,6 +10,12 @@ interface UserRepositoryInterface
     public function newInstance(): UserInterface;
 
     /**
+     * @param int $id
+     * @return UserInterface
+     */
+    public function getById(int $id): UserInterface;
+
+    /**
      * @param array $where
      * @param array $opt
      * @return UserInterface[]
