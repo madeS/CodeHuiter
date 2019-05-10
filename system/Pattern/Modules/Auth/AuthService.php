@@ -59,6 +59,10 @@ class AuthService
     public const GROUP_ADMIN = 6;          // Tagged as Admin
     public const GROUP_SUPER_ADMIN = 7;    // Tagged as Super Admin
 
+    public const TOKEN_TYPE_RECOVERY = 'recovery';
+    public const TOKEN_TYPE_CONFIRM_EMAIL = 'email';
+
+
     protected $groups = [
         self::GROUP_NOT_BANNED,
         self::GROUP_NOT_DELETED,
@@ -435,7 +439,7 @@ class AuthService
     protected function sendEmailConfirm(UserInterface $user): ClientResult
     {
         $userDataInfo = $user->getDataInfo();
-        $key = $this->getDataInfoTokenKey('email');
+        $key = $this->getDataInfoTokenKey(self::TOKEN_TYPE_CONFIRM_EMAIL);
         if (!isset($userDataInfo[$key])) {
             $userDataInfo[$key] = $this->sigFunc($user->getId(), $user->getLogin(), $user->getEmail(), $key);
         }
@@ -488,8 +492,8 @@ class AuthService
     protected function sendPasswordRecovery(UserInterface $user): ClientResult
     {
         $userDataInfo = $user->getDataInfo();
-        $key = $this->getDataInfoTokenKey('email');
-        if (!isset($userDataInfo[$key])) {
+        $key = $this->getDataInfoTokenKey(self::TOKEN_TYPE_RECOVERY);
+        if (!isset($userDataInfo[$key]) || !$userDataInfo[$key]) {
             $userDataInfo[$key] = $this->sigFunc($user->getId() ,$user->getLogin(), $user->getEmail(), $key);
         }
         $user->setDataInfo($userDataInfo);
@@ -646,9 +650,27 @@ class AuthService
         return ClientResult::createSuccess();
     }
 
+    /**
+     * @param $tokenType
+     * @return string
+     */
     private function getDataInfoTokenKey($tokenType): string
     {
         return $tokenType . '_conf_token';
+    }
+
+    /**
+     * @param UserInterface $user
+     * @param string $token
+     * @param string $tokenType
+     * @return bool
+     */
+    public function isValidToken(UserInterface $user, string $token, string $tokenType): bool
+    {
+        $key = $this->getDataInfoTokenKey($tokenType);
+        $userDataInfo = $user->getDataInfo();
+        $userToken = ($userDataInfo[$key] ?? '');
+        return $token && $token === $userToken;
     }
 
     /**
@@ -658,7 +680,7 @@ class AuthService
      * @param bool $resetToken
      * @return bool
      */
-    public function confirmToken(string $userId, string $token, $tokenType = 'email', $resetToken = true)
+    public function confirmToken(string $userId, string $token, $tokenType, $resetToken = true): bool
     {
         $tokenKey = $this->getDataInfoTokenKey($tokenType);
         if (!$tokenKey) {
@@ -682,7 +704,7 @@ class AuthService
         }
 
         if ($resetToken) {
-            $userDataInfo[$tokenKey] = '';
+            unset($userDataInfo[$tokenKey]);
             $user->setDataInfo($userDataInfo);
         }
         if ($tokenType === 'email') {
@@ -730,7 +752,7 @@ class AuthService
      */
     public function setTimezone(UserInterface $user, $js_timezoneOffset): ?int
     {
-        $timezoneOffset = intval($js_timezoneOffset);
+        $timezoneOffset = (int)$js_timezoneOffset;
 
         if ((int)$user->getTimezone() === $timezoneOffset) {
             return null;

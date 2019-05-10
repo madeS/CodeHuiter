@@ -10,7 +10,7 @@ app = (function ($,mjsa){
 			//console.log('fancybox waiting...');
 			return false;
 		}
-		if (!Ya) return false;
+		if (!document.Ya || !Ya) return false; // TODO check this in inet
 		
 		$('.yaShare').each(function(){
 			var params = {

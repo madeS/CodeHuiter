@@ -1,6 +1,7 @@
 <?php
 
 $lang['auth_sign:incorrect_id'] = 'Пользователь не найден';
+$lang['auth_sign:incorrect_token'] = 'Неверный токен';
 $lang['auth_sign:email_empty'] = 'Email необходим';
 $lang['auth_sign:email_too_long'] = 'Email слишком длинный';
 $lang['auth_sign:email_incorrect'] = 'Некорректный email';

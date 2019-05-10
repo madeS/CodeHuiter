@@ -11,9 +11,9 @@ interface UserRepositoryInterface
 
     /**
      * @param int $id
-     * @return UserInterface
+     * @return UserInterface|null
      */
-    public function getById(int $id): UserInterface;
+    public function getById(int $id): ?UserInterface;
 
     /**
      * @param array $where

@@ -16,9 +16,6 @@ $lang['allpages.messages'] = 'Сообщения';
 
 $lang['auth_ui:recover:recovering_password'] = 'Восстановление пароля';
 
-$lang['auth_ui:recover:enter_new_password'] = 'Введите Ваш новый пароль';
-$lang['auth_ui:recover:confirm_new_password'] = 'Повторите Ваш новый пароль';
-$lang['auth_ui:recover:submit'] = 'Создать новый пароль';
 
 
 

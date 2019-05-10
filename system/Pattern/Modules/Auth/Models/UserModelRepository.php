@@ -15,7 +15,7 @@ class UserModelRepository extends AbstractRepository implements UserRepositoryIn
     /**
      * {@inheritdoc}
      */
-    public function getById(int $id): UserInterface
+    public function getById(int $id): ?UserInterface
     {
         /** @var UserModel|null $model */
         $model = UserModel::getOneWhere(['id' => $id]);

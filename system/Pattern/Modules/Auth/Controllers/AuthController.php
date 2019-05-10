@@ -5,6 +5,7 @@ namespace CodeHuiter\Pattern\Modules\Auth\Controllers;
 use CodeHuiter\Config\PatternConfig;
 use CodeHuiter\Core\Response;
 use CodeHuiter\Pattern\Controllers\Base\BaseController;
+use CodeHuiter\Pattern\Modules\Auth\AuthService;
 use CodeHuiter\Pattern\Modules\Auth\Models\UserRepositoryInterface;
 
 class AuthController extends BaseController
@@ -12,7 +13,7 @@ class AuthController extends BaseController
     /**
      * @return bool|void
      */
-    public function index()
+    public function index(): void
     {
         $this->initWithAuth(false);
         if ($this->auth->user->exist()) {
@@ -41,14 +42,14 @@ class AuthController extends BaseController
         }
     }
 
-    public function register_submit()
+    public function register_submit(): void
     {
         $this->initWithAuth(false);
         $targetUi = $this->auth->user->exist() ? $this->auth->user : null;
 
         $data = $this->auth->registerByEmailValidator($this->mjsa, $_POST, [], $targetUi);
         if (!$data) {
-            return false;
+            return;
         }
         $result = $this->auth->registerByEmail($data['email'], $data['password'], $data['login'], $targetUi);
         if ($result->isSuccess()) {
@@ -71,12 +72,12 @@ class AuthController extends BaseController
         }
     }
 
-    public function login_submit()
+    public function login_submit(): void
     {
         $this->initWithAuth(false);
         $data = $this->auth->loginByPasswordValidator($this->mjsa, $_POST);
         if (!$data) {
-            return false;
+            return;
         }
         $result = $this->auth->loginByPassword($data['logemail'], $data['password']);
         if ($result->isSuccess()) {
@@ -101,7 +102,7 @@ class AuthController extends BaseController
         }
     }
 
-    public function logout()
+    public function logout(): void
     {
         $this->initWithAuth(false);
         if ($this->auth->user->exist()) {
@@ -110,7 +111,7 @@ class AuthController extends BaseController
         $this->response->location($_SERVER['HTTP_REFERER'] ?? $this->links->main(),true);
     }
 
-    public function confirm_email()
+    public function confirm_email(): void
     {
         $success = $this->auth->confirmToken(
             $this->request->getGet('user_id', ''),
@@ -125,7 +126,7 @@ class AuthController extends BaseController
         }
     }
 
-    public function password_recovery_submit()
+    public function password_recovery_submit(): void
     {
         $this->initWithAuth(false);
         $result = $this->auth->sendPasswordRecoveryByLogemail(
@@ -147,12 +148,91 @@ class AuthController extends BaseController
         }
     }
 
-    public function password_change()
+    public function recovery(): void
     {
         $this->initWithAuth(false);
-        $this->data['user'] = $this->getUserRepository()->getById((int)$this->request->getGet('user_id', ''));
+        $user = $this->getUserRepository()->getById((int)$this->request->getGet('user_id', ''));
+        if (!$user) {
+            $this->errorPageByCode(Response::HTTP_CODE_FORBIDDEN, $this->lang->get('auth_sign:incorrect_id'));
+            return;
+        }
+        $token = $this->request->getGet('token', '');
+        $this->data['user'] = $user;
+        $this->data['email_token'] = $token;
+        if (!$this->auth->isValidToken($user, $token, AuthService::TOKEN_TYPE_RECOVERY)) {
+            $this->errorPageByCode(Response::HTTP_CODE_FORBIDDEN, $this->lang->get('auth_sign:incorrect_token'));
+            return;
+        }
         $this->render($this->auth->getViewsPath() . 'password_change');
     }
+
+    public function user_edit_password_submit(): void
+    {
+        $this->initWithAuth(false);
+        $validatorConfig = [];
+        if (!$this->auth->user->exist()) {
+            $user = $this->getUserRepository()->getById((int)$this->request->getGet('user_id', ''));
+            if (!$user) {
+                $this->mjsa->errorMessage($this->lang->get('auth_sign:incorrect_id'));
+                return;
+            }
+            $token = $this->request->getGet('token', '');
+            if (!$this->auth->isValidToken($user, $token, AuthService::TOKEN_TYPE_RECOVERY)) {
+                $this->mjsa->errorMessage($this->lang->get('auth_sign:incorrect_token'));
+                return;
+            }
+            $this->auth->user = $user;
+        } else {
+            $validatorConfig = array_merge($validatorConfig, [
+                'password' => ['required' => true, 'required_text' => $this->lang->get('auth_sign:recovery_need_old_password')],
+            ]);
+        }
+        $validatorConfig = array_merge($validatorConfig, [
+            'newpassword' => array('required' => true, 'required_text' => $this->lang->get('auth_sign:need_password')),
+            'newpassword_conf' => array('required' => true, 'required_text' => $this->lang->get('auth_sign:need_password_conf')),
+        ]);
+        $pdata = $this->mjsa->validator($_POST, $validatorConfig);
+        if (!$pdata) {
+            return;
+        }
+        if ($pdata['newpassword'] !== $pdata['newpassword_conf']) {
+            $this->mjsa->incorrect('newpassword_conf');
+            $this->mjsa->errorMessage($this->lang->get('auth_sign:incorrect_password_conf'));
+            return;
+        }
+
+        // TODO
+
+        $success = $this->mauth->setNewPasswordByOldPassword($this->data['ui']['id'], $pdata['password'], $pdata['newpassword']);
+        if (!$success) {
+            return $this->mm->mjsaPrintError($this->mauth->getErrorMessage());
+        }
+        $this->mm->mjsaPrintEvent(array(
+            'success' => lang('musers:user_info_changed'), 'reload' => true, 'closePopups' => true,
+        ));
+    }
+
+    public function set_new_password(){
+        $this->mm->request_type = 'mjsa_ajax';
+        $this->initWithAuth(false);
+        $pdata = $this->mm->mjsaValidator($_POST, array(
+            'user_id' => array('required' => true, 'required_text' => lang('mauth.recover.need_more_params')),
+            'token' => array('required' => true, 'required_text' => lang('mauth.recover.need_more_params')),
+            'new_pass' => array('required' => true, 'required_text' => lang('mauth.recover.need_password')),
+            'new_pass_conf' => array('required' => true, 'required_text' => lang('mauth.recover.need_password_conf')),
+        ));
+        if (!$pdata) return false;
+        if ($pdata['new_pass'] !== $pdata['new_pass_conf']){
+            return $this->mm->mjsaPrintError(lang('mauth.recover.incorrect_password_conf').'|{"incorrect":"new_pass_conf"}');
+        }
+        if (!$this->mauth->setNewPasswordByToken($_POST['user_id'], $_POST['token'], $_POST['new_pass'])){
+            return $this->mm->mjsaPrintError($this->mauth->getErrorMessage());
+        }
+        $this->mm->mjsaPrintEvent(array(
+            'redirect' => $this->links->userSettings(), 'closePopups' => true,
+        ));
+    }
+
 
     public function sync_timezone()
     {
@@ -237,73 +317,7 @@ class AuthController extends BaseController
         ));
         //[false][LOGINED][SENDED][REGISTERED/or/$ui]
     }
-    public function user_edit_password_submit(){
-        $this->mm->request_type = 'mjsa_ajax';
-        if (!$this->initWithAuth(true)) return false;
-        $pdata = $this->mm->mjsaValidator($_POST, array(
-            'password' => array('required' => true, 'required_text' => lang('mauth.recover.need_old_password')),
-            'newpassword' => array('required' => true, 'required_text' => lang('mauth.recover.need_password')),
-            'newpassword_conf' => array('required' => true, 'required_text' => lang('mauth.recover.need_password_conf')),
-        ));
-        if (!$pdata) return false;
-        if ($pdata['newpassword'] !== $pdata['newpassword_conf']){
-            return $this->mm->mjsaPrintError(lang('mauth.recover.incorrect_password_conf').'|{"incorrect":"newpassword_conf"}');
-        }
-        $success = $this->mauth->setNewPasswordByOldPassword($this->data['ui']['id'], $pdata['password'], $pdata['newpassword']);
-        if (!$success) {
-            return $this->mm->mjsaPrintError($this->mauth->getErrorMessage());
-        }
-        $this->mm->mjsaPrintEvent(array(
-            'success' => lang('musers:user_info_changed'), 'reload' => true, 'closePopups' => true,
-        ));
-    }
 
-    public function recovery_password_email(){
-        $this->initWithAuth(false);
-        $correct_link = true;
-        if (!isset($_GET['user_id']) || ($_GET['user_id'] == '') || !isset($_GET['token']) || ($_GET['token'] == '')) {
-            $correct_link = false;
-        } else {
-            if(!$this->mauth->confirmToken($_GET['user_id'],'password',$_GET['token'],false)) $correct_link = false;
-        }
-        if (!$correct_link){
-            $this->data['h1'] = '';
-            $this->data['h2'] = lang('mauth.create_new_pass.fail.title');
-            $this->data['p'] = array(
-                lang('mauth.create_new_pass.fail.p1')
-            );
-            $this->data['content_tpl'] = 'mop/text_page.tpl.php';
-            $this->load->view('main.tpl.php',$this->data);
-            return false;
-        }
-
-        // create new password form
-        $this->data['token'] = $_GET['token'];
-        $this->data['user_id'] = $_GET['user_id'];
-        $this->data['content_tpl'] = 'mop/form_recovery_password.tpl.php';
-        $this->load->view('main.tpl.php',$this->data);
-    }
-
-    public function set_new_password(){
-        $this->mm->request_type = 'mjsa_ajax';
-        $this->initWithAuth(false);
-        $pdata = $this->mm->mjsaValidator($_POST, array(
-            'user_id' => array('required' => true, 'required_text' => lang('mauth.recover.need_more_params')),
-            'token' => array('required' => true, 'required_text' => lang('mauth.recover.need_more_params')),
-            'new_pass' => array('required' => true, 'required_text' => lang('mauth.recover.need_password')),
-            'new_pass_conf' => array('required' => true, 'required_text' => lang('mauth.recover.need_password_conf')),
-        ));
-        if (!$pdata) return false;
-        if ($pdata['new_pass'] !== $pdata['new_pass_conf']){
-            return $this->mm->mjsaPrintError(lang('mauth.recover.incorrect_password_conf').'|{"incorrect":"new_pass_conf"}');
-        }
-        if (!$this->mauth->setNewPasswordByToken($_POST['user_id'], $_POST['token'], $_POST['new_pass'])){
-            return $this->mm->mjsaPrintError($this->mauth->getErrorMessage());
-        }
-        $this->mm->mjsaPrintEvent(array(
-            'redirect' => $this->links->userSettings(), 'closePopups' => true,
-        ));
-    }
 
     public function unactive_me(){
         $this->mm->request_type = 'mjsa_ajax';

@@ -1,11 +1,14 @@
 <?php
 namespace CodeHuiter\Core;
 
+use CodeHuiter\Core\Exceptions\ExceptionProcessor;
+
 class Benchmark
 {
     const APP_START = 'AppStart';
 
     private const CLASSES_CACHE_FILE = 'autoload/loadedClasses.php';
+    private const CLASSES_CACHE_FILE_CLEAR_LOG = 'autoload/clearLog.php';
     public const BENCH_MODE_SCRIPT_START = 1;
     public const BENCH_MODE_APP_INIT = 2;
 
@@ -50,8 +53,12 @@ class Benchmark
     public function loadClass($class)
     {
         if ($this->loadedClasses === null) {
-            include_once CACHE_PATH . self::CLASSES_CACHE_FILE;
-            $this->loadedClasses = (isset($loadedClasses) && is_array($loadedClasses)) ? $loadedClasses : [];
+            if (file_exists(CACHE_PATH . self::CLASSES_CACHE_FILE)) {
+                $this->loadedClasses = include CACHE_PATH . self::CLASSES_CACHE_FILE;
+            }
+            if (!is_array($this->loadedClasses)) {
+                $this->loadedClasses = [];
+            }
         }
         if (isset($this->loadedClasses[$class])) {
             include BASE_PATH . $this->loadedClasses[$class];
@@ -61,6 +68,11 @@ class Benchmark
             if (file_exists(CACHE_PATH . self::CLASSES_CACHE_FILE)) {
                 // Invalid cache file
                 unlink(CACHE_PATH . self::CLASSES_CACHE_FILE);
+                file_put_contents(
+                    CACHE_PATH . self::CLASSES_CACHE_FILE_CLEAR_LOG,
+                    "Invalid cache for class [$class] got[{$this->loadedClasses[$class]}]. Log cleared" . ";\n",
+                    LOCK_EX
+                );
             }
         }
         $explodedClass = explode('\\', $class);
@@ -88,9 +100,10 @@ class Benchmark
 
         file_put_contents(
             CACHE_PATH . self::CLASSES_CACHE_FILE,
-            "<?php\n\$loadedClasses = " . var_export($this->loadedClasses, true) . ";\n",
+            "<?php\n return " . var_export($this->loadedClasses, true) . ";\n",
             LOCK_EX
         );
+        return $success;
     }
 
     /**

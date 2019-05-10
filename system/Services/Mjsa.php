@@ -296,43 +296,53 @@ class Mjsa
                 continue;
             }
             if (($options['max_length'] ?? null) && strlen($data) > $options['max_length']) {
-                $this->errorMessage((
+                $this->errorMessage(
                     $options['max_length_text']
                     ?? $this->lang->get('mjsa_validator:max_length',['{#max_length}' => $options['max_length']])
-                ));
+                );
                 $this->incorrect($field);
                 if ($focusOneError) break;
                 else continue;
             }
             if (($options['length'] ?? null) && strlen($data) !== $options['length']) {
-                $this->errorMessage((
+                $this->errorMessage(
                     $options['length_text']
                     ?? $this->lang->get('mjsa_validator:length',['{#length}' => $options['length']])
-                ));
+                );
                 $this->incorrect($field);
                 if ($focusOneError) break;
                 else continue;
             }
             if (($options['email'] ?? null) && !Validator::isValidEmail($data)) {
-                $this->errorMessage((
+                $this->errorMessage(
                     $options['email_text']
                     ?? $this->lang->get('mjsa_validator:email')
-                ));
+                );
                 $this->incorrect($field);
                 if ($focusOneError) break;
                 else continue;
             }
             if (($options['phone_length'] ?? null) && strlen($data) !== $options['phone_length']) {
-                $this->errorMessage((
+                $this->errorMessage(
                     $options['phone_length_text']
                     ?? $this->lang->get(
                         'mjsa_validator:phone_length',
                         ['{#phone_length}' => $options['phone_length']]
                     )
-                ));
+                );
                 $this->incorrect($field);
                 if ($focusOneError) break;
                 else continue;
+            }
+            if (($options['callback'] ?? null) && is_callable($options['callback'])) {
+                $callback = $options['callback'];
+                $callbackResult = $callback($data);
+                if ($callback($data) !== true) {
+                    $this->errorMessage($callbackResult);
+                    $this->incorrect($field);
+                    if ($focusOneError) break;
+                    else continue;
+                }
             }
             $result[$field] = $data;
         }
