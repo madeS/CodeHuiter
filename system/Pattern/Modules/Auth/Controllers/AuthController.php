@@ -113,14 +113,12 @@ class AuthController extends BaseController
 
     public function confirm_email(): void
     {
-        $success = $this->auth->confirmToken(
+        $result = $this->auth->activateEmail(
             $this->request->getGet('user_id', ''),
-            $this->request->getGet('token', ''),
-            'email',
-            true
+            $this->request->getGet('token', '')
         );
-        if (!$success) {
-            $this->errorPageByCode(Response::HTTP_CODE_FORBIDDEN, $this->auth->getErrorMessage());
+        if (!$result->isSuccess()) {
+            $this->errorPageByCode(Response::HTTP_CODE_FORBIDDEN, $result->getMessage());
         } else {
             $this->response->location($this->links->userSettings(), true);
         }

@@ -248,7 +248,7 @@ class AuthService
      * @param int $id
      * @return UserInterface|null
      */
-    protected function getUserById($id): ?UserInterface
+    public function getUserById($id): ?UserInterface
     {
         return $this->userRepository->findOne(['id' => $id]);
     }
@@ -464,6 +464,7 @@ class AuthService
     // @todo when user change email, save old email to datainfo
 
     /**
+     * Controller
      * @param string $logemail
      * @param string $logemailKey
      * @return ClientResult
@@ -674,13 +675,13 @@ class AuthService
     }
 
     /**
-     * @param string $userId
+     * @param UserInterface $user
      * @param string $token
      * @param string $tokenType
      * @param bool $resetToken
-     * @return bool
+     * @return ClientResult
      */
-    public function confirmToken(string $userId, string $token, $tokenType, $resetToken = true): bool
+    public function confirmToken(UserInterface $user, string $token, string $tokenType, bool $resetToken): ClientResult
     {
         $tokenKey = $this->getDataInfoTokenKey($tokenType);
         if (!$tokenKey) {
@@ -688,52 +689,24 @@ class AuthService
                 sprintf('Incorrect token type %s', $tokenType)
             ));
         }
-        $user = $this->userRepository->findOne(['id' => $userId]);
-        if (!$user) {
-            return $this->setErrorMessage($this->lang->get('auth_sign:incorrect_id'));
-        }
         if (!in_array(self::GROUP_NOT_BANNED, $user->getGroups(), true)) {
-            return $this->setErrorMessage($this->lang->get('auth_sign:user_banned'));
+            return ClientResult::createError($this->lang->get('auth_sign:user_banned'));
         }
 
         $userDataInfo = $user->getDataInfo();
         $userToken = ($userDataInfo[$tokenKey] ?? '');
 
         if (!$userToken || $userToken !== $token) {
-            return $this->setErrorMessage($this->lang->get('auth_sign:token_is_incorrect'));
+            return ClientResult::createError($this->lang->get('auth_sign:token_is_incorrect'));
         }
 
         if ($resetToken) {
             unset($userDataInfo[$tokenKey]);
             $user->setDataInfo($userDataInfo);
         }
-        if ($tokenType === 'email') {
-            $usersWithSameEmail = $this->userRepository->find([
-                'email' => $user->getEmail(),
-                'email_conf' => (int)true,
-            ]);
-            if ($usersWithSameEmail) {
-                return $this->setErrorMessage($this->lang->get('auth_sign:already_email_confirmed'));
-            }
-            $user->addGroup(self::GROUP_ACTIVE);
-            $user->setEmailConfirmed(true);
-            $user->saveUser();
-
-            $withSameEmailUnconfirmedUsers = $this->userRepository->find([
-                'email' => $user->getEmail(),
-                'email_conf' => (int)false,
-            ]);
-            foreach ($withSameEmailUnconfirmedUsers as $withSameEmailUnconfirmedUser) {
-                if (!in_array(self::GROUP_ACTIVE, $withSameEmailUnconfirmedUser->getGroups())) {
-                    $withSameEmailUnconfirmedUser->deleteUser();
-                }
-            }
-
-            $this->updateSig($user);
-        }
         $user->saveUser();
 
-        return true;
+        return ClientResult::createSuccess();
     }
 
     /**
@@ -746,6 +719,7 @@ class AuthService
     }
 
     /**
+     * Controller
      * @param UserInterface $user
      * @param mixed $js_timezoneOffset
      * @return int|null
@@ -761,6 +735,97 @@ class AuthService
         $user->saveUser();
 
         return $user->getTimezone();
+    }
+
+    /**
+     * Controller
+     * @param string $userId
+     * @param string $token
+     * @return ClientResult
+     */
+    public function activateEmail(string $userId, string $token): ClientResult
+    {
+        $user = $this->getUserById($userId);
+        if (!$user) return ClientResult::createError($this->lang->get('auth_sign:incorrect_id'));
+        $tokenResult = $this->confirmToken($user,self::TOKEN_TYPE_CONFIRM_EMAIL, $token, true);
+        if (!$tokenResult->isSuccess()) {
+            return ClientResult::createError($tokenResult->getMessage());
+        }
+
+        $usersWithSameEmail = $this->userRepository->find([
+            'email' => $user->getEmail(),
+            'email_conf' => (int)true,
+        ]);
+        if ($usersWithSameEmail) {
+            return ClientResult::createError($this->lang->get('auth_sign:already_email_confirmed'));
+        }
+        $user->addGroup(self::GROUP_ACTIVE);
+        $user->setEmailConfirmed(true);
+        $user->saveUser();
+
+        $withSameEmailUnconfirmedUsers = $this->userRepository->find([
+            'email' => $user->getEmail(),
+            'email_conf' => (int)false,
+        ]);
+        foreach ($withSameEmailUnconfirmedUsers as $withSameEmailUnconfirmedUser) {
+            if (!in_array(self::GROUP_ACTIVE, $withSameEmailUnconfirmedUser->getGroups(), true)) {
+                $withSameEmailUnconfirmedUser->deleteUser();
+            }
+        }
+        $this->updateSig($user);
+    }
+
+    /**
+     * Controller
+     * @param int $userId
+     * @param string $oldPassword
+     * @param string $newPassword
+     * @return ClientResult
+     */
+    public function setNewPasswordByOldPassword(int $userId, string $oldPassword, string $newPassword): ClientResult
+    {
+        $user = $this->getUserById($userId);
+        if (!$user) return ClientResult::createError($this->lang->get('auth_sign:incorrect_id'));
+        if ($oldPassword === '' || !$this->isValidPassword($user, $oldPassword)) {
+            return ClientResult::createIncorrectField($this->lang->get('auth_sign:password_wrong'), 'oldPassword');
+        }
+        return $this->setPassword($user, $newPassword);
+    }
+
+    /**
+     * Controller
+     * @param int $userId
+     * @param string $token
+     * @param string $newPassword
+     * @return ClientResult
+     */
+    public function setNewPasswordByToken(int $userId, string $token, string $newPassword): ClientResult
+    {
+        $user = $this->getUserById($userId);
+        if (!$user) return ClientResult::createError($this->lang->get('auth_sign:incorrect_id'));
+        $tokenResult = $this->confirmToken($user,self::TOKEN_TYPE_RECOVERY, $token, true);
+        if (!$tokenResult->isSuccess()) {
+            return ClientResult::createError($tokenResult->getMessage());
+        }
+        return $this->setPassword($user, $newPassword);
+    }
+
+    /**
+     * Use it in admin page only
+     * @param UserInterface $user
+     * @param string $password
+     * @return ClientResult
+     */
+    public function setPassword(UserInterface $user, string $password): ClientResult
+    {
+        if (!$password) {
+            return ClientResult::createIncorrectField($this->lang->get('auth_sign:empty_password'), 'password');
+        }
+        $passHash = $this->passFunc($user->getLogin(), $user->getEmail(), $password, $this->config->passFuncMethod);
+        $user->setPassHash($passHash);
+        $this->updateSig($user);
+        $user->saveUser();
+        return ClientResult::createSuccess();
     }
 }
 
@@ -1291,34 +1356,7 @@ class Mauth {
             return false;
         }
     }
-    //v3.6
-    public function setNewPasswordByOldPassword($user_id, $password, $newpassword){
-        $ui = $this->getUserRow($user_id);
-        if (!$ui) return $this->setErrorMessage(lang('auth_sign:incorrect_id'));
-        if (($password !== '') && $this->isValidPassword($ui['login'], $ui['email'], $password, $ui['passhash'])){
-            return $this->setPassword($user_id, $newpassword);
-        } else {
-            return $this->setErrorMessage(lang('mauth.login:incorrect_password').'|{"incorrect":"password"}');
-        }
-    }
-    //v3.6
-    public function setNewPasswordByToken($user_id, $token, $newpassword){
-        if($this->confirmToken($user_id,'password', $token, true) === false){
-            return false;
-        } else {
-            return $this->setPassword($user_id, $newpassword);
-        }
-    }
-    //v3.6
-    public function setPassword($ui_or_id, $password){
-        if (!is_array($ui_or_id)) $ui_or_id = $this->getUserRow($ui_or_id);
-        if (!$ui_or_id) return $this->setErrorMessage(lang('auth_sign:incorrect_id'));
-        if (!$password) return $this->setErrorMessage(lang('mauth.recov.empty_password'));
-        $passhash = $this->passFunc($ui_or_id['login'], $ui_or_id['email'], $password);
-        $this->updateUserRow($ui_or_id['id'],array('passhash' => "'$passhash'"));
-        $this->updateSig($ui_or_id);
-        return $ui_or_id;
-    }
+
     //v3.6
     private function updateOauths($defaultUi,$oauth){
         $defaultUi = $this->getUserRow($defaultUi['id']);
