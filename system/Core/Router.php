@@ -5,9 +5,9 @@ namespace CodeHuiter\Core;
 use CodeHuiter\Config\Config;
 use CodeHuiter\Config\RouterConfig;
 use CodeHuiter\Core\Log\AbstractLog;
-use CodeHuiter\Exceptions\CoreCodeHuiterException;
-use CodeHuiter\Exceptions\InvalidConfigException;
-use CodeHuiter\Exceptions\InvalidRequestException;
+use CodeHuiter\Exception\CoreCodeHuiterException;
+use CodeHuiter\Exception\InvalidConfigException;
+use CodeHuiter\Exception\InvalidRequestException;
 
 class Router
 {
@@ -18,10 +18,10 @@ class Router
     protected $config;
 
     /** @var string */
-    protected $directory = APP_PATH . 'Controllers/';
+    protected $directory = APP_PATH . 'Controller/';
 
     /** @var string */
-    protected $namespace = '\\App\\Controllers\\';
+    protected $namespace = '\\App\\Controller\\';
 
     /** @var string $controller */
     protected $controller;
@@ -130,7 +130,8 @@ class Router
     public function setRouting($routeKey, $params)
     {
         if (
-            !isset($this->config->$routeKey['controller'])
+            !isset($this->config->$routeKey)
+            || !isset($this->config->$routeKey['controller'])
             || !isset($this->config->$routeKey['controller_method'])
         ) {
             throw new InvalidConfigException("Not correct exist config.router.{$routeKey} ");
@@ -274,19 +275,19 @@ class Router
             if ($i === 0) {
                 if (strpos($segmentTest, 'APP_MODULE_') === 0) {
                     $moduleName = substr($segmentTest, strlen('APP_MODULE_'));
-                    $this->setDirectory( 'Modules/'.$moduleName.'/Controllers', APP_PATH);
-                    $this->setNamespace('', '\\App\\Modules\\' . $moduleName . '\\Controllers');
+                    $this->setDirectory( 'Module/'.$moduleName.'/Controller', APP_PATH);
+                    $this->setNamespace('', '\\App\\Module\\' . $moduleName . '\\Controller');
                     array_shift($segments);
                     continue;
                 } elseif (strpos($segmentTest, 'SYS_MODULE_PATH_') === 0) {
                     $modulePath = str_replace('_','/',substr($segmentTest, strlen('SYS_MODULE_PATH_')));
-                    $this->setDirectory( $modulePath . '/Controllers', SYSTEM_PATH);
-                    $this->setNamespace($modulePath . '\\Controllers', '\\CodeHuiter\\');
+                    $this->setDirectory( $modulePath . '/Controller', SYSTEM_PATH);
+                    $this->setNamespace($modulePath . '\\Controller', '\\CodeHuiter\\');
                     array_shift($segments);
                     continue;
                 } else {
-                    $this->setDirectory( 'Controllers', APP_PATH);
-                    $this->setNamespace('', '\\App\\Controllers');
+                    $this->setDirectory( 'Controller', APP_PATH);
+                    $this->setNamespace('', '\\App\\Controller');
                 }
             }
             $nameTest = $this->directory . $segmentTest;

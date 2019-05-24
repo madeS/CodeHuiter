@@ -3,7 +3,7 @@
 namespace CodeHuiter\Core\Event;
 
 use CodeHuiter\Core\Application;
-use CodeHuiter\Exceptions\InvalidFlowException;
+use CodeHuiter\Exception\InvalidFlowException;
 
 class ApplicationEventSubscription
 {

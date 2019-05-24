@@ -66,15 +66,15 @@ abstract class Config
         $this->services[self::SERVICE_KEY_REQUEST] = [self::OPT_KEY_CLASS_APP => '\\CodeHuiter\\Core\\Request', self::OPT_KEY_SINGLE => true];
         $this->services[self::SERVICE_KEY_RESPONSE] = [self::OPT_KEY_CLASS_APP => '\\CodeHuiter\\Core\\Response', self::OPT_KEY_SINGLE => true];
         $this->services[self::SERVICE_KEY_ROUTER] = [self::OPT_KEY_CLASS_APP => '\\CodeHuiter\\Core\\Router', self::OPT_KEY_SINGLE => true];
-        $this->services[self::SERVICE_KEY_LOG] = [self::OPT_KEY_CLASS_APP => '\\CodeHuiter\\Services\\Log\\Log', self::OPT_KEY_SINGLE => true];
-        $this->services[self::SERVICE_KEY_CONSOLE] = [self::OPT_KEY_CLASS_APP => '\\CodeHuiter\\Services\\Console', self::OPT_KEY_SINGLE => true];
-        $this->services[self::SERVICE_KEY_DEBUG] = [self::OPT_KEY_CLASS => '\\CodeHuiter\\Services\\Debug', self::OPT_KEY_SINGLE => true];
-        $this->services[self::SERVICE_KEY_EMAIL] = [self::OPT_KEY_CLASS_APP => '\\CodeHuiter\\Services\\Email\\Mailer\\Mailer', self::OPT_KEY_SINGLE => true];
-        $this->services[self::SERVICE_KEY_DATE] = [self::OPT_KEY_CLASS_APP => '\\CodeHuiter\\Services\\DateService', self::OPT_KEY_SINGLE => true];
-        $this->services[self::SERVICE_KEY_LANG] = [self::OPT_KEY_CLASS => '\\CodeHuiter\\Services\\Language', self::OPT_KEY_SINGLE => true];
+        $this->services[self::SERVICE_KEY_LOG] = [self::OPT_KEY_CLASS_APP => '\\CodeHuiter\\Service\\Log\\Log', self::OPT_KEY_SINGLE => true];
+        $this->services[self::SERVICE_KEY_CONSOLE] = [self::OPT_KEY_CLASS_APP => '\\CodeHuiter\\Service\\Console', self::OPT_KEY_SINGLE => true];
+        $this->services[self::SERVICE_KEY_DEBUG] = [self::OPT_KEY_CLASS => '\\CodeHuiter\\Service\\Debug', self::OPT_KEY_SINGLE => true];
+        $this->services[self::SERVICE_KEY_EMAIL] = [self::OPT_KEY_CLASS_APP => '\\CodeHuiter\\Service\\Email\\Mailer\\Mailer', self::OPT_KEY_SINGLE => true];
+        $this->services[self::SERVICE_KEY_DATE] = [self::OPT_KEY_CLASS_APP => '\\CodeHuiter\\Service\\DateService', self::OPT_KEY_SINGLE => true];
+        $this->services[self::SERVICE_KEY_LANG] = [self::OPT_KEY_CLASS => '\\CodeHuiter\\Service\\Language', self::OPT_KEY_SINGLE => true];
         $this->services[self::SERVICE_KEY_MIME_TYPES] = [self::OPT_KEY_CLASS => '\\CodeHuiter\\Config\\Data\\MimeTypes', self::OPT_KEY_SINGLE => true];
-        $this->services[self::SERVICE_KEY_NETWORK] = [self::OPT_KEY_CLASS_APP => '\\CodeHuiter\\Services\\Network', self::OPT_KEY_SINGLE => true];
-        $this->services[self::SERVICE_KEY_HTML_PARSER] = [self::OPT_KEY_CLASS => '\\CodeHuiter\\Services\\HtmlParser\\SimpleHtmlDomParser', self::OPT_KEY_SINGLE => true];
+        $this->services[self::SERVICE_KEY_NETWORK] = [self::OPT_KEY_CLASS_APP => '\\CodeHuiter\\Service\\Network', self::OPT_KEY_SINGLE => true];
+        $this->services[self::SERVICE_KEY_HTML_PARSER] = [self::OPT_KEY_CLASS => '\\CodeHuiter\\Service\\HtmlParser\\SimpleHtmlDomParser', self::OPT_KEY_SINGLE => true];
 
         $this->services[self::SERVICE_KEY_DB] = [self::OPT_KEY_SINGLE => true, self::OPT_KEY_CALLBACK => function(Application $app) {
             return new \CodeHuiter\Database\Drivers\PDODriver(
@@ -170,9 +170,9 @@ class ResponseConfig
 
 class RouterConfig
 {
-    public $error403 = ['controller' => '\\App\\Controllers\\Errors\\Error_Controller', 'controller_method' => 'error403'];
-    public $error404 = ['controller' => '\\App\\Controllers\\Errors\\Error_Controller', 'controller_method' => 'error404'];
-    public $error500 = ['controller' => '\\App\\Controllers\\Errors\\Error_Controller', 'controller_method' => 'error500'];
+    public $error403 = ['controller' => '\\App\\Controller\\Error\\Error_Controller', 'controller_method' => 'error403'];
+    public $error404 = ['controller' => '\\App\\Controller\\Error\\Error_Controller', 'controller_method' => 'error404'];
+    public $error500 = ['controller' => '\\App\\Controller\\Error\\Error_Controller', 'controller_method' => 'error500'];
     public $translateUri = [
         '-' => '_',
         '.' => '_dot_',

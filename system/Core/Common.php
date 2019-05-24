@@ -111,7 +111,7 @@ if ( ! function_exists('show_error'))
      *
      * This function lets us invoke the exception class and
      * display errors using the standard error template located
-     * in application/views/errors/error_general.php
+     * in application/View/error/error_general.php
      * This function will send the error page directly to the
      * browser and exit.
      *
@@ -150,7 +150,7 @@ if ( ! function_exists('_error_handler'))
      */
     function _error_handler($severity, $message, $filePath, $line)
     {
-        \CodeHuiter\Core\Exceptions\ExceptionProcessor::defaultProcessError($severity, $message, $filePath, $line);
+        \CodeHuiter\Core\Exception\ExceptionProcessor::defaultProcessError($severity, $message, $filePath, $line);
     }
 }
 
@@ -161,7 +161,7 @@ if ( ! function_exists('_exception_handler'))
      */
     function _exception_handler($exception)
     {
-        \CodeHuiter\Core\Exceptions\ExceptionProcessor::defaultProcessException($exception);
+        \CodeHuiter\Core\Exception\ExceptionProcessor::defaultProcessException($exception);
     }
 }
 

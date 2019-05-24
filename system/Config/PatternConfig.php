@@ -2,8 +2,6 @@
 
 namespace CodeHuiter\Config;
 
-use CodeHuiter\Core\Application;
-
 class PatternConfig extends Config
 {
     /** @var ProjectConfig */
@@ -67,13 +65,13 @@ class PatternConfig extends Config
         $this->authConfig = new AuthConfig();
         $this->authConfig->cookieDomain = '.' . $this->settingsConfig->domain;
 
-        $this->services[self::SERVICE_KEY_MJSA] = [self::OPT_KEY_SINGLE => true, self::OPT_KEY_CLASS_APP => '\\CodeHuiter\\Services\\Mjsa'];
-        $this->services[self::SERVICE_KEY_COMPRESSOR] = [self::OPT_KEY_SINGLE => true, self::OPT_KEY_CLASS_APP => '\\CodeHuiter\\Services\\Compressor'];
-        $this->services[self::SERVICE_KEY_LINKS] = [self::OPT_KEY_SINGLE => true, self::OPT_KEY_CLASS_APP => '\\App\\Services\\Links'];
-        $this->services[self::SERVICE_KEY_MEDIA] = [self::OPT_KEY_SINGLE => true, self::OPT_KEY_CLASS_APP => '\\CodeHuiter\\Pattern\\Services\\Media'];
-        $this->services[self::SERVICE_KEY_AUTH] = [self::OPT_KEY_SINGLE => true, self::OPT_KEY_CLASS_APP => '\\CodeHuiter\\Pattern\\Modules\\Auth\\AuthService'];
+        $this->services[self::SERVICE_KEY_MJSA] = [self::OPT_KEY_SINGLE => true, self::OPT_KEY_CLASS_APP => '\\CodeHuiter\\Service\\Mjsa'];
+        $this->services[self::SERVICE_KEY_COMPRESSOR] = [self::OPT_KEY_SINGLE => true, self::OPT_KEY_CLASS_APP => '\\CodeHuiter\\Service\\Compressor'];
+        $this->services[self::SERVICE_KEY_LINKS] = [self::OPT_KEY_SINGLE => true, self::OPT_KEY_CLASS_APP => '\\App\\Service\\Link'];
+        $this->services[self::SERVICE_KEY_MEDIA] = [self::OPT_KEY_SINGLE => true, self::OPT_KEY_CLASS_APP => '\\CodeHuiter\\Pattern\\Service\\Media'];
+        $this->services[self::SERVICE_KEY_AUTH] = [self::OPT_KEY_SINGLE => true, self::OPT_KEY_CLASS_APP => '\\CodeHuiter\\Pattern\\Module\\Auth\\AuthService'];
 
-        $this->services[self::SERVICE_USER_REPOSITORY] = [self::OPT_KEY_SINGLE => true, self::OPT_KEY_CLASS_APP => '\\CodeHuiter\\Pattern\\Modules\\Auth\\Models\\UserModelRepository'];
+        $this->services[self::SERVICE_USER_REPOSITORY] = [self::OPT_KEY_SINGLE => true, self::OPT_KEY_CLASS_APP => '\\CodeHuiter\\Pattern\\Module\\Auth\\Model\\UserModelRepository'];
     }
 }
 

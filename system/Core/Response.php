@@ -4,9 +4,9 @@ namespace CodeHuiter\Core;
 
 use CodeHuiter\Config\Config;
 use CodeHuiter\Config\ResponseConfig;
-use CodeHuiter\Core\Exceptions\ExceptionProcessor;
-use CodeHuiter\Exceptions\InvalidConfigException;
-use CodeHuiter\Services\Mjsa;
+use CodeHuiter\Core\Exception\ExceptionProcessor;
+use CodeHuiter\Exception\InvalidConfigException;
+use CodeHuiter\Service\Mjsa;
 
 class Response
 {

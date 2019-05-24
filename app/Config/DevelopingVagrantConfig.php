@@ -14,7 +14,7 @@ class DevelopingVagrantConfig extends DefaultConfig
         $this->defaultDatabaseConfig->username = 'appuser';
         $this->defaultDatabaseConfig->password = 'apppassword';
 
-        $this->compressorConfig->version = '20181109143000';
+        //$this->compressorConfig->version = '20181109143000';
         $this->compressorConfig->version = 'dev';
     }
 }

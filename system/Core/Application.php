@@ -6,11 +6,11 @@ use App\Config\DefaultConfig;
 use CodeHuiter\Config\Config;
 use CodeHuiter\Core\Event\ApplicationEvent;
 use CodeHuiter\Core\Event\ApplicationEventSubscription;
-use CodeHuiter\Core\Exceptions\ExceptionProcessor;
-use CodeHuiter\Core\Exceptions\ExceptionThrower;
-use CodeHuiter\Core\Exceptions\ExceptionThrowerInterface;
-use CodeHuiter\Exceptions\AppContainerException;
-use CodeHuiter\Exceptions\CodeHuiterException;
+use CodeHuiter\Core\Exception\ExceptionProcessor;
+use CodeHuiter\Core\Exception\ExceptionThrower;
+use CodeHuiter\Core\Exception\ExceptionThrowerInterface;
+use CodeHuiter\Exception\AppContainerException;
+use CodeHuiter\Exception\CodeHuiterException;
 
 class Application
 {

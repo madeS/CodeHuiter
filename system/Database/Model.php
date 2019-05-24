@@ -4,7 +4,7 @@ namespace CodeHuiter\Database;
 
 use CodeHuiter\Config\Config;
 use CodeHuiter\Core\Application;
-use CodeHuiter\Services\DateService;
+use CodeHuiter\Service\DateService;
 
 class Model
 {

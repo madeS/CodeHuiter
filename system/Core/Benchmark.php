@@ -1,7 +1,7 @@
 <?php
 namespace CodeHuiter\Core;
 
-use CodeHuiter\Core\Exceptions\ExceptionProcessor;
+use CodeHuiter\Core\Exception\ExceptionProcessor;
 
 class Benchmark
 {

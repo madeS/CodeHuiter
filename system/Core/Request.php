@@ -3,8 +3,8 @@
 namespace CodeHuiter\Core;
 
 use CodeHuiter\Config\RequestConfig;
-use CodeHuiter\Exceptions\InvalidRequestException;
-use CodeHuiter\Exceptions\ServerConfigException;
+use CodeHuiter\Exception\InvalidRequestException;
+use CodeHuiter\Exception\ServerConfigException;
 
 class Request
 {
