@@ -43,7 +43,7 @@ class Compressor
         foreach ($exts as $ext => $resultProp) {
             $outputFile = PUB_PATH . $outputFileTemplate . '.' . $ext;
             if (!file_exists($outputFile) || $this->config->version === 'dev') {
-                $fp = fopen($outputFile, 'w');
+                $fp = fopen($outputFile, 'wb');
                 foreach ($this->config->$ext as $connected) {
                     $connectedExtArr = explode('.',$connected);
                     if (end($connectedExtArr) === 'php') {
