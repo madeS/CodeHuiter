@@ -5,7 +5,8 @@ namespace App\Controller;
 use CodeHuiter\Pattern\Module\Auth\AuthService;
 
 /**
- * @property-read Mauth $mauth
+ * @property-read \CodeHuiter\OldFrameworkAdapter\Service\Mauth $mauth
+ * @property-read \CodeHuiter\OldFrameworkAdapter\Service\Mm $mm
  */
 class LegacyDefaultController extends DefaultController
 {

@@ -2,6 +2,6 @@
 
 namespace App\Controller;
 
-class Main_Controller extends Blog_Controller
+class Main_Controller extends MainQuotar_Controller
 {
 }
