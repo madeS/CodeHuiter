@@ -11,13 +11,14 @@ use CodeHuiter\Core\Exception\ExceptionThrower;
 use CodeHuiter\Core\Exception\ExceptionThrowerInterface;
 use CodeHuiter\Exception\AppContainerException;
 use CodeHuiter\Exception\CodeHuiterException;
+use Exception;
 
 class Application
 {
     /**
      * @var Application $instance
      */
-    protected static $instance = null;
+    protected static $instance;
 
     /**
      * @return Application
@@ -50,6 +51,8 @@ class Application
      */
     protected $subscriptions = [];
 
+    protected $serviceCreateStack = [];
+
     /**
      * Application constructor.
      */
@@ -74,32 +77,37 @@ class Application
      */
     public function get(string $name)
     {
+        if (isset($this->serviceCreateStack[$name])) {
+            $this->fireException(new AppContainerException("Recursive Service [$name] creation found: " . print_r($this->serviceCreateStack, true)));
+        }
+        $this->serviceCreateStack[$name] = true;
+
+        $result = null;
         if(!isset($this->config->services[$name])) {
-            ExceptionProcessor::defaultProcessException(
-                new AppContainerException("Class [$name] not found in services")
-            );
+            $this->fireException(new AppContainerException("Class [$name] not found in services"));
         }
         if (
-            isset($this->container[$name])
-            && isset($this->config->services[$name]['single']) && $this->config->services[$name]['single']
-        ){
-            return $this->container[$name];
-        }
-        if (isset($this->config->services[$name]['callback']) && $this->config->services[$name]['callback']) {
-            $callback = $this->config->services[$name]['callback'];
-            $this->container[$name] = $callback($this);
-        } elseif (isset($this->config->services[$name]['class']) && $this->config->services[$name]['class']) {
-            $class = $this->config->services[$name]['class'];
-            $this->container[$name] = new $class();
-        } elseif (isset($this->config->services[$name]['class_app']) && $this->config->services[$name]['class_app']) {
-            $class = $this->config->services[$name]['class_app'];
-            $this->container[$name] = new $class($this);
-        } else {
-            ExceptionProcessor::defaultProcessException(
-                new AppContainerException("Class [$name] not provide object creation information")
-            );
+            !isset($this->container[$name])
+            || !isset($this->config->services[$name]['single'])
+            || !$this->config->services[$name]['single']
+        ) {
+            if (isset($this->config->services[$name]['callback']) && $this->config->services[$name]['callback']) {
+                $callback = $this->config->services[$name]['callback'];
+                $this->container[$name] = $callback($this);
+            } elseif (isset($this->config->services[$name]['class']) && $this->config->services[$name]['class']) {
+                $class = $this->config->services[$name]['class'];
+                $this->container[$name] = new $class();
+            } elseif (isset($this->config->services[$name]['class_app']) && $this->config->services[$name]['class_app']) {
+                $class = $this->config->services[$name]['class_app'];
+                $this->container[$name] = new $class($this);
+            } else {
+                $this->fireException(
+                    new AppContainerException("Class [$name] not provide object creation information")
+                );
+            }
         }
 
+        unset($this->serviceCreateStack[$name]);
         return $this->container[$name];
     }
 
@@ -151,7 +159,7 @@ class Application
             $this->subscriptions[$event] = [];
         }
         $this->subscriptions[$event][] = new ApplicationEventSubscription($handler, $priority);
-        usort($this->subscriptions[$event], function (ApplicationEventSubscription $a, ApplicationEventSubscription $b) {
+        usort($this->subscriptions[$event], static function (ApplicationEventSubscription $a, ApplicationEventSubscription $b) {
             return !($a->priority <=> $b->priority);
         });
     }
@@ -176,9 +184,9 @@ class Application
     }
 
     /**
-     * @param \Exception $exception
+     * @param Exception $exception
      */
-    public function fireException(\Exception $exception): void
+    public function fireException(Exception $exception): void
     {
         $this->getThrower()->fire($exception);
     }
@@ -206,8 +214,7 @@ class Application
                 ));
             }
             return $result;
-        } else {
-            return $default;
         }
+        return $default;
     }
 }
