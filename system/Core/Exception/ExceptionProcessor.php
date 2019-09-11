@@ -4,7 +4,7 @@ namespace CodeHuiter\Core\Exception;
 
 use CodeHuiter\Config\Config;
 use CodeHuiter\Core\Application;
-use CodeHuiter\Core\Log\AbstractLog;
+use CodeHuiter\Service\Logger;
 use CodeHuiter\Core\Request;
 use CodeHuiter\Core\Response;
 use CodeHuiter\Exception\PhpErrorException;
@@ -47,7 +47,7 @@ class ExceptionProcessor
                     header('HTTP/1.1' . ' ' . 500 . ' ' . Response::$httpCodes[500], TRUE, 500);
                 }
             }
-            /** @var AbstractLog $log */
+            /** @var Logger $log */
             $log = $app->get(Config::SERVICE_KEY_LOG);
             $log->error($exception->getMessage(), ['trace' => $exception->getTraceAsString()], 'exceptions');
 
@@ -78,13 +78,6 @@ class ExceptionProcessor
         $buffer = ob_get_contents();
         ob_end_clean();
         echo $buffer;
-
-        if (false) {
-            // for PhpStorm
-            print_r($exceptions);
-            print_r($show_debug_backtrace);
-        }
-        return;
     }
 
     /**

@@ -165,20 +165,20 @@ class Response
     {
         $this->sendHeaders();
         if ($this->config->profiler) {
-            /** @var Benchmark $benchmark */
-            $benchmark = $this->app->get(Config::SERVICE_KEY_BENCHMARK);
-            $benchmark->mark('ResponseSend');
+            /** @var CodeLoader $loader */
+            $loader = $this->app->get(Config::SERVICE_KEY_LOADER);
+            $loader->benchmarkPoint('ResponseSend');
             if (strpos($this->finalOutput, '{#result_time_table}') !== false) {
-                $this->finalOutput = str_replace('{#result_time_table}', $benchmark->totalTimeTable(), $this->finalOutput);
+                $this->finalOutput = str_replace('{#result_time_table}', $loader->benchmarkTotalTimeTable(), $this->finalOutput);
             }
             if (strpos($this->finalOutput, '{#result_class_table}') !== false) {
-                $this->finalOutput = str_replace('{#result_class_table}', $benchmark->totalLoadedTable(), $this->finalOutput);
+                $this->finalOutput = str_replace('{#result_class_table}', $loader->benchmarkTotalLoadedTable(), $this->finalOutput);
             }
             if (strpos($this->finalOutput, '{#result_time}') !== false) {
-                $this->finalOutput = str_replace('{#result_time}', $benchmark->elapsedString('BEFORE_SEND_RESPONSE'), $this->finalOutput);
+                $this->finalOutput = str_replace('{#result_time}', $loader->benchmarkElapsedString('BEFORE_SEND_RESPONSE'), $this->finalOutput);
             }
             if (strpos($this->finalOutput, '{#result_memory}') !== false) {
-                $this->finalOutput = str_replace('{#result_memory}', $benchmark->memoryString(), $this->finalOutput);
+                $this->finalOutput = str_replace('{#result_memory}', $loader->benchmarkTotalMemoryString(), $this->finalOutput);
             }
         }
 

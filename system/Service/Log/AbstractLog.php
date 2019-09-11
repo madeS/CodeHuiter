@@ -1,11 +1,12 @@
 <?php
 
-namespace CodeHuiter\Core\Log;
+namespace CodeHuiter\Service\Log;
 
 use CodeHuiter\Config\LogConfig;
+use CodeHuiter\Service\Logger;
 use Exception;
 
-abstract class AbstractLog
+abstract class AbstractLog implements Logger
 {
     /**
      * @var LogConfig
@@ -30,6 +31,9 @@ abstract class AbstractLog
 
     protected $traceData;
 
+    /** @var string */
+    protected $tag = '';
+
     /**
      * @param LogConfig $config
      */
@@ -53,7 +57,7 @@ abstract class AbstractLog
         }
     }
 
-    public function addTrace()
+    public function withTrace(): Logger
     {
         $this->traceData = [];
         $e = new Exception;
@@ -61,20 +65,34 @@ abstract class AbstractLog
         foreach($traceArray as $key => $traceArrayValue) {
             $this->traceData['#'.$key] = $traceArrayValue;
         }
+        return $this;
     }
 
-    abstract public function log($message, $context = null, $level = '', $tag = '');
+    public function withTag(string $tag = ''): Logger
+    {
+        $this->tag = $tag;
+        return $this;
+    }
+
+    /**
+     * @param string $message
+     * @param array|null $context
+     * @param string $level
+     * @param string $tag
+     * @return void
+     */
+    abstract public function log(string $message, ?array $context = null, string $level = '', string $tag = ''): void;
 
     /**
      * System is unusable.
      *
      * @param string $message
      * @param mixed $context
-     * @param string $tag
      */
-    public function emergency($message, ?array $context = null, $tag = '')
+    public function emergency(string $message, array $context = []): void
     {
-        $this->log($message, $context, 'emergency', $tag);
+        $this->log($message, $context, 'emergency', $this->tag);
+        $this->tag = '';
     }
 
     //--------------------------------------------------------------------
@@ -87,11 +105,11 @@ abstract class AbstractLog
      *
      * @param string $message
      * @param mixed $context
-     * @param string $tag
      */
-    public function alert($message, ?array $context = null, $tag = '')
+    public function alert(string $message, array $context = []): void
     {
-        $this->log($message, $context, 'alert', $tag);
+        $this->log($message, $context, 'alert', $this->tag);
+        $this->tag = '';
     }
 
     //--------------------------------------------------------------------
@@ -103,11 +121,11 @@ abstract class AbstractLog
      *
      * @param string $message
      * @param mixed $context
-     * @param string $tag
      */
-    public function critical($message, ?array $context = null, $tag = '')
+    public function critical(string $message, array $context = []): void
     {
-        $this->log($message, $context, 'critical', $tag);
+        $this->log($message, $context, 'critical', $this->tag);
+        $this->tag = '';
     }
 
     //--------------------------------------------------------------------
@@ -118,11 +136,11 @@ abstract class AbstractLog
      *
      * @param string $message
      * @param mixed $context
-     * @param string $tag
      */
-    public function error($message, ?array $context = null, $tag = '')
+    public function error(string $message, array $context = []): void
     {
-        $this->log($message, $context, 'error', $tag);
+        $this->log($message, $context, 'error', $this->tag);
+        $this->tag = '';
     }
 
 
@@ -134,11 +152,11 @@ abstract class AbstractLog
      *
      * @param string $message
      * @param mixed $context
-     * @param string $tag
      */
-    public function warning($message, ?array $context = null, $tag = '')
+    public function warning(string $message, array $context = []): void
     {
-        $this->log($message, $context, 'warning', $tag);
+        $this->log($message, $context, 'warning', $this->tag);
+        $this->tag = '';
     }
 
     /**
@@ -146,11 +164,11 @@ abstract class AbstractLog
      *
      * @param string $message
      * @param mixed $context
-     * @param string $tag
      */
-    public function notice($message, ?array $context = null, $tag = '')
+    public function notice(string $message, array $context = []): void
     {
-        $this->log($message, $context, 'notice', $tag);
+        $this->log($message, $context, 'notice', $this->tag);
+        $this->tag = '';
     }
 
     /**
@@ -160,11 +178,11 @@ abstract class AbstractLog
      *
      * @param string $message
      * @param mixed $context
-     * @param string $tag
      */
-    public function info($message, ?array $context = null, $tag = '')
+    public function info(string $message, array $context = []): void
     {
-        $this->log($message, $context, 'info', $tag);
+        $this->log($message, $context, 'info', $this->tag);
+        $this->tag = '';
     }
 
     /**
@@ -172,10 +190,10 @@ abstract class AbstractLog
      *
      * @param string $message
      * @param mixed $context
-     * @param string $tag
      */
-    public function debug($message, ?array $context = null, $tag = '')
+    public function debug(string $message, array $context = []): void
     {
-        $this->log($message, $context, 'debug', $tag);
+        $this->log($message, $context, 'debug', $this->tag);
+        $this->tag = '';
     }
 }

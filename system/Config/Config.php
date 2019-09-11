@@ -4,8 +4,8 @@ namespace CodeHuiter\Config;
 
 use CodeHuiter\Config\Data\MimeTypes;
 use CodeHuiter\Core\Application;
-use CodeHuiter\Core\Benchmark;
-use CodeHuiter\Core\Log\AbstractLog;
+use CodeHuiter\Core\CodeLoader;
+use CodeHuiter\Service\Logger;
 use CodeHuiter\Core\Request;
 use CodeHuiter\Core\Response;
 use CodeHuiter\Core\Router;
@@ -40,7 +40,7 @@ abstract class Config
     public const SERVICE_KEY_REQUEST = 'request';
     public const SERVICE_KEY_RESPONSE = 'response';
     public const SERVICE_KEY_ROUTER = 'router';
-    public const SERVICE_KEY_BENCHMARK = 'benchmark';
+    public const SERVICE_KEY_LOADER = 'loader';
 
     public const SERVICE_KEY_DEBUG = 'debug';
     public const SERVICE_KEY_EMAIL = 'email';
@@ -91,7 +91,7 @@ abstract class Config
         $this->services[self::SERVICE_KEY_CONSOLE] = [self::OPT_KEY_CONFIG_METHOD_APP => 'createServiceConsole', self::OPT_KEY_SINGLE => true];
 
         /** @see Config::createServiceBenchMark() */
-        $this->services[self::SERVICE_KEY_BENCHMARK] = [self::OPT_KEY_CONFIG_METHOD => 'createServiceBenchMark', self::OPT_KEY_SINGLE => true];
+        $this->services[self::SERVICE_KEY_LOADER] = [self::OPT_KEY_CONFIG_METHOD => 'createServiceBenchMark', self::OPT_KEY_SINGLE => true];
 
         /** @see Config::createServiceDate() */
         $this->services[self::SERVICE_KEY_DATE] = [self::OPT_KEY_CONFIG_METHOD => 'createServiceDate', self::OPT_KEY_SINGLE => true];
@@ -147,9 +147,9 @@ abstract class Config
     }
 
     /**
-     * @return AbstractLog
+     * @return Logger
      */
-    public function createServiceLog(): AbstractLog
+    public function createServiceLog(): Logger
     {
         return new Log($this->logConfig);
     }
@@ -165,11 +165,11 @@ abstract class Config
     }
 
     /**
-     * @return Benchmark
+     * @return CodeLoader
      */
-    public function createServiceBenchMark(): Benchmark
+    public function createServiceBenchMark(): CodeLoader
     {
-        return new Benchmark();
+        return new CodeLoader();
     }
 
     /**
@@ -287,14 +287,14 @@ abstract class Config
 
     /**
      * @param Application $application
-     * @return AbstractLog
+     * @return Logger
      * @throws RuntimeAppContainerException
      */
-    protected function getApplicationServiceLog(Application $application): AbstractLog
+    protected function getApplicationServiceLog(Application $application): Logger
     {
         $obj = $application->get(self::SERVICE_KEY_LOG);
-        if (!$obj instanceof AbstractLog) {
-            throw RuntimeAppContainerException::appContainerReturnWrongType(AbstractLog::class, get_class($obj));
+        if (!$obj instanceof Logger) {
+            throw RuntimeAppContainerException::appContainerReturnWrongType(Logger::class, get_class($obj));
         }
         return $obj;
     }
@@ -329,14 +329,14 @@ abstract class Config
 
     /**
      * @param Application $application
-     * @return Benchmark
+     * @return CodeLoader
      * @throws RuntimeAppContainerException
      */
-    protected function getApplicationServiceBenchmark(Application $application): Benchmark
+    protected function getApplicationServiceBenchmark(Application $application): CodeLoader
     {
-        $obj = $application->get(self::SERVICE_KEY_BENCHMARK);
-        if (!$obj instanceof Benchmark) {
-            throw RuntimeAppContainerException::appContainerReturnWrongType(Benchmark::class, get_class($obj));
+        $obj = $application->get(self::SERVICE_KEY_LOADER);
+        if (!$obj instanceof CodeLoader) {
+            throw RuntimeAppContainerException::appContainerReturnWrongType(CodeLoader::class, get_class($obj));
         }
         return $obj;
     }

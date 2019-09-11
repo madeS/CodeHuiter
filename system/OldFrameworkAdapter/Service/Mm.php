@@ -392,7 +392,7 @@ class Mm {
 		$res = $this->dbl->query($query_string);
 		$ret = array();
 		if ($debug || $this->sqlDebug) { 
-			$this->benchmark->mark('m_start');
+			$this->loader->mark('m_start');
 		}
 		foreach ($res->result_array() as $row) {
 			$rower = array();
@@ -411,9 +411,9 @@ class Mm {
 			
 		}
 		if ($debug || $this->sqlDebug) { 
-			$this->benchmark->mark('m_end');
+			$this->loader->mark('m_end');
 			$elapsedDB = end($this->dbl->query_times);
-			$elapsedFM = $this->benchmark->elapsed_time('m_start', 'm_end');
+			$elapsedFM = $this->loader->elapsed_time('m_start', 'm_end');
 			if ($elapsedDB > $this->sqlDebugTime || $elapsedFM > $this->sqlDebugTime || $debug) {
 				$message = "dbSelect:[format_time=".number_format($elapsedFM,6)."]\n:[sql_time=".number_format($elapsedDB, 6)."]\n::[".end($this->dbl->queries)."]";
 				if ($this->sqlDebugPrint || $debug) {
@@ -3142,7 +3142,7 @@ v1.3.7.53 (2013-07-02)
 insertImage: ext opt opt.out_ext
 
 v1.3.6.52
-benchmark html comment 
+loader html comment
 
 v1.3.5.51
 add func: generateRandomString
@@ -3181,7 +3181,7 @@ dbFromStore
 add_func: mjsaError
 
 v1.2.4.42 
-benchmark use in debug db_* funcs
+loader use in debug db_* funcs
 
 v1.2.3.41
 add func: secondsToTimeSimple

@@ -1,16 +1,17 @@
 <?php
 namespace CodeHuiter\Core;
 
-use CodeHuiter\Core\Exception\ExceptionProcessor;
+use Composer\Autoload\ClassLoader;
 
-class Benchmark
+class CodeLoader
 {
     const APP_START = 'AppStart';
 
     private const CLASSES_CACHE_FILE = 'autoload/loadedClasses.php';
     private const CLASSES_CACHE_FILE_CLEAR_LOG = 'autoload/clearLog.php';
-    public const BENCH_MODE_SCRIPT_START = 1;
-    public const BENCH_MODE_APP_INIT = 2;
+    public const BENCH_MODE_NO_BENCH = 0;
+    public const BENCH_MODE_BENCH_TIMES = 1;
+    public const BENCH_MODE_BENCH_TIMES_AND_MEMORY = 2;
 
     public const GET_DEBUG_BENCH_ENABLE = 'debug_bench';
 
@@ -22,7 +23,7 @@ class Benchmark
     /**
      * List of all benchmark markers
      *
-     * @var	array
+     * @var	array <name, microTime>
      */
     protected $times = [];
 
@@ -30,21 +31,23 @@ class Benchmark
 
     protected $results = [];
 
-    /** @var \Composer\Autoload\ClassLoader $autoloader */
+    /** @var ClassLoader $autoloader */
     protected $autoloader;
 
     protected $loadedClasses = null;
 
-    public $benchMode = 0;
-
+    protected $benchMode = self::BENCH_MODE_NO_BENCH;
 
     public function __construct() {
-        $options = getopt("m::");
-        $this->benchMode = $options['m'] ?? 0;
-        $this->mark(self::APP_START);
+        $this->benchmarkPoint(self::APP_START);
     }
 
-    public function setAutoloader(\Composer\Autoload\ClassLoader $autoloader)
+    public function setBenchMode(int $benchMode)
+    {
+        $this->benchMode = $benchMode;
+    }
+
+    public function setAutoloader(ClassLoader $autoloader)
     {
         $this->autoloader = $autoloader;
         spl_autoload_register(array($this, 'loadClass'), true, true);
@@ -60,6 +63,7 @@ class Benchmark
                 $this->loadedClasses = [];
             }
         }
+        //$this->loadedClasses['before_' . $class] = number_format(memory_get_usage(false) / 1024, 2);
         if (isset($this->loadedClasses[$class])) {
             include BASE_PATH . $this->loadedClasses[$class];
             if (class_exists($class) || interface_exists($class)) {
@@ -84,7 +88,9 @@ class Benchmark
         $file = implode(DIRECTORY_SEPARATOR, $explodedClass) . '.php';
 
         $success = false;
-        if (file_exists(BASE_PATH . $file)) {
+        if (!file_exists(BASE_PATH . $file)) {
+            $this->loadedClasses['UNKNOWN_' . $class] = $file;
+        } else {
             include BASE_PATH . $file;
             if (class_exists($class) || interface_exists($class)) {
                 $this->loadedClasses[$class] = $file;
@@ -93,9 +99,6 @@ class Benchmark
                 $this->loadedClasses['INVALID_' . $class] = $file;
                 $success = false;
             }
-        } else {
-            $this->loadedClasses['UNKNOWN_' . $class] = $file;
-            $success = false;
         }
 
         file_put_contents(
@@ -117,7 +120,8 @@ class Benchmark
      * @param string $name Marker name
      * @return void
      */
-    public function mark(string $name) {
+    public function benchmarkPoint(string $name): void
+    {
         $this->times[$name] = microtime(true);
         $this->markers[] = $name;
     }
@@ -130,13 +134,14 @@ class Benchmark
      * @param string $point2
      * @return float
      */
-    public function elapsedTime($point1 = '', $point2 = '') {
+    public function benchmarkElapsedTime($point1 = '', $point2 = ''): float
+    {
         if ($point2 === '') {
             $point2 = $point1;
             $point1 = self::APP_START;
         }
         if (!isset($this->times[$point2])) {
-            $this->mark($point2);
+            $this->benchmarkPoint($point2);
         }
         return $this->times[$point2] - $this->times[$point1];
     }
@@ -149,9 +154,9 @@ class Benchmark
      * @param string $point2
      * @return string
      */
-    public function elapsedString($point1 = '', $point2 = '')
+    public function benchmarkElapsedString($point1 = '', $point2 = ''): string
     {
-        return number_format($this->elapsedTime($point1, $point2), 4);
+        return number_format($this->benchmarkElapsedTime($point1, $point2), 4);
     }
     
     /**
@@ -159,7 +164,7 @@ class Benchmark
      *
      * @return int
      */
-    public function memory()
+    public function benchmarkTotalMemory(): int
     {
         return memory_get_usage(false);
     }
@@ -169,12 +174,12 @@ class Benchmark
      * 
      * @return string
      */
-    public function memoryString()
+    public function benchmarkTotalMemoryString(): string
     {
         return round(memory_get_usage() / 1024 / 1024, 2).' MB';
     }
 
-    protected function generateTimeData()
+    protected function benchmarkGenerateTimeData(): void
     {
         $this->results = [];
         $totalElapsedTime = 0;
@@ -199,13 +204,15 @@ class Benchmark
         }
     }
 
-    protected function getLoadedClasses(){
+    protected function benchmarkGetLoadedClasses(): array
+    {
         return $this->loadedClasses;
     }
 
-    public function totalTimeTable(){
-        $this->mark('BenchmarkEND');
-        $this->generateTimeData();
+    public function benchmarkTotalTimeTable(): string
+    {
+        $this->benchmarkPoint('BenchmarkEND');
+        $this->benchmarkGenerateTimeData();
 
         $ret = '<div style="">';
         $ret .= '    <div style=";">';
@@ -227,9 +234,9 @@ class Benchmark
         return $ret;
     }
 
-    public function totalLoadedTable()
+    public function benchmarkTotalLoadedTable(): string
     {
-        $classes = $this->getLoadedClasses();
+        $classes = $this->benchmarkGetLoadedClasses();
 
         $ret = '<div style="">';
         $ret .= '    <div style=";">';
@@ -237,7 +244,7 @@ class Benchmark
         $ret .= '    </div>';
         foreach ($classes as $class => $result) {
             $ret .= '    <div style=";">';
-            $ret .= '        <div style=" width: 66%; display:inline-block; vertical-align:top;">'. $class .'</div>';
+            $ret .= '        <div style=" width: 66%; display:inline-block; vertical-align:top;">'. $class .' | '  . $result . '</div>';
             $ret .= '    </div>';
         }
         $ret .= '</div>';

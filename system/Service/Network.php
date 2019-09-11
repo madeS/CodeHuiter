@@ -2,7 +2,7 @@
 
 namespace CodeHuiter\Service;
 
-use CodeHuiter\Core\Log\AbstractLog;
+use CodeHuiter\Service\Logger;
 use Throwable;
 
 class Network
@@ -21,11 +21,11 @@ class Network
     ];
 
     /**
-     * @var AbstractLog
+     * @var Logger
      */
     protected $log;
 
-    public function __construct(AbstractLog $log)
+    public function __construct(Logger $log)
     {
         $this->log = $log;
     }
@@ -161,7 +161,7 @@ class Network
             curl_close($ch);
             return $responseCURL;
         } catch (Throwable $ex) {
-            $this->log->warning('Curl Connection Error: ' . $ex->getMessage(), $ex);
+            $this->log->withTag('NETWORK')->warning('Curl Connection Error: ' . $ex->getMessage(), ['exception' => $ex]);
             return null;
         }
     }

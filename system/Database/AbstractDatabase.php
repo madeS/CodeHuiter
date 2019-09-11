@@ -2,11 +2,11 @@
 namespace CodeHuiter\Database;
 
 use CodeHuiter\Config\DatabaseConfig;
-use CodeHuiter\Core\Log\AbstractLog;
+use CodeHuiter\Service\Logger;
 
 abstract class AbstractDatabase
 {
-    /** @var AbstractLog */
+    /** @var Logger */
     protected $log;
 
     protected $benchmarkData = [];
@@ -19,7 +19,7 @@ abstract class AbstractDatabase
 
     protected $isCalculateTime;
 
-    public function __construct(AbstractLog $log, DatabaseConfig $databaseConfig)
+    public function __construct(Logger $log, DatabaseConfig $databaseConfig)
     {
         $this->log = $log;
         $this->isLogIfLonger = $databaseConfig->logIfLonger;
@@ -58,9 +58,10 @@ abstract class AbstractDatabase
             'time_total' => $timeExecute + $timeFormat,
         ];
         if ($this->isLogTrace === true) {
-            $this->log->addTrace();
+            $this->log->withTrace();
         }
-        $this->log->warning("Database query time is {$data['time_total']}", $data, 'DB_QUERY_TIME');
+        $this->log->withTag('DB_QUERY_TIME');
+        $this->log->warning("Database query time is {$data['time_total']}", $data);
     }
 
     /**

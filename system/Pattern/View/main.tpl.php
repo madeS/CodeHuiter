@@ -85,7 +85,7 @@
 
 	<!-- TODO config show only if superuser ??? -->
 	<div id="debug_info">
-        <?php if(($_GET[\CodeHuiter\Core\Benchmark::GET_DEBUG_BENCH_ENABLE] ?? false)):?>
+        <?php if(($_GET[\CodeHuiter\Core\CodeLoader::GET_DEBUG_BENCH_ENABLE] ?? false)):?>
 			{#result_time_table}
 			{#result_class_table}
         <?php endif;?>

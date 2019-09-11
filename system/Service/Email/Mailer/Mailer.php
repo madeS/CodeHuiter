@@ -3,7 +3,7 @@
 namespace CodeHuiter\Service\Email\Mailer;
 
 use CodeHuiter\Config\EmailConfig;
-use CodeHuiter\Core\Log\AbstractLog;
+use CodeHuiter\Service\Logger;
 use CodeHuiter\Exception\TagException;
 use CodeHuiter\Service\DateService;
 use CodeHuiter\Service\Email\AbstractEmail;
@@ -22,10 +22,10 @@ class Mailer extends AbstractEmail
 
     /**
      * @param EmailConfig $config
-     * @param AbstractLog $log
+     * @param Logger $log
      * @param DateService $dateService
      */
-    public function __construct(EmailConfig $config, AbstractLog $log, DateService $dateService)
+    public function __construct(EmailConfig $config, Logger $log, DateService $dateService)
     {
         $this->date = $dateService;
         parent::__construct($config, $log);
@@ -105,15 +105,15 @@ class Mailer extends AbstractEmail
         $this->lastStatusMessage .= isset($sender) ? $sender->printDebugger() : '';
         $toEmailsString = '[' . implode(',', $emails) . ']';
         if (!$success) {
-            $this->log->warning(
+            $this->log->withTag('MAILER')->warning(
                 "Email to $toEmailsString Subject: $subject not sent. " . $this->lastStatusMessage,
-                [], 'MAILER'
+                []
             );
             return false;
         }
-        $this->log->info(
+        $this->log->withTag('MAILER')->info(
             "Sent email to $toEmailsString Subject: $subject",
-            [], 'MAILER'
+            []
         );
         return true;
     }

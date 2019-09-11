@@ -38,7 +38,7 @@ class BaseController extends Controller
     protected function errorPageByCode($code = 404, $message = '')
     {
         try {
-            $this->log->warning('Page '. $code .' showed with uri ['.$this->request->uri.']', [], 'exceptions');
+            $this->log->withTag('exceptions')->warning('Page '. $code .' showed with uri ['.$this->request->uri.']', []);
 
             $this->router->setRouting('error' . $code, [$message]);
             $this->router->execute();
@@ -73,7 +73,7 @@ class BaseController extends Controller
             $this->data['userInfo'] = $this->auth->getDefaultUser();
         }
 
-        $this->benchmark->mark('RenderStart');
+        $this->loader->benchmarkPoint('RenderStart');
         $this->data['patternTemplate'] = SYSTEM_PATH . 'Pattern/View/';
         $this->data['template'] = VIEW_PATH . $this->app->config->projectConfig->template;
         $this->data['headAfterTpl'] = $this->app->config->projectConfig->headAfterTpl;

@@ -2,7 +2,7 @@
 namespace CodeHuiter\Service\Log;
 
 use CodeHuiter\Core\Exception\ExceptionProcessor;
-use CodeHuiter\Core\Log\AbstractLog;
+use Exception;
 
 class Log extends AbstractLog
 {
@@ -12,12 +12,12 @@ class Log extends AbstractLog
      * @param string $level
      * @param string $tag
      */
-    public function log($message, $context = null, $level = '', $tag = '')
+    public function log(string $message, ?array $context = null, string $level = '', string $tag = ''): void
     {
         if ($level === '') {
             $level = $this->defaultLevel;
         }
-        if (!in_array($this->levels[$level], $this->enableLevels)) {
+        if (!in_array($this->levels[$level], $this->enableLevels, true)) {
             return;
         }
 
@@ -39,15 +39,10 @@ class Log extends AbstractLog
      */
     protected function contextToString($message, $context)
     {
-        $result = '';
-        if(is_object($message) || is_array($message)){
-            $result .= print_r($message,true);
-        } else {
-            $result .= (string) $message;
-        }
+        $result = $message;
         if ($context === null) {
 
-        } elseif ($context instanceof \Exception) {
+        } elseif ($context instanceof Exception) {
             $exceptions = ExceptionProcessor::extractExceptions($context);
             foreach($exceptions as $exception) {
                 $result .= "\n\n"
@@ -81,7 +76,7 @@ class Log extends AbstractLog
             $isNewFile = true;
         }
 
-        $fp = fopen($file, 'a');
+        $fp = fopen($file, 'ab');
         flock($fp, LOCK_EX);
         $timeString = '[' . $level . ' | ' . date($this->config->dateFormat) . ']';
         fwrite($fp, $timeString .' '. $message ."\n");

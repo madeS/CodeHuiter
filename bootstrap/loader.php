@@ -9,10 +9,11 @@ define('STORAGE_PATH', BASE_PATH . 'storage/');
 define('VIEW_PATH', APP_PATH . 'View/');
 define('CACHE_PATH', STORAGE_PATH . 'framework/cache/');
 
-require SYSTEM_PATH . 'Core/Benchmark.php';
-$benchmark = new \CodeHuiter\Core\Benchmark();
-
-if ($benchmark->benchMode == \CodeHuiter\Core\Benchmark::BENCH_MODE_SCRIPT_START) exit(0);
+require SYSTEM_PATH . 'Core/CodeLoader.php';
+$benchmark = new \CodeHuiter\Core\CodeLoader();
+if ($_GET['debug_bench'] ?? null) {
+    $benchmark->setBenchMode(\CodeHuiter\Core\CodeLoader::BENCH_MODE_BENCH_TIMES_AND_MEMORY);
+}
 
 /*
 maintenance
@@ -75,6 +76,5 @@ register_shutdown_function('_shutdown_handler');
 // --------------------------------------------------
 
 $app = \CodeHuiter\Core\Application::getInstance();
-$app->set(\CodeHuiter\Config\Config::SERVICE_KEY_BENCHMARK, $benchmark);
-if ($benchmark->benchMode == \CodeHuiter\Core\Benchmark::BENCH_MODE_APP_INIT) exit(0);
+$app->set(\CodeHuiter\Config\Config::SERVICE_KEY_LOADER, $benchmark);
 $app->run();

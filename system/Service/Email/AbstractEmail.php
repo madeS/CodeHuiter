@@ -5,12 +5,12 @@ namespace CodeHuiter\Service\Email;
 use CodeHuiter\Config\Config;
 use CodeHuiter\Config\EmailConfig;
 use CodeHuiter\Core\Application;
-use CodeHuiter\Core\Log\AbstractLog;
+use CodeHuiter\Service\Logger;
 
 abstract class AbstractEmail
 {
     /**
-     * @var AbstractLog
+     * @var Logger
      */
     protected $log;
 
@@ -24,7 +24,7 @@ abstract class AbstractEmail
      */
     protected $lastStatusMessage = '';
 
-    public function __construct(EmailConfig $config, AbstractLog $log)
+    public function __construct(EmailConfig $config, Logger $log)
     {
         $this->log = $log;
         $this->config = $config;

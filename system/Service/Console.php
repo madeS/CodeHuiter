@@ -2,25 +2,20 @@
 
 namespace CodeHuiter\Service;
 
-use CodeHuiter\Config\Config;
-use CodeHuiter\Core\Application;
-use CodeHuiter\Core\Log\AbstractLog;
-
 class Console
 {
     /**
-     * @var AbstractLog|null
+     * @var Logger|null
      */
     protected $log;
 
     /** @var string $clog_out */
     protected $clog_out = '';
 
-    public function __construct(?AbstractLog $log = null)
+    public function __construct(?Logger $log = null)
     {
         $this->log = $log;
     }
-
 
     /**
      * Лог в консоль
@@ -30,9 +25,9 @@ class Console
      */
     public function log($message, $clearLine = false, $endLine = true){
         if ($clearLine){
-            print_r(str_pad('', mb_strlen($this->clog_out), chr(0x08)));
-            print_r(str_pad('', mb_strlen($this->clog_out), ' '));
-            print_r(str_pad('', mb_strlen($this->clog_out), chr(0x08)));
+            print(str_pad('', mb_strlen($this->clog_out), chr(0x08)));
+            print(str_pad('', mb_strlen($this->clog_out), ' '));
+            print(str_pad('', mb_strlen($this->clog_out), chr(0x08)));
             $this->clog_out = '';
         }
         if(is_object($message) || is_array($message)){
@@ -41,19 +36,26 @@ class Console
             $message = (string) $message;
         }
         $this->clog_out .= $message;
-        print_r($message);
+        print($message);
         if ($endLine){
-            print_r("\r\n");
+            print("\r\n");
             $this->clog_out = "";
             if ($this->log) {
-                $this->log->info($message, null, 'console');
+                $this->log->withTag('console')->info($message);
             }
         }
     }
 
 
     protected $startTime = 0;
-    public function progressRemaining($now,$total) {
+
+    /**
+     * @param int $now
+     * @param int $total
+     * @return string
+     */
+    public function progressRemaining(int $now, int $total): string
+    {
         if ($this->startTime === 0 || $now == 0) {
             $this->startTime = microtime(true);
             return '???';

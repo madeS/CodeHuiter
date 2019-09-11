@@ -6,6 +6,7 @@ class PatternConfig extends Config
 {
     /** @var ProjectConfig */
     public $projectConfig;
+
     /** @var CompressorConfig */
     public $compressorConfig;
     /** @var LinksConfig */

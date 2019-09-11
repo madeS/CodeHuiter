@@ -2,9 +2,8 @@
 
 namespace CodeHuiter\Core;
 
-use CodeHuiter\Config\Config;
 use CodeHuiter\Config\RouterConfig;
-use CodeHuiter\Core\Log\AbstractLog;
+use CodeHuiter\Service\Logger;
 use CodeHuiter\Exception\CoreCodeHuiterException;
 use CodeHuiter\Exception\InvalidConfigException;
 use CodeHuiter\Exception\InvalidRequestException;
@@ -38,30 +37,30 @@ class Router
     /** @var Controller $controllerInstance */
     protected $controllerInstance;
 
-    /** @var Benchmark $benchmark  */
-    protected $benchmark;
+    /** @var CodeLoader $loader  */
+    protected $loader;
 
-    /** @var AbstractLog */
+    /** @var Logger */
     protected $log;
 
     /**
      * @param Application $app
      * @param RouterConfig $config
-     * @param AbstractLog $log
+     * @param Logger $log
      * @param Request $request
-     * @param Benchmark $benchmark
+     * @param CodeLoader $loader
      */
     public function __construct(
         Application $app,
         RouterConfig $config,
-        AbstractLog $log,
+        Logger $log,
         Request $request,
-        Benchmark $benchmark
+        CodeLoader $loader
     ) {
         $this->config = $config;
         $this->app = $app;
         $this->request = $request;
-        $this->benchmark = $benchmark;
+        $this->loader = $loader;
         $this->log = $log;
 
         $segments = $this->checkRoutingRewriteSegments();
@@ -103,9 +102,9 @@ class Router
                 }
 
                 // Controller run
-                $this->benchmark->mark('CreateController');
+                $this->loader->benchmarkPoint('CreateController');
                 $this->controllerInstance = new $this->controller($this->app);
-                $this->benchmark->mark('RunController');
+                $this->loader->benchmarkPoint('RunController');
                 $this->controllerInstance->{$this->controllerMethod}(...$this->controllerMethodParams);
 
             } catch (\ReflectionException $exception) {

@@ -7,12 +7,12 @@ use CodeHuiter\Database\AbstractDatabase;
 /**
  * The base controller
  *
- * @property-read Benchmark $benchmark
+ * @property-read CodeLoader $loader
  * @property-read Router $router
  * @property-read Request $request
  * @property-read Response $response
  * @property-read AbstractDatabase $db
- * @property-read \CodeHuiter\Core\Log\AbstractLog $log
+ * @property-read \CodeHuiter\Service\Logger $log
  * @property-read \CodeHuiter\Service\Console $console
  * @property-read \CodeHuiter\Service\Debug $debug
  * @property-read \CodeHuiter\Service\Language $lang
