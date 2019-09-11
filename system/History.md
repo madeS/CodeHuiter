@@ -3,7 +3,8 @@
 
 ## Bench Test History ###
 
-
+v0.1.46.75  - Memory: 531.98KB Real: 2,048.00KB Avg(148): 0.001899 / 0.001282 (CI3_BASE) =  (with method service initializations)
+v0.1.45.74  - Memory: 531.98KB Real: 2,048.00KB Avg(148): 0.001899 / 0.001282 (CI3_BASE) = 
 v0.1.42.65  - Memory: 531.98KB Real: 2,048.00KB Avg(148): 0.001899 / 0.001255 (CI3_BASE) = 1.51
 v0.1.38.57  - Memory: 498.93KB Real: 2,048.00KB Avg(253): 0.001164 / 0.001015 (CI3_BASE) = 1.14 (with autoload cache)
 v0.1.37.56  - Memory: 501.83KB Real: 2,048.00KB Avg(249): 0.001410 / 0.001164 (CI3_BASE) = 1.21 (without db connection)

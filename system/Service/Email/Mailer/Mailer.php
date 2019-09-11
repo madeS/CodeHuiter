@@ -2,8 +2,8 @@
 
 namespace CodeHuiter\Service\Email\Mailer;
 
-use CodeHuiter\Config\Config;
-use CodeHuiter\Core\Application;
+use CodeHuiter\Config\EmailConfig;
+use CodeHuiter\Core\Log\AbstractLog;
 use CodeHuiter\Exception\TagException;
 use CodeHuiter\Service\DateService;
 use CodeHuiter\Service\Email\AbstractEmail;
@@ -21,12 +21,14 @@ class Mailer extends AbstractEmail
     protected $date;
 
     /**
-     * @param Application $application
+     * @param EmailConfig $config
+     * @param AbstractLog $log
+     * @param DateService $dateService
      */
-    public function __construct(Application $application)
+    public function __construct(EmailConfig $config, AbstractLog $log, DateService $dateService)
     {
-        $this->date = $application->get(Config::SERVICE_KEY_DATE);
-        parent::__construct($application);
+        $this->date = $dateService;
+        parent::__construct($config, $log);
     }
 
     /**

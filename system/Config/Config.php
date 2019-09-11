@@ -2,21 +2,46 @@
 
 namespace CodeHuiter\Config;
 
+use CodeHuiter\Config\Data\MimeTypes;
 use CodeHuiter\Core\Application;
+use CodeHuiter\Core\Benchmark;
+use CodeHuiter\Core\Log\AbstractLog;
+use CodeHuiter\Core\Request;
+use CodeHuiter\Core\Response;
+use CodeHuiter\Core\Router;
+use CodeHuiter\Database\AbstractDatabase;
+use CodeHuiter\Database\Drivers\PDODriver;
+use CodeHuiter\Exception\InvalidRequestException;
+use CodeHuiter\Exception\RuntimeAppContainerException;
+use CodeHuiter\Service\Console;
+use CodeHuiter\Service\DateService;
+use CodeHuiter\Service\Debug;
+use CodeHuiter\Service\Email\AbstractEmail;
+use CodeHuiter\Service\Email\Mailer\Mailer;
+use CodeHuiter\Service\HtmlParser\HtmlParserInterface;
+use CodeHuiter\Service\HtmlParser\SimpleHtmlDomParser;
+use CodeHuiter\Service\Language;
+use CodeHuiter\Service\Log\Log;
+use CodeHuiter\Service\Network;
 
 abstract class Config
 {
     public const OPT_KEY_SINGLE = 'single';
+    public const OPT_KEY_CONFIG_METHOD = 'config_method';
+    public const OPT_KEY_CONFIG_METHOD_APP = 'config_method_app';
     public const OPT_KEY_CLASS_APP = 'class_app';
     public const OPT_KEY_CLASS = 'class';
     public const OPT_KEY_CALLBACK = 'callback';
+
+    public const SERVICE_KEY_LOG = 'log';
+    public const SERVICE_KEY_CONSOLE = 'console';
+
 
     public const SERVICE_KEY_REQUEST = 'request';
     public const SERVICE_KEY_RESPONSE = 'response';
     public const SERVICE_KEY_ROUTER = 'router';
     public const SERVICE_KEY_BENCHMARK = 'benchmark';
-    public const SERVICE_KEY_LOG = 'log';
-    public const SERVICE_KEY_CONSOLE = 'console';
+
     public const SERVICE_KEY_DEBUG = 'debug';
     public const SERVICE_KEY_EMAIL = 'email';
     public const SERVICE_KEY_DATE = 'date';
@@ -24,7 +49,7 @@ abstract class Config
     public const SERVICE_KEY_MIME_TYPES = 'mimeTypes';
     public const SERVICE_KEY_NETWORK = 'network';
     public const SERVICE_KEY_HTML_PARSER = 'htmlParser';
-    public const SERVICE_KEY_DB = 'db';
+    public const SERVICE_KEY_DB_DEFAULT = 'db';
 
     /**
      * @var array
@@ -35,18 +60,21 @@ abstract class Config
     public $settingsConfig;
     /** @var FrameworkConfig */
     public $frameworkConfig;
+
+    /** @var LogConfig */
+    public $logConfig;
+    /** @var DateConfig */
+    public $dateConfig;
+    /** @var EmailConfig */
+    public $emailConfig;
+
     /** @var RequestConfig */
     public $requestConfig;
     /** @var ResponseConfig */
     public $responseConfig;
     /** @var RouterConfig */
     public $routerConfig;
-    /** @var LogConfig */
-    public $logConfig;
-    /** @var EmailConfig */
-    public $emailConfig;
-    /** @var DateConfig */
-    public $dateConfig;
+
     /** @var DatabaseConfig */
     public $defaultDatabaseConfig;
 
@@ -54,43 +82,263 @@ abstract class Config
     {
         $this->settingsConfig = new SettingsConfig();
         $this->frameworkConfig = new FrameworkConfig();
-        $this->requestConfig = new RequestConfig();
-        $this->responseConfig = new ResponseConfig();
-        $this->routerConfig = new RouterConfig();
+
+        /** @see Config::createServiceLog() */
+        $this->services[self::SERVICE_KEY_LOG] = [self::OPT_KEY_CONFIG_METHOD => 'createServiceLog', self::OPT_KEY_SINGLE => true];
         $this->logConfig = new LogConfig();
-        $this->emailConfig = new EmailConfig();
+
+        /** @see Config::createServiceConsole() */
+        $this->services[self::SERVICE_KEY_CONSOLE] = [self::OPT_KEY_CONFIG_METHOD_APP => 'createServiceConsole', self::OPT_KEY_SINGLE => true];
+
+        /** @see Config::createServiceBenchMark() */
+        $this->services[self::SERVICE_KEY_BENCHMARK] = [self::OPT_KEY_CONFIG_METHOD => 'createServiceBenchMark', self::OPT_KEY_SINGLE => true];
+
+        /** @see Config::createServiceDate() */
+        $this->services[self::SERVICE_KEY_DATE] = [self::OPT_KEY_CONFIG_METHOD => 'createServiceDate', self::OPT_KEY_SINGLE => true];
         $this->dateConfig = new DateConfig();
+
+        /** @see Config::createServiceDebug() */
+        $this->services[self::SERVICE_KEY_DEBUG] = [self::OPT_KEY_CONFIG_METHOD => 'createServiceDebug', self::OPT_KEY_SINGLE => true];
+
+        /** @see Config::createServiceNetwork() */
+        $this->services[self::SERVICE_KEY_NETWORK] = [self::OPT_KEY_CONFIG_METHOD_APP => 'createServiceNetwork', self::OPT_KEY_SINGLE => true];
+
+        /** @see Config::createServiceMimeTypes() */
+        $this->services[self::SERVICE_KEY_MIME_TYPES] = [self::OPT_KEY_CONFIG_METHOD => 'createServiceMimeTypes', self::OPT_KEY_SINGLE => true];
+
+        /** @see Config::createServiceEmail() */
+        $this->services[self::SERVICE_KEY_EMAIL] = [self::OPT_KEY_CONFIG_METHOD_APP => 'createServiceEmail', self::OPT_KEY_SINGLE => true];
+        $this->emailConfig = new EmailConfig();
+
+        /** @see Config::createServiceLang() */
+        $this->services[self::SERVICE_KEY_LANG] = [self::OPT_KEY_CONFIG_METHOD => 'createServiceLang', self::OPT_KEY_SINGLE => true];
+
+        /** @see Config::createServiceParser() */
+        $this->services[self::SERVICE_KEY_HTML_PARSER] = [self::OPT_KEY_CONFIG_METHOD => 'createServiceParser', self::OPT_KEY_SINGLE => true];
+
+        /** @see Config::createServiceRequest() */
+        $this->services[self::SERVICE_KEY_REQUEST] = [self::OPT_KEY_CONFIG_METHOD => 'createServiceRequest', self::OPT_KEY_SINGLE => true];
+        $this->requestConfig = new RequestConfig();
+
+        /** @see Config::createServiceResponse() */
+        $this->services[self::SERVICE_KEY_RESPONSE] = [self::OPT_KEY_CONFIG_METHOD_APP => 'createServiceResponse', self::OPT_KEY_SINGLE => true];
+        $this->responseConfig = new ResponseConfig();
+
+        /** @see Config::createServiceRouter() */
+        $this->services[self::SERVICE_KEY_ROUTER] = [self::OPT_KEY_CONFIG_METHOD_APP => 'createServiceRouter', self::OPT_KEY_SINGLE => true];
+        $this->routerConfig = new RouterConfig();
+
+        /** @see Config::createServiceDefaultDB() */
+        $this->services[self::SERVICE_KEY_DB_DEFAULT] = [self::OPT_KEY_CONFIG_METHOD_APP => 'createServiceDefaultDB', self::OPT_KEY_SINGLE => true];
         $this->defaultDatabaseConfig = new DatabaseConfig();
-
-        $this->services[self::SERVICE_KEY_BENCHMARK] = [self::OPT_KEY_CLASS => '\\CodeHuiter\\Core\\Benchmark', self::OPT_KEY_SINGLE => true];
-        $this->services[self::SERVICE_KEY_REQUEST] = [self::OPT_KEY_CLASS_APP => '\\CodeHuiter\\Core\\Request', self::OPT_KEY_SINGLE => true];
-        $this->services[self::SERVICE_KEY_RESPONSE] = [self::OPT_KEY_CLASS_APP => '\\CodeHuiter\\Core\\Response', self::OPT_KEY_SINGLE => true];
-        $this->services[self::SERVICE_KEY_ROUTER] = [self::OPT_KEY_CLASS_APP => '\\CodeHuiter\\Core\\Router', self::OPT_KEY_SINGLE => true];
-        $this->services[self::SERVICE_KEY_LOG] = [self::OPT_KEY_CLASS_APP => '\\CodeHuiter\\Service\\Log\\Log', self::OPT_KEY_SINGLE => true];
-        $this->services[self::SERVICE_KEY_CONSOLE] = [self::OPT_KEY_CLASS_APP => '\\CodeHuiter\\Service\\Console', self::OPT_KEY_SINGLE => true];
-        $this->services[self::SERVICE_KEY_DEBUG] = [self::OPT_KEY_CLASS => '\\CodeHuiter\\Service\\Debug', self::OPT_KEY_SINGLE => true];
-        $this->services[self::SERVICE_KEY_EMAIL] = [self::OPT_KEY_CLASS_APP => '\\CodeHuiter\\Service\\Email\\Mailer\\Mailer', self::OPT_KEY_SINGLE => true];
-        $this->services[self::SERVICE_KEY_DATE] = [self::OPT_KEY_CLASS_APP => '\\CodeHuiter\\Service\\DateService', self::OPT_KEY_SINGLE => true];
-        $this->services[self::SERVICE_KEY_LANG] = [self::OPT_KEY_CLASS => '\\CodeHuiter\\Service\\Language', self::OPT_KEY_SINGLE => true];
-        $this->services[self::SERVICE_KEY_MIME_TYPES] = [self::OPT_KEY_CLASS => '\\CodeHuiter\\Config\\Data\\MimeTypes', self::OPT_KEY_SINGLE => true];
-        $this->services[self::SERVICE_KEY_NETWORK] = [self::OPT_KEY_CLASS_APP => '\\CodeHuiter\\Service\\Network', self::OPT_KEY_SINGLE => true];
-        $this->services[self::SERVICE_KEY_HTML_PARSER] = [self::OPT_KEY_CLASS => '\\CodeHuiter\\Service\\HtmlParser\\SimpleHtmlDomParser', self::OPT_KEY_SINGLE => true];
-
-        $this->services[self::SERVICE_KEY_DB] = [self::OPT_KEY_SINGLE => true, self::OPT_KEY_CALLBACK => function(Application $app) {
-            return new \CodeHuiter\Database\Drivers\PDODriver(
-                $app->get(self::SERVICE_KEY_LOG), $app->config->defaultDatabaseConfig
-            );
-        }];
     }
 
-    public function initialize(Application $application)
+    /**
+     * @param Application $app
+     */
+    public function initialize(Application $app): void
     {
         foreach ($this as $key => $value) {
             $config = $this->$key;
             if ($config instanceof InitializedConfig) {
-                $config->initialize($application);
+                $config->initialize($app);
             }
         }
+    }
+
+    /**
+     * @return AbstractLog
+     */
+    public function createServiceLog(): AbstractLog
+    {
+        return new Log($this->logConfig);
+    }
+
+    /**
+     * @param Application $app
+     * @return Console
+     * @throws RuntimeAppContainerException
+     */
+    public function createServiceConsole(Application $app): Console
+    {
+        return new Console($this->getApplicationServiceLog($app));
+    }
+
+    /**
+     * @return Benchmark
+     */
+    public function createServiceBenchMark(): Benchmark
+    {
+        return new Benchmark();
+    }
+
+    /**
+     * @return DateService
+     */
+    public function createServiceDate(): DateService
+    {
+        return new DateService($this->dateConfig);
+    }
+
+    /**
+     * @return Debug
+     */
+    public function createServiceDebug(): Debug
+    {
+        return new Debug();
+    }
+
+    /**
+     * @param Application $app
+     * @return Network
+     * @throws RuntimeAppContainerException
+     */
+    public function createServiceNetwork(Application $app): Network
+    {
+        return new Network($this->getApplicationServiceLog($app));
+    }
+
+    /**
+     * @return MimeTypes
+     */
+    public function createServiceMimeTypes(): MimeTypes
+    {
+        return new MimeTypes();
+    }
+
+    /**
+     * @param Application $app
+     * @return AbstractEmail
+     * @throws RuntimeAppContainerException
+     */
+    public function createServiceEmail(Application $app): AbstractEmail
+    {
+        return new Mailer(
+            $this->emailConfig,
+            $this->getApplicationServiceLog($app),
+            $this->getApplicationServiceDate($app)
+        );
+    }
+
+    /**
+     * @return Language
+     */
+    public function createServiceLang(): Language
+    {
+        return new Language();
+    }
+
+    /**
+     * @return HtmlParserInterface
+     */
+    public function createServiceParser(): HtmlParserInterface
+    {
+        return new SimpleHtmlDomParser();
+    }
+
+    /**
+     * @return Request
+     * @throws InvalidRequestException
+     * @throws \CodeHuiter\Exception\ServerConfigException
+     */
+    public function createServiceRequest(): Request
+    {
+        return new Request($this->requestConfig);
+    }
+
+    /**
+     * @param Application $app
+     * @return Response
+     * @throws RuntimeAppContainerException
+     */
+    public function createServiceResponse(Application $app): Response
+    {
+        return new Response($app, $this->responseConfig, $this->getApplicationServiceRequest($app));
+    }
+
+    /**
+     * @param Application $app
+     * @return Router
+     * @throws RuntimeAppContainerException
+     */
+    public function createServiceRouter(Application $app) : Router
+    {
+        return new Router(
+            $app,
+            $this->routerConfig,
+            $this->getApplicationServiceLog($app),
+            $this->getApplicationServiceRequest($app),
+            $this->getApplicationServiceBenchmark($app)
+        );
+    }
+
+    /**
+     * @param Application $app
+     * @return AbstractDatabase
+     * @throws RuntimeAppContainerException
+     */
+    public function createServiceDefaultDB(Application $app): AbstractDatabase
+    {
+        return new PDODriver(
+            $this->getApplicationServiceLog($app),
+            $this->defaultDatabaseConfig
+        );
+    }
+
+    /**
+     * @param Application $application
+     * @return AbstractLog
+     * @throws RuntimeAppContainerException
+     */
+    protected function getApplicationServiceLog(Application $application): AbstractLog
+    {
+        $obj = $application->get(self::SERVICE_KEY_LOG);
+        if (!$obj instanceof AbstractLog) {
+            throw RuntimeAppContainerException::appContainerReturnWrongType(AbstractLog::class, get_class($obj));
+        }
+        return $obj;
+    }
+
+    /**
+     * @param Application $application
+     * @return DateService
+     * @throws RuntimeAppContainerException
+     */
+    protected function getApplicationServiceDate(Application $application): DateService
+    {
+        $obj = $application->get(self::SERVICE_KEY_DATE);
+        if (!$obj instanceof DateService) {
+            throw RuntimeAppContainerException::appContainerReturnWrongType(DateService::class, get_class($obj));
+        }
+        return $obj;
+    }
+
+    /**
+     * @param Application $application
+     * @return Request
+     * @throws RuntimeAppContainerException
+     */
+    protected function getApplicationServiceRequest(Application $application): Request
+    {
+        $obj = $application->get(self::SERVICE_KEY_REQUEST);
+        if (!$obj instanceof Request) {
+            throw RuntimeAppContainerException::appContainerReturnWrongType(Request::class, get_class($obj));
+        }
+        return $obj;
+    }
+
+    /**
+     * @param Application $application
+     * @return Benchmark
+     * @throws RuntimeAppContainerException
+     */
+    protected function getApplicationServiceBenchmark(Application $application): Benchmark
+    {
+        $obj = $application->get(self::SERVICE_KEY_BENCHMARK);
+        if (!$obj instanceof Benchmark) {
+            throw RuntimeAppContainerException::appContainerReturnWrongType(Benchmark::class, get_class($obj));
+        }
+        return $obj;
     }
 }
 

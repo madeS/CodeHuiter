@@ -36,7 +36,7 @@ class AuthController extends BaseController
                 $this->response->render($this->auth->getViewsPath() . 'login', $this->data, true),
                 'authPopup',
                 ['maxWidth' => 600, 'close' => true,]
-            );
+            )->send();
         } else {
             $this->render($this->auth->getViewsPath() . 'login');
         }
@@ -54,21 +54,20 @@ class AuthController extends BaseController
         $result = $this->auth->registerByEmail($data['email'], $data['password'], $data['login'], $targetUi);
         if ($result->isSuccess()) {
             //$this->mjsa->successMessage($result->getMessage());
-            $this->mjsa->closePopups();
-            $this->mjsa->reload();
+            $this->mjsa->closePopups()->reload()->send();
         } elseif ($result->isSpecific() && isset($result->getFields()['confirmation'])) {
             $this->mjsa->formReplace($this->response->render(
                 $this->auth->getViewsPath() . 'formMessage',
                 ['message' => $result->getMessage(), 'messageType' => 'success'],
                 true
-            ));
+            ))->send();
         } else {
             if ($result->isIncorrectField()) {
                 foreach ($result->getFields() as $field) {
                     $this->mjsa->incorrect($field);
                 }
             }
-            $this->mjsa->errorMessage($result->getMessage());
+            $this->mjsa->errorMessage($result->getMessage())->send();
         }
     }
 
@@ -81,7 +80,7 @@ class AuthController extends BaseController
         }
         $result = $this->auth->loginByPassword($data['logemail'], $data['password']);
         if ($result->isSuccess()) {
-            $this->mjsa->closePopups();
+            $this->mjsa->closePopups()->send();
             echo '<script>'
                 . 'if ($(".regauth_form_container .continue_url").val()) location.reload();'
                 . 'else mjsa.bodyUpdate();'
@@ -91,19 +90,22 @@ class AuthController extends BaseController
                 $this->auth->getViewsPath() . 'formMessage',
                 ['message' => $result->getMessage(), 'messageType' => 'success'],
                 true
-            ));
+            ))->send();
         } else {
             if ($result->isIncorrectField()) {
                 foreach ($result->getFields() as $field) {
                     $this->mjsa->incorrect($field);
                 }
             }
-            $this->mjsa->errorMessage($result->getMessage());
+            $this->mjsa->errorMessage($result->getMessage())->send();
         }
     }
 
     public function logout(): void
     {
+        /**
+         * TODO only POST request allow
+         */
         $this->initWithAuth(false);
         if ($this->auth->user->exist()) {
             $this->auth->resetSig($this->auth->user, true);
@@ -126,6 +128,9 @@ class AuthController extends BaseController
 
     public function password_recovery_submit(): void
     {
+        /**
+         * TODO csrf tocken implement for all post requests
+         */
         $this->initWithAuth(false);
         $result = $this->auth->sendPasswordRecoveryByLogemail(
             $this->request->getPost('logemail', '')
@@ -135,14 +140,14 @@ class AuthController extends BaseController
                 $this->auth->getViewsPath() . 'formMessage',
                 ['message' => $this->lang->get('auth_sign:recovery_link_sent'), 'messageType' => 'success'],
                 true
-            ));
+            ))->send();
         } else {
             if ($result->isIncorrectField()) {
                 foreach ($result->getFields() as $field) {
                     $this->mjsa->incorrect($field);
                 }
             }
-            $this->mjsa->errorMessage($result->getMessage());
+            $this->mjsa->errorMessage($result->getMessage())->send();
         }
     }
 
@@ -171,12 +176,12 @@ class AuthController extends BaseController
         if (!$this->auth->user->exist()) {
             $user = $this->getUserRepository()->getById((int)$this->request->getGet('user_id', ''));
             if (!$user) {
-                $this->mjsa->errorMessage($this->lang->get('auth_sign:incorrect_id'));
+                $this->mjsa->errorMessage($this->lang->get('auth_sign:incorrect_id'))->send();
                 return;
             }
             $token = $this->request->getGet('token', '');
             if (!$this->auth->isValidToken($user, $token, AuthService::TOKEN_TYPE_RECOVERY)) {
-                $this->mjsa->errorMessage($this->lang->get('auth_sign:incorrect_token'));
+                $this->mjsa->errorMessage($this->lang->get('auth_sign:incorrect_token'))->send();
                 return;
             }
             $this->auth->user = $user;
@@ -194,8 +199,10 @@ class AuthController extends BaseController
             return;
         }
         if ($pdata['newpassword'] !== $pdata['newpassword_conf']) {
-            $this->mjsa->incorrect('newpassword_conf');
-            $this->mjsa->errorMessage($this->lang->get('auth_sign:incorrect_password_conf'));
+            $this->mjsa
+                ->incorrect('newpassword_conf')
+                ->errorMessage($this->lang->get('auth_sign:incorrect_password_conf'))
+                ->send();
             return;
         }
 
@@ -203,12 +210,12 @@ class AuthController extends BaseController
 
         $success = $this->mauth->setNewPasswordByOldPassword($this->data['ui']['id'], $pdata['password'], $pdata['newpassword']);
         if (!$success) {
-            $this->mm->mjsaPrintError($this->mauth->getErrorMessage());
+            $this->mm->mjsaPrintError($this->mauth->getErrorMessage())->send();
             return;
         }
         $this->mm->mjsaPrintEvent(array(
             'success' => lang('musers:user_info_changed'), 'reload' => true, 'closePopups' => true,
-        ));
+        ))->send();
     }
 
     public function set_new_password(){
@@ -246,7 +253,7 @@ class AuthController extends BaseController
         $timeStr = $this->date->fromTime()->forUser($this->auth->user)->toFormat('H:i:s',false,true);
         $this->mjsa->successMessage(
             $this->lang->get('auth_actions:timezone_synced', ['{#time}' => $timeStr])
-        );
+        )->send();
 
         echo '<script>'
             . '$("#body_cont").attr("data-timezoneoffset","'.$timzoneOffset.'");'

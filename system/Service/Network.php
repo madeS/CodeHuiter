@@ -2,9 +2,8 @@
 
 namespace CodeHuiter\Service;
 
-use CodeHuiter\Config\Config;
-use CodeHuiter\Core\Application;
 use CodeHuiter\Core\Log\AbstractLog;
+use Throwable;
 
 class Network
 {
@@ -26,9 +25,9 @@ class Network
      */
     protected $log;
 
-    public function __construct(Application $application)
+    public function __construct(AbstractLog $log)
     {
-        $this->log = $application->get(Config::SERVICE_KEY_LOG);
+        $this->log = $log;
     }
 
     /**
@@ -95,7 +94,7 @@ class Network
             if (!empty($options['referer'])){
                 curl_setopt($ch, CURLOPT_REFERER, $options['referer']);
             }
-            if (isset($options['encoding']) && $options['encoding'] == 'gzip'){
+            if (isset($options['encoding']) && $options['encoding'] === 'gzip'){
                 curl_setopt($ch, CURLOPT_ENCODING, "gzip");
             }
             if ($method == self::METHOD_POST) {
@@ -114,7 +113,9 @@ class Network
                     curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, TRUE);
                     curl_setopt($ch, CURLOPT_CAINFO, $options['ssl']);
                 } else {
+                    /** @noinspection CurlSslServerSpoofingInspection */
                     curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+                    /** @noinspection CurlSslServerSpoofingInspection */
                     curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
                     curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_ANY);
                 }
@@ -136,7 +137,7 @@ class Network
             $verbose = null;
             if (!empty($options['debug'])){
                 curl_setopt($ch, CURLOPT_VERBOSE, true);
-                $verbose = fopen('php://temp', 'w+');
+                $verbose = fopen('php://temp', 'wb+');
                 curl_setopt($ch, CURLOPT_STDERR, $verbose);
                 //$type = curl_multi_getcontent($ch)
             }
@@ -159,7 +160,7 @@ class Network
             }
             curl_close($ch);
             return $responseCURL;
-        } catch (\Throwable $ex) {
+        } catch (Throwable $ex) {
             $this->log->warning('Curl Connection Error: ' . $ex->getMessage(), $ex);
             return null;
         }

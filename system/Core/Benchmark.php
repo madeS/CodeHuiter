@@ -70,8 +70,8 @@ class Benchmark
                 unlink(CACHE_PATH . self::CLASSES_CACHE_FILE);
                 file_put_contents(
                     CACHE_PATH . self::CLASSES_CACHE_FILE_CLEAR_LOG,
-                    "Invalid cache for class [$class] got[{$this->loadedClasses[$class]}]. Log cleared" . ";\n",
-                    LOCK_EX
+                    "Invalid cache for class [$class] got[{$this->loadedClasses[$class]}]. File cleared" . ";\n",
+                    FILE_APPEND
                 );
             }
         }
@@ -102,6 +102,11 @@ class Benchmark
             CACHE_PATH . self::CLASSES_CACHE_FILE,
             "<?php\n return " . var_export($this->loadedClasses, true) . ";\n",
             LOCK_EX
+        );
+        file_put_contents(
+            CACHE_PATH . self::CLASSES_CACHE_FILE_CLEAR_LOG,
+            gmdate ('Y-m-d H:i:s') . ": Added $class class;\n",
+            FILE_APPEND
         );
         return $success;
     }

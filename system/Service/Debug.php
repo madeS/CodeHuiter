@@ -17,8 +17,10 @@ class Debug
             echo '<pre>';
         }
         if ($detail) {
+            /** @noinspection ForgottenDebugOutputInspection */
             var_dump($obj);
         } else {
+            /** @noinspection ForgottenDebugOutputInspection */
             print_r($obj);
         }
         if ($isHtml) {

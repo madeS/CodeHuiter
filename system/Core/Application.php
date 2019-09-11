@@ -88,17 +88,23 @@ class Application
         }
         if (
             !isset($this->container[$name])
-            || !isset($this->config->services[$name]['single'])
-            || !$this->config->services[$name]['single']
+            || !isset($this->config->services[$name][Config::OPT_KEY_SINGLE])
+            || !$this->config->services[$name][Config::OPT_KEY_SINGLE]
         ) {
-            if (isset($this->config->services[$name]['callback']) && $this->config->services[$name]['callback']) {
-                $callback = $this->config->services[$name]['callback'];
+            if (isset($this->config->services[$name][Config::OPT_KEY_CONFIG_METHOD]) && $this->config->services[$name][Config::OPT_KEY_CONFIG_METHOD]) {
+                $configMethod = $this->config->services[$name][Config::OPT_KEY_CONFIG_METHOD];
+                $this->container[$name] = $this->config->$configMethod();
+            } elseif (isset($this->config->services[$name][Config::OPT_KEY_CONFIG_METHOD_APP]) && $this->config->services[$name][Config::OPT_KEY_CONFIG_METHOD_APP]) {
+                $configMethod = $this->config->services[$name][Config::OPT_KEY_CONFIG_METHOD_APP];
+                $this->container[$name] = $this->config->$configMethod($this);
+            } elseif (isset($this->config->services[$name][Config::OPT_KEY_CALLBACK]) && $this->config->services[$name][Config::OPT_KEY_CALLBACK]) {
+                $callback = $this->config->services[$name][Config::OPT_KEY_CALLBACK];
                 $this->container[$name] = $callback($this);
-            } elseif (isset($this->config->services[$name]['class']) && $this->config->services[$name]['class']) {
-                $class = $this->config->services[$name]['class'];
+            } elseif (isset($this->config->services[$name][Config::OPT_KEY_CLASS]) && $this->config->services[$name][Config::OPT_KEY_CLASS]) {
+                $class = $this->config->services[$name][Config::OPT_KEY_CLASS];
                 $this->container[$name] = new $class();
-            } elseif (isset($this->config->services[$name]['class_app']) && $this->config->services[$name]['class_app']) {
-                $class = $this->config->services[$name]['class_app'];
+            } elseif (isset($this->config->services[$name][Config::OPT_KEY_CLASS_APP]) && $this->config->services[$name][Config::OPT_KEY_CLASS_APP]) {
+                $class = $this->config->services[$name][Config::OPT_KEY_CLASS_APP];
                 $this->container[$name] = new $class($this);
             } else {
                 $this->fireException(

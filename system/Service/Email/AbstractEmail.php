@@ -24,10 +24,10 @@ abstract class AbstractEmail
      */
     protected $lastStatusMessage = '';
 
-    public function __construct(Application $application)
+    public function __construct(EmailConfig $config, AbstractLog $log)
     {
-        $this->log = $application->get(Config::SERVICE_KEY_LOG);
-        $this->config = $application->config->emailConfig;
+        $this->log = $log;
+        $this->config = $config;
     }
 
     public function getLastStatusMessage()

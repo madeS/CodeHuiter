@@ -24,4 +24,41 @@ class Test_Controller extends BaseController
     {
         echo "This is get method of test controller with data1 = $data1; and data2 = $data2";
     }
+
+    public function prop()
+    {
+        $prop = 0.04;
+        $total = 1;
+        $fail = 1;
+
+        $totalCount = 0;
+        $totalFailed = 0;
+        while (true) {
+            $iterationFailed = 0;
+            for ($i = 0; $i < $total; $i++) {
+                if($this->getRandomResultWithProp($prop)) {
+                    $iterationFailed++;
+                }
+            }
+
+            if ($iterationFailed >= $fail) {
+                $totalFailed++;
+            }
+            $totalCount++;
+
+            $failedNum = number_format(($totalFailed/$totalCount) * 100, 3);
+            $this->console->log("Result: $failedNum % ... (for $totalCount)", true, false);
+        }
+    }
+
+    private function getRandomResultWithProp(float $prop): bool
+    {
+        $max = 100;
+        $rand = random_int(0, $max - 1);
+        if ($rand/$max < $prop) {
+            return true;
+        }
+        return false;
+    }
+
 }

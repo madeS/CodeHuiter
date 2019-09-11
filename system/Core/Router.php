@@ -46,14 +46,23 @@ class Router
 
     /**
      * @param Application $app
+     * @param RouterConfig $config
+     * @param AbstractLog $log
+     * @param Request $request
+     * @param Benchmark $benchmark
      */
-    public function __construct(Application $app)
-    {
-        $this->config = $app->config->routerConfig;
+    public function __construct(
+        Application $app,
+        RouterConfig $config,
+        AbstractLog $log,
+        Request $request,
+        Benchmark $benchmark
+    ) {
+        $this->config = $config;
         $this->app = $app;
-        $this->request = $app->get(Config::SERVICE_KEY_REQUEST);
-        $this->benchmark = $app->get(Config::SERVICE_KEY_BENCHMARK);
-        $this->log = $app->get(Config::SERVICE_KEY_LOG);
+        $this->request = $request;
+        $this->benchmark = $benchmark;
+        $this->log = $log;
 
         $segments = $this->checkRoutingRewriteSegments();
         if ($segments === null) {

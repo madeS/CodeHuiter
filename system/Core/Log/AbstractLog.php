@@ -3,7 +3,7 @@
 namespace CodeHuiter\Core\Log;
 
 use CodeHuiter\Config\LogConfig;
-use CodeHuiter\Core\Application;
+use Exception;
 
 abstract class AbstractLog
 {
@@ -31,11 +31,11 @@ abstract class AbstractLog
     protected $traceData;
 
     /**
-     * @param Application $application
+     * @param LogConfig $config
      */
-    public function __construct(Application $application)
+    public function __construct(LogConfig $config)
     {
-        $this->config = $application->config->logConfig;
+        $this->config = $config;
         $this->defaultLevel = $this->config->defaultLevel ?? 'debug';
 
         $this->enableLevels = [];
@@ -56,7 +56,7 @@ abstract class AbstractLog
     public function addTrace()
     {
         $this->traceData = [];
-        $e = new \Exception;
+        $e = new Exception;
         $traceArray = explode("\n",$e->getTraceAsString());
         foreach($traceArray as $key => $traceArrayValue) {
             $this->traceData['#'.$key] = $traceArrayValue;

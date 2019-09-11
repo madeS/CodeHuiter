@@ -19,6 +19,9 @@ use CodeHuiter\Service\Email\AbstractEmail;
 use CodeHuiter\Service\Language;
 use CodeHuiter\Service\Mjsa;
 
+/**
+ * TODO Add max 10 logins per minute
+ */
 class AuthService
 {
     const MODULE_PATH = 'Pattern/Module/Auth/';

@@ -10,14 +10,14 @@ class Error_Controller extends Controller
     {
         echo 'This is error 403';
 
-        echo 'Additional Message: ' . $message;
+        echo '<br/><br/>Additional Message: ' . $message;
     }
 
     public function error404($message)
     {
         echo 'This is error 404';
 
-        echo 'Additional Message: ' . $message;
+        echo '<br/><br/>Additional Message: ' . $message;
     }
 
     public function error500($exception)

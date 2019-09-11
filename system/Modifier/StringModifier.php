@@ -50,9 +50,25 @@ class StringModifier
         return mb_strpos($haystack, $needle, $offset, self::CHARSET);
     }
 
-    public static function toHtml(string $string): string
+    /**
+     * Filter risk content from HTML string to insert to HTML
+     * @param string $string
+     * @return string
+     */
+    public static function htmlForHtml(string $string): string
     {
-        return htmlspecialchars($string);
+        // use HTMLPurifier
+        return $string;
+    }
+
+    /**
+     * Filter risk content from non HTML string to insert to HTML
+     * @param string $string
+     * @return string
+     */
+    public static function textForHtml(string $string): string
+    {
+        return htmlspecialchars($string, ENT_QUOTES | ENT_SUBSTITUTE, self::CHARSET);
     }
 
     public static function fromHtml(string $string): string

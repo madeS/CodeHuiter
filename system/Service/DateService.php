@@ -25,9 +25,9 @@ class DateService
     protected $outTimezone = null;
     protected $utcAppend = null;
 
-    public function __construct(Application $application)
+    public function __construct(DateConfig $dateConfig)
     {
-        $this->config = $application->config->dateConfig;
+        $this->config = $dateConfig;
         $this->now = time();
     }
 

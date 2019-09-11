@@ -8,6 +8,9 @@ use CodeHuiter\Core\Exception\ExceptionProcessor;
 use CodeHuiter\Exception\InvalidConfigException;
 use CodeHuiter\Service\Mjsa;
 
+/**
+ * TODO split response and html renderer
+ */
 class Response
 {
     /** @var array */
@@ -34,13 +37,15 @@ class Response
 
     /**
      * @param Application $app
+     * @param ResponseConfig $config
+     * @param Request $request
      */
-    public function __construct(Application $app)
+    public function __construct(Application $app, ResponseConfig $config, Request $request)
     {
         $this->initLevel = ob_get_level();
         $this->app = $app;
-        $this->config = $app->config->responseConfig;
-        $this->request = $this->app->get(Config::SERVICE_KEY_REQUEST);
+        $this->config = $config;
+        $this->request = $request;
     }
 
     public function getRealViewFile($viewFile)
@@ -123,6 +128,11 @@ class Response
         $this->finalHeaders[trim($headerArr[0])] = [$headerString];
     }
 
+    public function denyIframe(): void
+    {
+        $this->setHeader('X-Frame-Options: DENY');
+    }
+
     /**
      * @param $extensionOrFilename
      * @param string | null $charset null - Not send charset, 'default' - default response charset
@@ -137,21 +147,23 @@ class Response
         $this->setHeader($mimeTypes->getTypeHeader($extensionOrFilename, $charset));
     }
 
-    public function setCookie($name, $value, $expireTime, $path, $domain)
+    public function setCookie($name, $value, $expireTime, $path, $domain): void
     {
         setcookie($name, $value, $expireTime, $path, $domain);
     }
 
-    protected function sendHeaders()
+    public function sendHeaders(): void
     {
         foreach ($this->finalHeaders as $header) {
-
+            header($header);
         }
+        $this->finalHeaders = [];
     }
 
 
-    public function send()
+    public function send(): void
     {
+        $this->sendHeaders();
         if ($this->config->profiler) {
             /** @var Benchmark $benchmark */
             $benchmark = $this->app->get(Config::SERVICE_KEY_BENCHMARK);
@@ -214,6 +226,7 @@ class Response
      */
     public function location($url, $temperatory = false){
         if ($this->request->isMjsaAJAX()) {
+            /** TODO Remove that */
             /** @var Mjsa $mjsaService */
             $mjsaService = $this->app->get('mjsa');
             $mjsaService->location($url, true);

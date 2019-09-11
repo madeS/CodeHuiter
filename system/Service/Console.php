@@ -16,9 +16,9 @@ class Console
     /** @var string $clog_out */
     protected $clog_out = '';
 
-    public function __construct(Application $application)
+    public function __construct(?AbstractLog $log = null)
     {
-        $this->log = $application->get(Config::SERVICE_KEY_LOG);
+        $this->log = $log;
     }
 
 

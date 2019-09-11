@@ -27,13 +27,13 @@ class Request
     protected $config;
 
     /**
-     * @param Application $application
+     * @param RequestConfig $config
      * @throws InvalidRequestException
      * @throws ServerConfigException
      */
-    public function __construct(Application $application)
+    public function __construct(RequestConfig $config)
     {
-        $this->config = $application->config->requestConfig;
+        $this->config = $config;
         $this->initialize();
         $this->checkServer();
 
