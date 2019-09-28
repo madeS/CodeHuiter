@@ -1,26 +1,26 @@
 <?php
 
-namespace CodeHuiter\Service\HtmlParser;
+namespace CodeHuiter\Service;
 
-interface HtmlParserInterface
+interface HtmlParser
 {
     /**
      * @param string|null $html
-     * @return HtmlParserInterface
+     * @return HtmlParser
      */
-    public function load(?string $html): HtmlParserInterface;
+    public function load(?string $html): HtmlParser;
 
     /**
      * @param string $selector
-     * @return HtmlParserInterface[]
+     * @return HtmlParser[]
      */
     public function find(string $selector): array;
 
     /**
      * @param string $selector
-     * @return HtmlParserInterface
+     * @return HtmlParser
      */
-    public function findOne(string $selector): HtmlParserInterface;
+    public function findOne(string $selector): HtmlParser;
 
     /**
      * @return bool

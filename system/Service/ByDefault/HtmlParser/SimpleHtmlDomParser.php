@@ -1,11 +1,12 @@
 <?php
 
-namespace CodeHuiter\Service\HtmlParser;
+namespace CodeHuiter\Service\ByDefault\HtmlParser;
 
-use CodeHuiter\Service\HtmlParser\SimpleHtmlDom\SimpleHtmlDom;
-use CodeHuiter\Service\HtmlParser\SimpleHtmlDom\SimpleHtmlDomNode;
+use CodeHuiter\Service\ByDefault\HtmlParser\SimpleHtmlDom\SimpleHtmlDom;
+use CodeHuiter\Service\ByDefault\HtmlParser\SimpleHtmlDom\SimpleHtmlDomNode;
+use CodeHuiter\Service\HtmlParser;
 
-class SimpleHtmlDomParser implements HtmlParserInterface
+class SimpleHtmlDomParser implements HtmlParser
 {
     /**
      * @var SimpleHtmlDom|SimpleHtmlDomNode|null
@@ -13,7 +14,7 @@ class SimpleHtmlDomParser implements HtmlParserInterface
     protected $instance;
 
     /**
-     * @var HtmlParserInterface[]
+     * @var HtmlParser[]
      */
     protected $childInstances = [];
 
@@ -26,9 +27,9 @@ class SimpleHtmlDomParser implements HtmlParserInterface
 
     /**
      * {@inheritdoc}
-     * @return HtmlParserInterface
+     * @return HtmlParser
      */
-    public function load(?string $html): HtmlParserInterface
+    public function load(?string $html): HtmlParser
     {
         if ($this->instance) {
             $this->unload();
@@ -39,7 +40,7 @@ class SimpleHtmlDomParser implements HtmlParserInterface
 
     /**
      * @param string $selector
-     * @return HtmlParserInterface[]
+     * @return HtmlParser[]
      */
     public function find(string $selector): array
     {
@@ -59,9 +60,9 @@ class SimpleHtmlDomParser implements HtmlParserInterface
 
     /**
      * @param string $selector
-     * @return HtmlParserInterface
+     * @return HtmlParser
      */
-    public function findOne(string $selector): HtmlParserInterface
+    public function findOne(string $selector): HtmlParser
     {
         if (!$this->instance) {
             return new SimpleHtmlDomParser();

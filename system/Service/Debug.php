@@ -2,29 +2,31 @@
 
 namespace CodeHuiter\Service;
 
-class Debug
+interface Debug
 {
     /**
      * @param mixed $obj
-     * @param array $options
+     * @param bool $toString
+     * @return string
      */
-    public function out($obj, $options = []): void
-    {
-        $isHtml = $options['html'] ?? true;
-        $detail = $options['detail'] ?? ($options['d'] ?? false);
+    public function out($obj, bool $toString = false): string;
 
-        if ($isHtml) {
-            echo '<pre>';
-        }
-        if ($detail) {
-            /** @noinspection ForgottenDebugOutputInspection */
-            var_dump($obj);
-        } else {
-            /** @noinspection ForgottenDebugOutputInspection */
-            print_r($obj);
-        }
-        if ($isHtml) {
-            echo '</pre>';
-        }
-    }
+    /**
+     * @param mixed $obj
+     * @return string
+     */
+    public function outDetailed($obj): string;
+
+    /**
+     * @param mixed $obj
+     * @param bool $toString
+     * @return string
+     */
+    public function outToHtml($obj, bool $toString = false): string;
+
+    /**
+     * @param mixed $obj
+     * @return string
+     */
+    public function outDetailedToHtml($obj): string;
 }

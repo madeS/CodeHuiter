@@ -1,6 +1,6 @@
 <?php
 
-namespace CodeHuiter\Service\Email\Mailer;
+namespace CodeHuiter\Service\ByDefault\Email\Sender;
 
 use CodeHuiter\Config\Data\MimeTypes;
 use CodeHuiter\Exception\TagException;

@@ -14,33 +14,75 @@ class Model
     /** @var string */
     protected static $table = 'tableName';
 
-    /** @var string  */
-    protected static $select = '*';
-
     /** @var string[] */
-    protected static $primaryKeys = ['id'];
+    protected static $primaryFields = ['id'];
 
     /** @var string[] */
     protected static $fields = [];
 
     /** @var AbstractDatabase */
-    protected static $dbHndlr = null;
+    private static $dbHandler;
 
     /** @var DateService */
-    protected static $dateService = null;
+    private static $dateService;
+
+    /**
+     * @deprecated TODO replace to repositories
+     * @return AbstractDatabase
+     */
+    protected static function getDb(): AbstractDatabase
+    {
+        if (static::$dbHandler === null) {
+            static::$dbHandler = Application::getInstance()->get(static::$database);
+        }
+        return static::$dbHandler;
+    }
 
     /**
      * @return AbstractDatabase
      */
-    protected static function getDb()
+    public function getModelDB(): AbstractDatabase
     {
-        if (static::$dbHndlr === null) {
-            static::$dbHndlr = Application::getInstance()->get(static::$database);
-        }
-        return static::$dbHndlr;
+        return self::getDb();
     }
 
-    protected static function getDateService()
+    /**
+     * @return string
+     */
+    public function getModelTable(): string
+    {
+        return self::$table;
+    }
+
+    /**
+     * @return string[]
+     */
+    public function getModelFields(): array
+    {
+        return self::$fields;
+    }
+
+    /**
+     * @return array
+     */
+    public function getModelPrimaryFields(): array
+    {
+        return self::$primaryFields;
+    }
+
+    /**
+     * @return string
+     */
+    public function getClass(): string
+    {
+        return self::class;
+    }
+
+    /**
+     * @deprecated TODO Replace to repositories
+     * @return DateService
+     */
+    protected static function getDateService(): DateService
     {
         if (static::$dateService === null) {
             static::$dateService = Application::getInstance()->get(Config::SERVICE_KEY_DATE);
@@ -49,11 +91,12 @@ class Model
     }
 
     /**
+     * @deprecated
      * @param array $where Where Key-Value array
      * @param array $opt [order => [[ field=>string, reverse=>bool ],...]]
      * @return self|null
      */
-    public static function getOneWhere($where = [], $opt = [])
+    public static function getOneWhere($where = [], $opt = []): ?self
     {
         /** @var self|null $model */
         $model = static::getDb()->selectWhereOneObject(static::class, static::$table, $where, $opt);
@@ -61,11 +104,12 @@ class Model
     }
 
     /**
+     * @deprecated
      * @param array $where Where Key-Value array
      * @param array $opt [key=>field, order => [[ field=>string, reverse=>bool ],...], limit=>[count=>,from=>,page=>,per_page=>]]
      * @return self[]
      */
-    public static function getWhere($where = [], $opt = [])
+    public static function getWhere($where = [], $opt = []): array
     {
         /** @var self[] $model */
         $model = static::getDb()->selectWhereObjects(static::class, static::$table, $where, $opt);
@@ -73,10 +117,11 @@ class Model
     }
 
     /**
+     * @deprecated
      * @param array $set Data
      * @return string Primary Key
      */
-    public static function insert($set)
+    public static function insert($set): string
     {
         return static::getDb()->insert(static::$table, $set);
     }
@@ -98,11 +143,11 @@ class Model
      * @param bool $onlyTouched
      * @return self
      */
-    public function save(bool $onlyTouched = false)
+    public function save(bool $onlyTouched = false): self
     {
         $filledPrimaryKeys = true;
         $whereArray = [];
-        foreach (static::$primaryKeys as $field) {
+        foreach (static::$primaryFields as $field) {
             if (!$this->$field) {
                 $filledPrimaryKeys = false;
             }
@@ -110,7 +155,7 @@ class Model
         }
 
         $setArray = [];
-        $fields = $onlyTouched ? $this->_touchedFields : static::$fields;
+        $fields = $onlyTouched && $filledPrimaryKeys ? $this->_touchedFields : static::$fields;
         foreach ($fields as $field) {
             $setArray[$field] = $this->$field;
         }
@@ -126,9 +171,8 @@ class Model
         }
 
         $lastInsertId = $db->insert(static::$table, $setArray);
-        foreach (static::$primaryKeys as $field) {
+        foreach (static::$primaryFields as $field) {
             $whereArray[$field] = $lastInsertId;
-            break;
         }
         /** @var self $object */
         $object = $db->selectWhereOneObject(static::class, static::$table, $whereArray);
@@ -141,7 +185,7 @@ class Model
     public function update(array $setArray): void
     {
         $whereArray = [];
-        foreach (static::$primaryKeys as $field) {
+        foreach (static::$primaryFields as $field) {
             $whereArray[$field] = $this->$field;
         }
         if ($whereArray) {
@@ -156,7 +200,7 @@ class Model
     public function delete(): void
     {
         $whereArray = [];
-        foreach (static::$primaryKeys as $field) {
+        foreach (static::$primaryFields as $field) {
             $whereArray[$field] = $this->$field;
         }
         if ($whereArray) {

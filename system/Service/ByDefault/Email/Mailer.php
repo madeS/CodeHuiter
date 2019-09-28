@@ -1,14 +1,15 @@
 <?php
 
-namespace CodeHuiter\Service\Email\Mailer;
+namespace CodeHuiter\Service\ByDefault\Email;
 
 use CodeHuiter\Config\EmailConfig;
+use CodeHuiter\Service\ByDefault\Email\Model\MailerModel;
+use CodeHuiter\Service\ByDefault\Email\Sender\EmailSender;
 use CodeHuiter\Service\Logger;
 use CodeHuiter\Exception\TagException;
 use CodeHuiter\Service\DateService;
-use CodeHuiter\Service\Email\AbstractEmail;
 
-class Mailer extends AbstractEmail
+class Mailer extends AbstractEmail implements \CodeHuiter\Service\Mailer
 {
     /**
      * @var EmailSender
@@ -35,7 +36,7 @@ class Mailer extends AbstractEmail
      * @throws TagException
      * @return EmailSender
      */
-    protected function getEmailSender()
+    protected function getEmailSender(): string
     {
         if ($this->emailSender === null) {
             $this->emailSender = new EmailSender($this->config->senderConfig);
@@ -46,7 +47,7 @@ class Mailer extends AbstractEmail
     /**
      * @inheritdoc
      */
-    public function send($subject, $content, $from, $emails, $ccEmails, $queued, bool $force)
+    public function send($subject, $content, $from, $emails, $ccEmails, $queued, bool $force): bool
     {
         if ($queued) {
             foreach ($emails as $email) {
@@ -55,8 +56,8 @@ class Mailer extends AbstractEmail
                     'subject' => $subject,
                     'email' => $email,
                     'message' => $content,
-                    'created_at'=> $this->date->now,
-                    'updated_at' => $this->date->now,
+                    'created_at'=> $this->date->fromTime()->toTime(),
+                    'updated_at' => $this->date->fromTime()->toTime()(),
                     'sended' => 0,
                 ];
                 $mailerId = MailerModel::insert($mailerData);
@@ -78,7 +79,7 @@ class Mailer extends AbstractEmail
      * @param array $ccEmails [email1, email2, email3]
      * @return bool
      */
-    protected function innerSend($subject, $content, $from, $emails, $ccEmails)
+    protected function innerSend($subject, $content, $from, $emails, $ccEmails): bool
     {
         $success = false;
         $this->lastStatusMessage = '';
@@ -123,7 +124,7 @@ class Mailer extends AbstractEmail
      * @param int|null $id
      * @return bool
      */
-    protected function sendFromQueue($count = 1, $id = null)
+    protected function sendFromQueue($count = 1, $id = null): bool
     {
         /** @var MailerModel[] $messages */
         $messages = MailerModel::getWhere(
@@ -145,11 +146,11 @@ class Mailer extends AbstractEmail
             if ($success){
                 $message->update([
                     'sended' => 1,
-                    'updated_at' => $this->date->now,
+                    'updated_at' => $this->date->fromTime()->toTime(),
                 ]);
             } else {
                 $message->update([
-                    'updated_at' => $this->date->now,
+                    'updated_at' => $this->date->fromTime()->toTime(),
                 ]);
             }
         }

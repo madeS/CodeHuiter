@@ -5,6 +5,8 @@ namespace CodeHuiter\Config;
 use CodeHuiter\Config\Data\MimeTypes;
 use CodeHuiter\Core\Application;
 use CodeHuiter\Core\CodeLoader;
+use CodeHuiter\Exception\ServerConfigException;
+use CodeHuiter\Service\Console;
 use CodeHuiter\Service\Logger;
 use CodeHuiter\Core\Request;
 use CodeHuiter\Core\Response;
@@ -13,15 +15,13 @@ use CodeHuiter\Database\AbstractDatabase;
 use CodeHuiter\Database\Drivers\PDODriver;
 use CodeHuiter\Exception\InvalidRequestException;
 use CodeHuiter\Exception\RuntimeAppContainerException;
-use CodeHuiter\Service\Console;
+use CodeHuiter\Service\ByDefault;
 use CodeHuiter\Service\DateService;
 use CodeHuiter\Service\Debug;
-use CodeHuiter\Service\Email\AbstractEmail;
-use CodeHuiter\Service\Email\Mailer\Mailer;
-use CodeHuiter\Service\HtmlParser\HtmlParserInterface;
-use CodeHuiter\Service\HtmlParser\SimpleHtmlDomParser;
+use CodeHuiter\Service\Mailer;
+use CodeHuiter\Service\HtmlParser;
 use CodeHuiter\Service\Language;
-use CodeHuiter\Service\Log\Log;
+use CodeHuiter\Service\ByDefault\Log\FileLog;
 use CodeHuiter\Service\Network;
 
 abstract class Config
@@ -151,7 +151,7 @@ abstract class Config
      */
     public function createServiceLog(): Logger
     {
-        return new Log($this->logConfig);
+        return new FileLog($this->logConfig);
     }
 
     /**
@@ -161,7 +161,7 @@ abstract class Config
      */
     public function createServiceConsole(Application $app): Console
     {
-        return new Console($this->getApplicationServiceLog($app));
+        return new ByDefault\Console($this->getApplicationServiceLog($app));
     }
 
     /**
@@ -177,7 +177,7 @@ abstract class Config
      */
     public function createServiceDate(): DateService
     {
-        return new DateService($this->dateConfig);
+        return new ByDefault\DateService($this->dateConfig);
     }
 
     /**
@@ -185,7 +185,7 @@ abstract class Config
      */
     public function createServiceDebug(): Debug
     {
-        return new Debug();
+        return new ByDefault\Debug();
     }
 
     /**
@@ -195,7 +195,7 @@ abstract class Config
      */
     public function createServiceNetwork(Application $app): Network
     {
-        return new Network($this->getApplicationServiceLog($app));
+        return new ByDefault\Network($this->getApplicationServiceLog($app));
     }
 
     /**
@@ -208,12 +208,12 @@ abstract class Config
 
     /**
      * @param Application $app
-     * @return AbstractEmail
+     * @return Mailer
      * @throws RuntimeAppContainerException
      */
-    public function createServiceEmail(Application $app): AbstractEmail
+    public function createServiceEmail(Application $app): Mailer
     {
-        return new Mailer(
+        return new ByDefault\Email\Mailer(
             $this->emailConfig,
             $this->getApplicationServiceLog($app),
             $this->getApplicationServiceDate($app)
@@ -225,21 +225,21 @@ abstract class Config
      */
     public function createServiceLang(): Language
     {
-        return new Language();
+        return new ByDefault\Language();
     }
 
     /**
-     * @return HtmlParserInterface
+     * @return HtmlParser
      */
-    public function createServiceParser(): HtmlParserInterface
+    public function createServiceParser(): HtmlParser
     {
-        return new SimpleHtmlDomParser();
+        return new ByDefault\HtmlParser\SimpleHtmlDomParser();
     }
 
     /**
      * @return Request
      * @throws InvalidRequestException
-     * @throws \CodeHuiter\Exception\ServerConfigException
+     * @throws ServerConfigException
      */
     public function createServiceRequest(): Request
     {
@@ -329,6 +329,20 @@ abstract class Config
 
     /**
      * @param Application $application
+     * @return Response
+     * @throws RuntimeAppContainerException
+     */
+    protected function getApplicationServiceResponse(Application $application): Response
+    {
+        $obj = $application->get(self::SERVICE_KEY_RESPONSE);
+        if (!$obj instanceof Response) {
+            throw RuntimeAppContainerException::appContainerReturnWrongType(Response::class, get_class($obj));
+        }
+        return $obj;
+    }
+
+    /**
+     * @param Application $application
      * @return CodeLoader
      * @throws RuntimeAppContainerException
      */
@@ -337,6 +351,20 @@ abstract class Config
         $obj = $application->get(self::SERVICE_KEY_LOADER);
         if (!$obj instanceof CodeLoader) {
             throw RuntimeAppContainerException::appContainerReturnWrongType(CodeLoader::class, get_class($obj));
+        }
+        return $obj;
+    }
+
+    /**
+     * @param Application $application
+     * @return Language
+     * @throws RuntimeAppContainerException
+     */
+    protected function getApplicationServiceLanguage(Application $application): Language
+    {
+        $obj = $application->get(self::SERVICE_KEY_LOADER);
+        if (!$obj instanceof Language) {
+            throw RuntimeAppContainerException::appContainerReturnWrongType(Language::class, get_class($obj));
         }
         return $obj;
     }

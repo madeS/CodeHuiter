@@ -1,14 +1,12 @@
 <?php
 
-namespace CodeHuiter\Service;
+namespace CodeHuiter\Pattern\Service\ByDefault;
 
 use CodeHuiter\Config\CompressorConfig;
-use CodeHuiter\Config\Config;
-use CodeHuiter\Core\Application;
 use CodeHuiter\Core\Request;
 use CodeHuiter\Core\Response;
 
-class Compressor
+class Compressor implements \CodeHuiter\Pattern\Service\Compressor
 {
     /** @var CompressorConfig  */
     protected $config;
@@ -20,19 +18,21 @@ class Compressor
     protected $response;
 
     /**
-     * @param Application $app
+     * @param CompressorConfig $config
+     * @param Request $request
+     * @param Response $response
      */
-    public function __construct(Application $app)
+    public function __construct(CompressorConfig $config, Request $request, Response $response)
     {
-        $this->config = $app->config->compressorConfig;
-        $this->request = $app->get(Config::SERVICE_KEY_REQUEST);
-        $this->response = $app->get(Config::SERVICE_KEY_RESPONSE);
+        $this->config = $config;
+        $this->request = $request;
+        $this->response = $response;
     }
 
     /**
      * @return CompressorConfig
      */
-    public function checkCompress()
+    public function checkCompress(): CompressorConfig
     {
         if (!empty($this->config->domainCompressor[$this->request->domain])) {
             $this->config = $this->config->domainCompressor[$this->request->domain];

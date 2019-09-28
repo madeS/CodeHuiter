@@ -1,6 +1,6 @@
 <?php
 
-namespace CodeHuiter\Service\Log;
+namespace CodeHuiter\Service\ByDefault\Log;
 
 use CodeHuiter\Config\LogConfig;
 use CodeHuiter\Service\Logger;

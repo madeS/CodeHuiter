@@ -8,7 +8,7 @@ class UsersGroupsModel extends Model
 {
     protected static $database = 'db'; // database_default config
     protected static $table = 'users_groups';
-    protected static $primaryKeys = ['user_id', 'group_id'];
+    protected static $primaryFields = ['user_id', 'group_id'];
     protected static $fields = [
         'user_id',
         'group_id',

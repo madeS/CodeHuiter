@@ -1,19 +1,18 @@
 <?php
 
-namespace CodeHuiter\Service;
+namespace CodeHuiter\Pattern\Service;
 
-use CodeHuiter\Config\Config;
-use CodeHuiter\Core\Application;
 use CodeHuiter\Modifier\Filter;
 use CodeHuiter\Modifier\StringModifier;
 use CodeHuiter\Modifier\Validator;
+use CodeHuiter\Service\Language;
 
 class Mjsa
 {
     /**
      * @var string|null
      */
-    protected $eventResponse = null;
+    protected $eventResponse;
 
     /**
      * @var string
@@ -28,14 +27,14 @@ class Mjsa
     /**
      * @var Language
      */
-    protected $lang;
+    protected $language;
 
     /**
-     * @param Application $app
+     * @param Language $language
      */
-    public function __construct(Application $app)
+    public function __construct(Language $language)
     {
-        $this->lang = $app->get(Config::SERVICE_KEY_LANG);;
+        $this->language = $language;
     }
 
     /**
@@ -286,7 +285,7 @@ class Mjsa
             }
 
             if (($options['required'] ?? null) && $data === '') {
-                $this->errorMessage(($options['required_text'] ?? $this->lang->get('mjsa_validator:required')));
+                $this->errorMessage(($options['required_text'] ?? $this->language->get('mjsa_validator:required')));
                 $this->incorrect($field);
                 if ($focusOneError) break;
                 else continue;
@@ -298,7 +297,7 @@ class Mjsa
             if (($options['max_length'] ?? null) && strlen($data) > $options['max_length']) {
                 $this->errorMessage(
                     $options['max_length_text']
-                    ?? $this->lang->get('mjsa_validator:max_length',['{#max_length}' => $options['max_length']])
+                    ?? $this->language->get('mjsa_validator:max_length',['{#max_length}' => $options['max_length']])
                 );
                 $this->incorrect($field);
                 if ($focusOneError) break;
@@ -307,7 +306,7 @@ class Mjsa
             if (($options['length'] ?? null) && strlen($data) !== $options['length']) {
                 $this->errorMessage(
                     $options['length_text']
-                    ?? $this->lang->get('mjsa_validator:length',['{#length}' => $options['length']])
+                    ?? $this->language->get('mjsa_validator:length',['{#length}' => $options['length']])
                 );
                 $this->incorrect($field);
                 if ($focusOneError) break;
@@ -316,7 +315,7 @@ class Mjsa
             if (($options['email'] ?? null) && !Validator::isValidEmail($data)) {
                 $this->errorMessage(
                     $options['email_text']
-                    ?? $this->lang->get('mjsa_validator:email')
+                    ?? $this->language->get('mjsa_validator:email')
                 );
                 $this->incorrect($field);
                 if ($focusOneError) break;
@@ -325,7 +324,7 @@ class Mjsa
             if (($options['phone_length'] ?? null) && strlen($data) !== $options['phone_length']) {
                 $this->errorMessage(
                     $options['phone_length_text']
-                    ?? $this->lang->get(
+                    ?? $this->language->get(
                         'mjsa_validator:phone_length',
                         ['{#phone_length}' => $options['phone_length']]
                     )
@@ -351,8 +350,7 @@ class Mjsa
         if ($response) {
             echo $response;
             return null;
-        } else {
-            return $result;
         }
+        return $result;
     }
 }

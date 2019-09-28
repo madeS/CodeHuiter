@@ -2,6 +2,11 @@
 
 namespace CodeHuiter\Config;
 
+use CodeHuiter\Core\Application;
+use CodeHuiter\Exception\RuntimeAppContainerException;
+use CodeHuiter\Pattern\Service\Compressor;
+use CodeHuiter\Pattern\Service\Mjsa;
+
 class PatternConfig extends Config
 {
     /** @var ProjectConfig */
@@ -66,14 +71,41 @@ class PatternConfig extends Config
         $this->authConfig = new AuthConfig();
         $this->authConfig->cookieDomain = '.' . $this->settingsConfig->domain;
 
-        $this->services[self::SERVICE_KEY_MJSA] = [self::OPT_KEY_SINGLE => true, self::OPT_KEY_CLASS_APP => '\\CodeHuiter\\Service\\Mjsa'];
-        $this->services[self::SERVICE_KEY_COMPRESSOR] = [self::OPT_KEY_SINGLE => true, self::OPT_KEY_CLASS_APP => '\\CodeHuiter\\Service\\Compressor'];
+        $this->services[self::SERVICE_KEY_MJSA] = [self::OPT_KEY_SINGLE => true, self::OPT_KEY_CLASS_APP => '\\CodeHuiter\\Pattern\\Service\\Mjsa'];
         $this->services[self::SERVICE_KEY_LINKS] = [self::OPT_KEY_SINGLE => true, self::OPT_KEY_CLASS_APP => '\\App\\Service\\Link'];
         $this->services[self::SERVICE_KEY_MEDIA] = [self::OPT_KEY_SINGLE => true, self::OPT_KEY_CLASS_APP => '\\CodeHuiter\\Pattern\\Service\\Media'];
         $this->services[self::SERVICE_KEY_AUTH] = [self::OPT_KEY_SINGLE => true, self::OPT_KEY_CLASS_APP => '\\CodeHuiter\\Pattern\\Module\\Auth\\AuthService'];
 
         $this->services[self::SERVICE_USER_REPOSITORY] = [self::OPT_KEY_SINGLE => true, self::OPT_KEY_CLASS_APP => '\\CodeHuiter\\Pattern\\Module\\Auth\\Model\\UserModelRepository'];
+
+        /** @see PatternConfig::createServiceCompressor() */
+        $this->services[self::SERVICE_KEY_COMPRESSOR] = [self::OPT_KEY_CONFIG_METHOD_APP => 'createServiceCompressor', self::OPT_KEY_SINGLE => true];
     }
+
+    /**
+     * @param Application $app
+     * @return Compressor
+     * @throws RuntimeAppContainerException
+     */
+    public function createServiceCompressor(Application $app): Compressor
+    {
+        return new \CodeHuiter\Pattern\Service\ByDefault\Compressor(
+            $this->compressorConfig,
+            $this->getApplicationServiceRequest($app),
+            $this->getApplicationServiceResponse($app)
+        );
+    }
+
+    /**
+     * @param Application $app
+     * @return Mjsa
+     * @throws RuntimeAppContainerException
+     */
+    public function createServiceMjsa(Application $app): Mjsa
+    {
+        return new Mjsa($this->getApplicationServiceLanguage($app));
+    }
+
 }
 
 class ProjectConfig

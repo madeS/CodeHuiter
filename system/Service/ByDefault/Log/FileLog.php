@@ -1,10 +1,10 @@
 <?php
-namespace CodeHuiter\Service\Log;
+namespace CodeHuiter\Service\ByDefault\Log;
 
 use CodeHuiter\Core\Exception\ExceptionProcessor;
 use Exception;
 
-class Log extends AbstractLog
+class FileLog extends AbstractLog
 {
     /**
      * @param string $message

@@ -57,6 +57,7 @@ interface UserInterface
     public function setPassHash(string $passHash): void;
 
     /**
+     * TODO rename timezone offset
      * @return string
      */
     public function getTimezone(): string;

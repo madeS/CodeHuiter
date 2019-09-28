@@ -9,7 +9,7 @@ use CodeHuiter\Exception\CodeHuiterException;
 use CodeHuiter\Exception\ErrorException;
 use CodeHuiter\Pattern\Module\Auth\AuthService;
 use CodeHuiter\Pattern\Module\Auth\Model\UserInterface;
-use CodeHuiter\Service\Compressor;
+use CodeHuiter\Pattern\Service\Compressor;
 
 /**
  * The base pattern controller
@@ -18,7 +18,7 @@ use CodeHuiter\Service\Compressor;
  * @property-read \App\Service\Link $links
  * @property-read \CodeHuiter\Pattern\Service\Media $media
  * @property-read \CodeHuiter\Pattern\Module\Auth\AuthService $auth
- * @property-read \CodeHuiter\Service\Mjsa $mjsa
+ * @property-read \CodeHuiter\Pattern\Service\Mjsa $mjsa
  */
 class BaseController extends Controller
 {

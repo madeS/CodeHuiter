@@ -6,7 +6,7 @@ use CodeHuiter\Config\Config;
 use CodeHuiter\Config\ResponseConfig;
 use CodeHuiter\Core\Exception\ExceptionProcessor;
 use CodeHuiter\Exception\InvalidConfigException;
-use CodeHuiter\Service\Mjsa;
+use CodeHuiter\Pattern\Service\Mjsa;
 
 /**
  * TODO split response and html renderer
@@ -58,6 +58,8 @@ class Response
 
     public function render($viewFile, $data = [], $return = false)
     {
+        // TODO !!!!!! move to renderer
+
         $this->controller = Controller::getInstance();
         $those = $this->controller; // In view
 
@@ -226,7 +228,7 @@ class Response
      */
     public function location($url, $temperatory = false){
         if ($this->request->isMjsaAJAX()) {
-            /** TODO Remove that */
+            /** TODO !!!!! Extend Response to MjsaResponse */
             /** @var Mjsa $mjsaService */
             $mjsaService = $this->app->get('mjsa');
             $mjsaService->location($url, true);

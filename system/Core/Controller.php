@@ -18,7 +18,7 @@ use CodeHuiter\Database\AbstractDatabase;
  * @property-read \CodeHuiter\Service\Language $lang
  * @property-read \CodeHuiter\Service\DateService $date
  * @property-read \CodeHuiter\Service\Network $network
- * @property-read \CodeHuiter\Service\HtmlParser\HtmlParserInterface $htmlParser
+ * @property-read \CodeHuiter\Service\HtmlParser $htmlParser
  */
 class Controller
 {

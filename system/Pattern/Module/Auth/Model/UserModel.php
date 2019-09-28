@@ -13,7 +13,7 @@ class UserModel extends Model implements UserInterface
 {
     protected static $database = 'db'; // database_default config
     protected static $table = 'users';
-    protected static $primaryKeys = ['id'];
+    protected static $primaryFields = ['id'];
     protected static $fields = [
         'id',
         'login',
@@ -391,14 +391,11 @@ class UserModel extends Model implements UserInterface
     /** @inheritdoc */
     public function saveUser(): UserInterface
     {
-        $onlyTouched = true;
         if (!$this->id) {
-            $dateService = self::getDateService();
-            $this->regtime = $dateService->sqlTime($dateService->now);
-            $onlyTouched = false;
+            $this->regtime = self::getDateService()->sqlTime();
         }
         /** @var self $user */
-        $user = parent::save($onlyTouched);
+        $user = parent::save(true);
         return $user;
     }
 

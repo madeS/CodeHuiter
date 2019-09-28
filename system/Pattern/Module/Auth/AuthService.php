@@ -15,9 +15,9 @@ use CodeHuiter\Pattern\Module\Auth\Model\UserInterface;
 use CodeHuiter\Pattern\Module\Auth\Model\UserRepositoryInterface;
 use CodeHuiter\Pattern\Result\ClientResult;
 use CodeHuiter\Service\DateService;
-use CodeHuiter\Service\Email\AbstractEmail;
+use CodeHuiter\Service\Mailer;
 use CodeHuiter\Service\Language;
-use CodeHuiter\Service\Mjsa;
+use CodeHuiter\Pattern\Service\Mjsa;
 
 /**
  * TODO Add max 10 logins per minute
@@ -91,11 +91,11 @@ class AuthService
     }
 
     /**
-     * @return AbstractEmail
+     * @return Mailer
      */
     protected function getEmail()
     {
-        /** @var AbstractEmail $email */
+        /** @var Mailer $email */
         $email = $this->app->get('email');
         return $email;
     }

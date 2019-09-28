@@ -114,6 +114,8 @@ class CodeLoader
         return $success;
     }
 
+    // TODO !!!!! Put to file only on shut down of script if nessesary
+
     /**
      * Set a benchmark marker
      *

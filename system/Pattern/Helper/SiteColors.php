@@ -1,6 +1,6 @@
 <?php
 
-namespace CodeHuiter\Service;
+namespace CodeHuiter\Pattern\Helper;
 
 use CodeHuiter\Exception\TagException;
 
@@ -15,10 +15,17 @@ class SiteColors
         }
     }
 
+    /**
+     * @deprecated
+     * @param $color
+     * @param int $opacity
+     * @return string
+     * @throws TagException
+     */
     public function colorConvert($color, $opacity = 1){
         if (is_string($color)){
-            if ($color[0] == '#') $color = substr($color, 1 );
-            if (strlen($color) == 6) {
+            if ($color[0] === '#') $color = substr($color, 1 );
+            if (strlen($color) === 6) {
                 $hex = array( $color[0] . $color[1], $color[2] . $color[3], $color[4] . $color[5] );
             } elseif ( strlen( $color ) == 3 ) {
                 $hex = array( $color[0] . $color[0], $color[1] . $color[1], $color[2] . $color[2] );
@@ -27,9 +34,9 @@ class SiteColors
             }
             $rgb = array_map('hexdec', $hex);
             if ($opacity === false) {
-                return 'rgb('.implode(",",$rgb).')';
+                return 'rgb('.implode(',', $rgb).')';
             } else {
-                return 'rgba('.implode(",",$rgb).','.$opacity.')';
+                return 'rgba('.implode(',', $rgb).','.$opacity.')';
             }
         } else if (is_array($color)) {
             $rgb = array_map('dechex', $color);

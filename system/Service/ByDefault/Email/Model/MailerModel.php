@@ -1,6 +1,6 @@
 <?php
 
-namespace CodeHuiter\Service\Email\Mailer;
+namespace CodeHuiter\Service\ByDefault\Email\Model;
 
 use CodeHuiter\Database\Model;
 
@@ -8,7 +8,7 @@ class MailerModel extends Model
 {
     protected static $database = 'db'; // database_default config
     protected static $table = 'mailer';
-    protected static $primaryKeys = ['id'];
+    protected static $primaryFields = ['id'];
     protected static $fields = [
         'id',
         'user_id',
