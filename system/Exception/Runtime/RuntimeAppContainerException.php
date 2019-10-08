@@ -1,5 +1,7 @@
 <?php
-namespace CodeHuiter\Exception;
+namespace CodeHuiter\Exception\Runtime;
+
+use CodeHuiter\Exception\CodeHuiterException;
 
 class RuntimeAppContainerException extends CodeHuiterException
 {

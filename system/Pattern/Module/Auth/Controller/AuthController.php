@@ -2,7 +2,6 @@
 
 namespace CodeHuiter\Pattern\Module\Auth\Controller;
 
-use CodeHuiter\Config\PatternConfig;
 use CodeHuiter\Core\Response;
 use CodeHuiter\Pattern\Controller\Base\BaseController;
 use CodeHuiter\Pattern\Module\Auth\AuthService;
@@ -267,7 +266,7 @@ class AuthController extends BaseController
      */
     private function getUserRepository(): UserRepositoryInterface
     {
-        return $this->app->get(PatternConfig::SERVICE_USER_REPOSITORY);
+        return $this->app->get(UserRepositoryInterface::class);
     }
 
 

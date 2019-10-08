@@ -3,7 +3,6 @@
 namespace CodeHuiter\Pattern\Service;
 
 use CodeHuiter\Config\LinksConfig;
-use CodeHuiter\Config\PatternConfig;
 use CodeHuiter\Core\Application;
 use CodeHuiter\Exception\InvalidFlowException;
 use CodeHuiter\Pattern\Module\Auth\Model\UserInterface;
@@ -17,16 +16,14 @@ class Link
     /** @var LinksConfig  */
     protected $config;
 
-    /** @var UserRepositoryInterface */
-    protected $userRepository;
-
     /**
      * @param Application $application
+     * @param LinksConfig $linksConfig
      */
-    public function __construct(Application $application)
+    public function __construct(Application $application, LinksConfig $linksConfig)
     {
         $this->app = $application;
-        $this->config = $application->config->linksConfig;
+        $this->config = $linksConfig;
     }
 
     /**
@@ -34,7 +31,7 @@ class Link
      */
     private function getUserRepository(): UserRepositoryInterface
     {
-        return $this->app->get(PatternConfig::SERVICE_USER_REPOSITORY);
+        return $this->app->get(UserRepositoryInterface::class);
     }
 
     /**

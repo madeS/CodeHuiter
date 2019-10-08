@@ -3,7 +3,6 @@
 namespace CodeHuiter\Pattern\Service;
 
 use CodeHuiter\Config\MediaConfig;
-use CodeHuiter\Core\Application;
 
 class Media
 {
@@ -12,9 +11,9 @@ class Media
      */
     private $config;
 
-    public function __construct(Application $application)
+    public function __construct(MediaConfig $mediaConfig)
     {
-        $this->config = $application->config->mediaConfig;
+        $this->config = $mediaConfig;
     }
 
     /**

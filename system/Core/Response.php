@@ -168,7 +168,7 @@ class Response
         $this->sendHeaders();
         if ($this->config->profiler) {
             /** @var CodeLoader $loader */
-            $loader = $this->app->get(Config::SERVICE_KEY_LOADER);
+            $loader = $this->app->get(CodeLoader::class);
             $loader->benchmarkPoint('ResponseSend');
             if (strpos($this->finalOutput, '{#result_time_table}') !== false) {
                 $this->finalOutput = str_replace('{#result_time_table}', $loader->benchmarkTotalTimeTable(), $this->finalOutput);

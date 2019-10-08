@@ -4,7 +4,6 @@ namespace CodeHuiter\Pattern\Module\Auth;
 
 use CodeHuiter\Config\AuthConfig;
 use CodeHuiter\Config\Config;
-use CodeHuiter\Config\PatternConfig;
 use CodeHuiter\Core\Application;
 use CodeHuiter\Core\Request;
 use CodeHuiter\Core\Response;
@@ -77,10 +76,12 @@ class AuthService
 
     protected $commonHash = '8dc66b2be10c6882c4565f74a2f9f21f';
 
-    public function __construct(Application $application)
-    {
+    public function __construct(
+        Application $application,
+        UserRepositoryInterface $userRepository
+    ) {
         $this->app = $application;
-        $this->userRepository = $application->get(PatternConfig::SERVICE_USER_REPOSITORY);
+        $this->userRepository = $userRepository;
         $this->date = $application->get(Config::SERVICE_KEY_DATE);
         $this->lang = $application->get(Config::SERVICE_KEY_LANG);
         $this->request = $application->get(Config::SERVICE_KEY_REQUEST);
@@ -772,7 +773,7 @@ class AuthService
         ]);
         foreach ($withSameEmailUnconfirmedUsers as $withSameEmailUnconfirmedUser) {
             if (!in_array(self::GROUP_ACTIVE, $withSameEmailUnconfirmedUser->getGroups(), true)) {
-                $withSameEmailUnconfirmedUser->deleteUser();
+                $this->userRepository->delete($withSameEmailUnconfirmedUser);
             }
         }
         $this->updateSig($user);

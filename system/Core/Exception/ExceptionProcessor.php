@@ -8,6 +8,7 @@ use CodeHuiter\Service\Logger;
 use CodeHuiter\Core\Request;
 use CodeHuiter\Core\Response;
 use CodeHuiter\Exception\PhpErrorException;
+use Exception;
 
 /**
  * Class for Fatal framework errors
@@ -22,7 +23,7 @@ class ExceptionProcessor
     {
         $dir = 'cli';
         $show_debug_backtrace = true;
-        /** @var \Exception[] $exceptions */
+        /** @var Exception[] $exceptions */
         $exceptions = [];
         $show_errors = true;
         try {
@@ -48,10 +49,10 @@ class ExceptionProcessor
                 }
             }
             /** @var Logger $log */
-            $log = $app->get(Config::SERVICE_KEY_LOG);
-            $log->error($exception->getMessage(), ['trace' => $exception->getTraceAsString()], 'exceptions');
+            $log = $app->get(Logger::class);
+            $log->withTag('exceptions')->error($exception->getMessage(), ['trace' => $exception->getTraceAsString()]);
 
-        } catch (\Exception $exceptionInner) {
+        } catch (Exception $exceptionInner) {
             $exceptions[] = $exceptionInner;
         }
         if (!$show_errors) {

@@ -3,9 +3,16 @@
 namespace CodeHuiter\Config;
 
 use CodeHuiter\Core\Application;
-use CodeHuiter\Exception\RuntimeAppContainerException;
+use CodeHuiter\Core\Request;
+use CodeHuiter\Core\Response;
+use CodeHuiter\Pattern\Module\Auth\AuthService;
+use CodeHuiter\Pattern\Module\Auth\Model\UserModelRepository;
+use CodeHuiter\Pattern\Module\Auth\Model\UserRepositoryInterface;
 use CodeHuiter\Pattern\Service\Compressor;
+use CodeHuiter\Pattern\Service\Link;
+use CodeHuiter\Pattern\Service\Media;
 use CodeHuiter\Pattern\Service\Mjsa;
+use CodeHuiter\Service\Language;
 
 class PatternConfig extends Config
 {
@@ -21,13 +28,11 @@ class PatternConfig extends Config
     /** @var AuthConfig */
     public $authConfig;
 
-    public const SERVICE_KEY_MJSA = 'mjsa';
     public const SERVICE_KEY_COMPRESSOR = 'compressor';
+    public const SERVICE_KEY_MJSA = 'mjsa';
     public const SERVICE_KEY_LINKS = 'links';
     public const SERVICE_KEY_MEDIA = 'media';
     public const SERVICE_KEY_AUTH = 'auth';
-
-    public const SERVICE_USER_REPOSITORY = 'userRepository';
 
     public function __construct()
     {
@@ -35,6 +40,21 @@ class PatternConfig extends Config
 
         $this->projectConfig = new ProjectConfig();
 
+        /**
+         * Compressor Service
+         */
+        $this->services[Compressor::class] = [
+            self::OPT_KEY_CALLBACK => static function (Application $app) {
+                return new \CodeHuiter\Pattern\Service\ByDefault\Compressor(
+                    $app->config->compressorConfig,
+                    $app->get(Request::class),
+                    $app->get(Response::class)
+                );
+            },
+            self::OPT_KEY_VALIDATE => Compressor::class,
+            self::OPT_KEY_SINGLE => true
+        ];
+        $this->injectedServices[self::SERVICE_KEY_COMPRESSOR] = Compressor::class;
         $this->compressorConfig = new CompressorConfig();
         // connect image crop (jcrop)
         $this->compressorConfig->css[] = '/pub/css/jquery.jcrop.min.css';
@@ -66,46 +86,61 @@ class PatternConfig extends Config
         $this->compressorConfig->singlyJs['yashare'] = '//yastatic.net/share/share.js" charset="utf-8';
         $this->compressorConfig->js[] = '/pub/js/app.yashare.js';
 
+        /**
+         * Mjsa Service
+         */
+        $this->services[Mjsa::class] = [
+            self::OPT_KEY_CALLBACK => static function (Application $app) {
+                return new Mjsa($app->get(Language::class));
+            },
+            self::OPT_KEY_VALIDATE => Mjsa::class,
+            self::OPT_KEY_SINGLE => true
+        ];
+        $this->injectedServices[self::SERVICE_KEY_MJSA] = Mjsa::class;
+
+        /**
+         * Links Service
+         */
+        $this->services[Link::class] = [
+            self::OPT_KEY_CALLBACK => static function (Application $app) {
+                return new Link($app->get(Language::class), $app->config->linksConfig);
+            },
+            self::OPT_KEY_VALIDATE => Link::class,
+            self::OPT_KEY_SINGLE => true
+        ];
+        $this->injectedServices[self::SERVICE_KEY_LINKS] = Link::class;
         $this->linksConfig = new LinksConfig();
+
+        /**
+         * Media Service
+         */
+        $this->services[Media::class] = [
+            self::OPT_KEY_CALLBACK => static function (Application $app) {
+                return new Media($app->config->mediaConfig);
+            },
+            self::OPT_KEY_VALIDATE => Media::class,
+            self::OPT_KEY_SINGLE => true
+        ];
+        $this->injectedServices[self::SERVICE_KEY_MEDIA] = Media::class;
         $this->mediaConfig = new MediaConfig();
+
+        /**
+         * Auth Service
+         */
+        $this->services[AuthService::class] = [
+            self::OPT_KEY_CALLBACK => static function (Application $app) {
+                return new AuthService($app, $app->get(UserRepositoryInterface::class));
+            },
+            self::OPT_KEY_VALIDATE => AuthService::class,
+            self::OPT_KEY_SINGLE => true
+        ];
+        $this->injectedServices[self::SERVICE_KEY_AUTH] = AuthService::class;
         $this->authConfig = new AuthConfig();
         $this->authConfig->cookieDomain = '.' . $this->settingsConfig->domain;
 
-        $this->services[self::SERVICE_KEY_MJSA] = [self::OPT_KEY_SINGLE => true, self::OPT_KEY_CLASS_APP => '\\CodeHuiter\\Pattern\\Service\\Mjsa'];
-        $this->services[self::SERVICE_KEY_LINKS] = [self::OPT_KEY_SINGLE => true, self::OPT_KEY_CLASS_APP => '\\App\\Service\\Link'];
-        $this->services[self::SERVICE_KEY_MEDIA] = [self::OPT_KEY_SINGLE => true, self::OPT_KEY_CLASS_APP => '\\CodeHuiter\\Pattern\\Service\\Media'];
-        $this->services[self::SERVICE_KEY_AUTH] = [self::OPT_KEY_SINGLE => true, self::OPT_KEY_CLASS_APP => '\\CodeHuiter\\Pattern\\Module\\Auth\\AuthService'];
 
-        $this->services[self::SERVICE_USER_REPOSITORY] = [self::OPT_KEY_SINGLE => true, self::OPT_KEY_CLASS_APP => '\\CodeHuiter\\Pattern\\Module\\Auth\\Model\\UserModelRepository'];
-
-        /** @see PatternConfig::createServiceCompressor() */
-        $this->services[self::SERVICE_KEY_COMPRESSOR] = [self::OPT_KEY_CONFIG_METHOD_APP => 'createServiceCompressor', self::OPT_KEY_SINGLE => true];
+        $this->services[UserRepositoryInterface::class] = [self::OPT_KEY_CLASS => UserModelRepository::class, self::OPT_KEY_VALIDATE => UserRepositoryInterface::class, self::OPT_KEY_SINGLE => true];
     }
-
-    /**
-     * @param Application $app
-     * @return Compressor
-     * @throws RuntimeAppContainerException
-     */
-    public function createServiceCompressor(Application $app): Compressor
-    {
-        return new \CodeHuiter\Pattern\Service\ByDefault\Compressor(
-            $this->compressorConfig,
-            $this->getApplicationServiceRequest($app),
-            $this->getApplicationServiceResponse($app)
-        );
-    }
-
-    /**
-     * @param Application $app
-     * @return Mjsa
-     * @throws RuntimeAppContainerException
-     */
-    public function createServiceMjsa(Application $app): Mjsa
-    {
-        return new Mjsa($this->getApplicationServiceLanguage($app));
-    }
-
 }
 
 class ProjectConfig

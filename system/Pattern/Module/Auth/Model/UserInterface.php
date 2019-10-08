@@ -178,9 +178,4 @@ interface UserInterface
      * @return UserInterface
      */
     public function saveUser(): UserInterface;
-
-    /**
-     * @return void
-     */
-    public function deleteUser(): void;
 }

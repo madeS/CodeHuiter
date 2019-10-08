@@ -1,36 +1,39 @@
 <?php
 namespace CodeHuiter\Database\Drivers;
 
-use CodeHuiter\Config\DatabaseConfig;
-use CodeHuiter\Database\AbstractDatabase;
+use CodeHuiter\Config\RelationalDatabaseConfig;
+use CodeHuiter\Database\ByDefault\AbstractDatabase;
+use PDO;
+use PDOException;
+use Throwable;
 
 class PDODriver extends AbstractDatabase
 {
-    /** @var \PDO $connection */
+    /** @var PDO $connection */
     protected $connection;
 
     /** @var bool */
     protected $inTransaction = false;
 
     /**
-     * @var DatabaseConfig
+     * @var RelationalDatabaseConfig
      */
     protected $config = null;
 
     /**
-     * @param DatabaseConfig $config
+     * @param RelationalDatabaseConfig $config
      */
-    protected function connect(DatabaseConfig $config)
+    protected function connect(RelationalDatabaseConfig $config): void
     {
         $this->config = $config;
         $options = [
-            \PDO::ATTR_PERSISTENT => $config->persistent,
-            \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
+            PDO::ATTR_PERSISTENT => $config->persistent,
+            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
         ];
         if ($config->charset && $config->collate) {
-            $options[\PDO::MYSQL_ATTR_INIT_COMMAND] = "SET NAMES {$config->charset} COLLATE {$config->collate}";
+            $options[PDO::MYSQL_ATTR_INIT_COMMAND] = "SET NAMES {$config->charset} COLLATE {$config->collate}";
         }
-        $this->connection = new \PDO($config->dsn, $config->username, $config->password, $options);
+        $this->connection = new PDO($config->dsn, $config->username, $config->password, $options);
         if ($config->persistent) {
             if ($config->charset && $config->collate) {
                 $this->connection->query("SET NAMES {$config->charset} COLLATE {$config->collate}");
@@ -41,7 +44,7 @@ class PDODriver extends AbstractDatabase
     /**
      * {@inheritdoc}
      */
-    public function quote($string)
+    public function quote($string): string
     {
         return $this->connection->quote($string);
     }
@@ -49,13 +52,13 @@ class PDODriver extends AbstractDatabase
     /**
      * {@inheritdoc}
      */
-    public function disconnect()
+    public function disconnect(): void
     {
         $this->connection->query('SELECT pg_terminate_backend(pg_backend_pid());');
         $this->connection = null;
     }
 
-    protected function reconnectProblem(\PDOException $exception)
+    protected function reconnectProblem(PDOException $exception): bool
     {
         if (!$this->config->reconnect) {
             return false;
@@ -80,7 +83,7 @@ class PDODriver extends AbstractDatabase
     /**
      * {@inheritdoc}
      */
-    public function selectObjects($className, $query, $params = [], $fieldAsKey = false)
+    public function selectObjects($className, $query, $params = [], $fieldAsKey = false): array
     {
         $startTime = $this->isCalculateTime ? microtime(true) : 0;
 
@@ -88,7 +91,7 @@ class PDODriver extends AbstractDatabase
         try {
             $statement = $this->connection->prepare($query);
             $statement->execute($params);
-        } catch (\PDOException $exception) {
+        } catch (PDOException $exception) {
             if ($this->reconnectProblem($exception)) {
                 $statement = $this->connection->prepare($query);
                 $statement->execute($params);
@@ -96,7 +99,7 @@ class PDODriver extends AbstractDatabase
             } else {
                 throw $this->pdoException($exception, $query, $params);
             }
-        } catch (\Throwable $event) {
+        } catch (Throwable $event) {
             throw $this->pdoException($event, $query, $params);
         }
 
@@ -104,9 +107,9 @@ class PDODriver extends AbstractDatabase
 
         // Format
         if ($className === false) {
-            $statement->setFetchMode(\PDO::FETCH_OBJ, $className);
+            $statement->setFetchMode(PDO::FETCH_OBJ, $className);
         } else {
-            $statement->setFetchMode(\PDO::FETCH_CLASS, $className);
+            $statement->setFetchMode(PDO::FETCH_CLASS, $className);
         }
         $result = $statement->fetchAll();
         if ($fieldAsKey !== false) {
@@ -141,7 +144,7 @@ class PDODriver extends AbstractDatabase
         try {
             $statement = $this->connection->prepare($query);
             $statement->execute($params);
-        } catch (\PDOException $exception) {
+        } catch (PDOException $exception) {
             if ($this->reconnectProblem($exception)) {
                 $statement = $this->connection->prepare($query);
                 $statement->execute($params);
@@ -149,7 +152,7 @@ class PDODriver extends AbstractDatabase
             } else {
                 throw $this->pdoException($exception, $query, $params);
             }
-        } catch (\Throwable $event) {
+        } catch (Throwable $event) {
             throw $this->pdoException($event, $query, $params);
         }
 
@@ -157,9 +160,9 @@ class PDODriver extends AbstractDatabase
 
         // Format
         if ($className === false) {
-            $statement->setFetchMode(\PDO::FETCH_OBJ, $className);
+            $statement->setFetchMode(PDO::FETCH_OBJ, $className);
         } else {
-            $statement->setFetchMode(\PDO::FETCH_CLASS, $className);
+            $statement->setFetchMode(PDO::FETCH_CLASS, $className);
         }
         $result = $statement->fetch();
 
@@ -180,7 +183,7 @@ class PDODriver extends AbstractDatabase
     /**
      * @inheritDoc
      */
-    public function select($query, $params = [], $fieldAsKey = false)
+    public function select($query, $params = [], $fieldAsKey = false): array
     {
         $startTime = $this->isCalculateTime ? microtime(true) : 0;
 
@@ -188,7 +191,7 @@ class PDODriver extends AbstractDatabase
         try {
             $statement = $this->connection->prepare($query);
             $statement->execute($params);
-        } catch (\PDOException $exception) {
+        } catch (PDOException $exception) {
             if ($this->reconnectProblem($exception)) {
                 $statement = $this->connection->prepare($query);
                 $statement->execute($params);
@@ -196,14 +199,14 @@ class PDODriver extends AbstractDatabase
             } else {
                 throw $this->pdoException($exception, $query, $params);
             }
-        } catch (\Throwable $event) {
+        } catch (Throwable $event) {
             throw $this->pdoException($event, $query, $params);
         }
 
         $executeTime = $this->isCalculateTime ? microtime(true) : 0;
 
         // Format
-        $statement->setFetchMode(\PDO::FETCH_ASSOC);
+        $statement->setFetchMode(PDO::FETCH_ASSOC);
         $result = $statement->fetchAll();
         if ($fieldAsKey !== false) {
             $fieldAsKeyResult = [];
@@ -229,7 +232,7 @@ class PDODriver extends AbstractDatabase
     /**
      * @inheritDoc
      */
-    public function selectOne($query, $params = [])
+    public function selectOne($query, $params = []): ?array
     {
         $startTime = $this->isCalculateTime ? microtime(true) : 0;
 
@@ -237,7 +240,7 @@ class PDODriver extends AbstractDatabase
         try {
             $statement = $this->connection->prepare($query);
             $statement->execute($params);
-        } catch (\PDOException $exception) {
+        } catch (PDOException $exception) {
             if ($this->reconnectProblem($exception)) {
                 $statement = $this->connection->prepare($query);
                 $statement->execute($params);
@@ -245,14 +248,14 @@ class PDODriver extends AbstractDatabase
             } else {
                 throw $this->pdoException($exception, $query, $params);
             }
-        } catch (\Throwable $event) {
+        } catch (Throwable $event) {
             throw $this->pdoException($event, $query, $params);
         }
 
         $executeTime = $this->isCalculateTime ? microtime(true) : 0;
 
         // Format
-        $statement->setFetchMode(\PDO::FETCH_ASSOC);
+        $statement->setFetchMode(PDO::FETCH_ASSOC);
         $result = $statement->fetch();
 
         if ($this->isCalculateTime) {
@@ -271,7 +274,7 @@ class PDODriver extends AbstractDatabase
     /**
      * @inheritDoc
      */
-    public function selectOneField($query, $params = [], $field = null)
+    public function selectOneField($query, $params = [], $field = null): ?string
     {
         $startTime = $this->isCalculateTime ? microtime(true) : 0;
 
@@ -279,7 +282,7 @@ class PDODriver extends AbstractDatabase
         try {
             $statement = $this->connection->prepare($query);
             $statement->execute($params);
-        } catch (\PDOException $exception) {
+        } catch (PDOException $exception) {
             if ($this->reconnectProblem($exception)) {
                 $statement = $this->connection->prepare($query);
                 $statement->execute($params);
@@ -287,14 +290,14 @@ class PDODriver extends AbstractDatabase
             } else {
                 throw $this->pdoException($exception, $query, $params);
             }
-        } catch (\Throwable $event) {
+        } catch (Throwable $event) {
             throw $this->pdoException($event, $query, $params);
         }
 
         $executeTime = $this->isCalculateTime ? microtime(true) : 0;
 
         // Format
-        $statement->setFetchMode(\PDO::FETCH_BOTH);
+        $statement->setFetchMode(PDO::FETCH_BOTH);
         $ret = $statement->fetch();
         $result = null;
         if ($ret) {
@@ -321,7 +324,7 @@ class PDODriver extends AbstractDatabase
     /**
      * @inheritDoc
      */
-    public function selectField($query, $params = [], $field = null, $fieldAsKey = false)
+    public function selectField($query, $params = [], $field = null, $fieldAsKey = false): array
     {
         $startTime = $this->isCalculateTime ? microtime(true) : 0;
 
@@ -329,7 +332,7 @@ class PDODriver extends AbstractDatabase
         try {
             $statement = $this->connection->prepare($query);
             $statement->execute($params);
-        } catch (\PDOException $exception) {
+        } catch (PDOException $exception) {
             if ($this->reconnectProblem($exception)) {
                 $statement = $this->connection->prepare($query);
                 $statement->execute($params);
@@ -337,14 +340,14 @@ class PDODriver extends AbstractDatabase
             } else {
                 throw $this->pdoException($exception, $query, $params);
             }
-        } catch (\Throwable $event) {
+        } catch (Throwable $event) {
             throw $this->pdoException($event, $query, $params);
         }
 
         $executeTime = $this->isCalculateTime ? microtime(true) : 0;
 
         // Format
-        $statement->setFetchMode(\PDO::FETCH_ASSOC);
+        $statement->setFetchMode(PDO::FETCH_ASSOC);
         $tmpResult = $statement->fetchAll();
 
         if ($field === null) {
@@ -377,7 +380,7 @@ class PDODriver extends AbstractDatabase
     /**
      * @inheritDoc
      */
-    public function execute($query, $params = [], $insertedResult = false)
+    public function execute($query, $params = [], $insertedResult = false): int
     {
         $startTime = $this->isCalculateTime ? microtime(true) : 0;
 
@@ -390,7 +393,7 @@ class PDODriver extends AbstractDatabase
             try {
                 $statement = $this->connection->prepare($query);
                 $statement->execute($params);
-            } catch (\PDOException $exception) {
+            } catch (PDOException $exception) {
                 if ($this->reconnectProblem($exception)) {
                     $statement = $this->connection->prepare($query);
                     $statement->execute($params);
@@ -398,7 +401,7 @@ class PDODriver extends AbstractDatabase
                 } else {
                     throw $this->pdoException($exception, $query, $params);
                 }
-            } catch (\Throwable $event) {
+            } catch (Throwable $event) {
                 throw $this->pdoException($event, $query, $params);
             }
             // Format
@@ -414,7 +417,7 @@ class PDODriver extends AbstractDatabase
             try {
                 $statement = $this->connection->prepare($query);
                 $statement->execute($params);
-            } catch (\PDOException $exception) {
+            } catch (PDOException $exception) {
                 if ($this->reconnectProblem($exception)) {
                     $statement = $this->connection->prepare($query);
                     $statement->execute($params);
@@ -422,7 +425,7 @@ class PDODriver extends AbstractDatabase
                 } else {
                     throw $this->pdoException($exception, $query, $params);
                 }
-            } catch (\Throwable $event) {
+            } catch (Throwable $event) {
                 throw $this->pdoException($event, $query, $params);
             }
             // Format
@@ -447,16 +450,15 @@ class PDODriver extends AbstractDatabase
     /**
      * @inheritDoc
      */
-    public function selectWhereObjects($className, $table, $where, $opt = [])
+    public function selectWhereObjects($className, $table, $where, $opt = []): array
     {
-        $compiled = $this->arrayCompile(
+        $compiled = self::arrayCompile(
             $where, null, null,
             (isset($opt['order']) ? $opt['order'] : null),
             (isset($opt['limit']) ? $opt['limit'] : null)
         );
         return $this->selectObjects(
             $className,
-            /** @lang MySQL */
             "SELECT * FROM `{$table}` \n WHERE {$compiled['where']} {$compiled['order']} {$compiled['limit']}",
             $compiled['params'],
             (isset($opt['key']) ? $opt['key'] : false)
@@ -468,12 +470,11 @@ class PDODriver extends AbstractDatabase
      */
     public function selectWhereOneObject($className, $table, $where, $opt = [])
     {
-        $compiled = $this->arrayCompile(
+        $compiled = self::arrayCompile(
             $where, null, null, (isset($opt['order']) ? $opt['order'] : null), null
         );
         return $this->selectOneObject(
             $className,
-            /** @lang MySQL */
             "SELECT * FROM `{$table}` \n WHERE {$compiled['where']} {$compiled['order']} LIMIT 0,1",
             $compiled['params']
         );
@@ -482,14 +483,14 @@ class PDODriver extends AbstractDatabase
     /**
      * @inheritDoc
      */
-    public function selectWhere($table, $where, $opt = [])
+    public function selectWhere($table, $where, $opt = []): array
     {
-        $compiled = $this->arrayCompile(
+        $compiled = self::arrayCompile(
             $where, null, null,
             (isset($opt['order']) ? $opt['order'] : null),
             (isset($opt['limit']) ? $opt['limit'] : null)
         );
-        return $this->select(/** @lang MySQL */
+        return $this->select(
             "SELECT * FROM `{$table}` \n WHERE {$compiled['where']} {$compiled['order']} {$compiled['limit']}",
             $compiled['params'],
             (isset($opt['key']) ? $opt['key'] : false)
@@ -499,12 +500,12 @@ class PDODriver extends AbstractDatabase
     /**
      * @inheritDoc
      */
-    public function selectWhereOne($table, $where, $opt = [])
+    public function selectWhereOne($table, $where, $opt = []): ?array
     {
-        $compiled = $this->arrayCompile(
+        $compiled = self::arrayCompile(
             $where, null, null, (isset($opt['order']) ? $opt['order'] : null), null
         );
-        return $this->selectOne(/** @lang MySQL */
+        return $this->selectOne(
             "SELECT * FROM `{$table}` \n WHERE {$compiled['where']} {$compiled['order']} LIMIT 0,1",
             $compiled['params']
         );
@@ -513,14 +514,14 @@ class PDODriver extends AbstractDatabase
     /**
      * @inheritDoc
      */
-    public function selectFieldWhere($table, $where, $field = null, $opt = [])
+    public function selectFieldWhere($table, $where, $field = null, $opt = []): array
     {
-        $compiled = $this->arrayCompile(
+        $compiled = self::arrayCompile(
             $where, null, null,
             (isset($opt['order']) ? $opt['order'] : null),
             (isset($opt['limit']) ? $opt['limit'] : null)
         );
-        return $this->selectField(/** @lang MySQL */
+        return $this->selectField(
             "SELECT * FROM `{$table}` \n WHERE {$compiled['where']} {$compiled['order']} {$compiled['limit']}",
             $compiled['params'],
             $field,
@@ -531,10 +532,10 @@ class PDODriver extends AbstractDatabase
     /**
      * @inheritDoc
      */
-    public function insert($table, $set)
+    public function insert($table, $set): string
     {
-        $compiled = $this->arrayCompile(null, null, $set, null, null);
-        return $this->execute(/** @lang MySQL */
+        $compiled = self::arrayCompile(null, null, $set, null, null);
+        return $this->execute(
             "INSERT INTO `{$table}` \n ({$compiled['insert_keys']}) \n VALUES ({$compiled['insert_values']})",
             $compiled['params'],
             true
@@ -544,10 +545,10 @@ class PDODriver extends AbstractDatabase
     /**
      * @inheritDoc
      */
-    public function update($table, $where, $set)
+    public function update($table, $where, $set): int
     {
-        $compiled = $this->arrayCompile($where, $set, null, null, null);
-        return $this->execute(/** @lang MySQL */
+        $compiled = self::arrayCompile($where, $set, null, null, null);
+        return $this->execute(
             "UPDATE `{$table}` \n SET {$compiled['set']} \n WHERE {$compiled['where']}",
             $compiled['params']
         );
@@ -556,36 +557,36 @@ class PDODriver extends AbstractDatabase
     /**
      * @inheritDoc
      */
-    public function delete($table, $where)
+    public function delete($table, $where): int
     {
         $compiled = self::arrayCompile($where, null, null, null, null);
-        return $this->execute(/** @lang MySQL */
+        return $this->execute(
             "DELETE FROM `{$table}` \n WHERE {$compiled['where']}",
             $compiled['params']
         );
     }
 
-    public function transactionStart()
+    public function transactionStart(): void
     {
         $this->connection->beginTransaction();
         $this->inTransaction = true;
     }
 
-    public function transactionCommit()
+    public function transactionCommit(): void
     {
         $this->connection->commit();
         $this->inTransaction = false;
     }
 
-    public function transactionRollBack()
+    public function transactionRollBack(): void
     {
         $this->connection->rollBack();
         $this->inTransaction = false;
     }
 
-    private function pdoException(\Throwable $exception, string $query, array $params)
+    private function pdoException(Throwable $exception, string $query, array $params): PDOException
     {
-        return new \PDOException("{$exception->getMessage()} \n with query: '$query' with params: " . json_encode($params), 0, $exception);
+        return new PDOException("{$exception->getMessage()} \n with query: '$query' with params: " . json_encode($params), 0, $exception);
     }
 
     /**
@@ -602,7 +603,7 @@ class PDODriver extends AbstractDatabase
         $insertArray = null,
         $orderArray = null,
         $limitArray = null
-    ) {
+    ): array {
         $result = [];
         $pdoParams = [];
 
@@ -681,7 +682,7 @@ class PDODriver extends AbstractDatabase
      * @param array $orderArray [['field' => string, 'reverse' => bool],[],...]
      * @return string
      */
-    public static function sqlOrder(array $orderArray)
+    public static function sqlOrder(array $orderArray): string
     {
         $orderArrays = [];
         foreach ($orderArray as $orderItem) {
@@ -701,7 +702,7 @@ class PDODriver extends AbstractDatabase
      * @param array $limitArray [count => int, from => int, page => int, per_page => int]
      * @return string
      */
-    public static function sqlLimit(array $limitArray)
+    public static function sqlLimit(array $limitArray): string
     {
         $sqlLimit = '';
         $from = 0;

@@ -2,6 +2,7 @@
 
 namespace CodeHuiter\Pattern\Controller\Base;
 
+use CodeHuiter\Config\PatternConfig;
 use CodeHuiter\Core\Application;
 use CodeHuiter\Core\Controller;
 use CodeHuiter\Core\Exception\ExceptionProcessor;
@@ -15,10 +16,19 @@ use CodeHuiter\Pattern\Service\Compressor;
  * The base pattern controller
  *
  * @property-read Compressor $compressor
+ * @see PatternConfig::SERVICE_KEY_COMPRESSOR There are Forward Usages
+ *
  * @property-read \App\Service\Link $links
+ * @see PatternConfig::SERVICE_KEY_LINKS There are Forward Usages
+ *
  * @property-read \CodeHuiter\Pattern\Service\Media $media
+ * @see PatternConfig::SERVICE_KEY_MEDIA There are Forward Usages
+ *
  * @property-read \CodeHuiter\Pattern\Module\Auth\AuthService $auth
+ * @see PatternConfig::SERVICE_KEY_AUTH There are Forward Usages
+ *
  * @property-read \CodeHuiter\Pattern\Service\Mjsa $mjsa
+ * @see PatternConfig::SERVICE_KEY_MJSA There are Forward Usages
  */
 class BaseController extends Controller
 {

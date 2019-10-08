@@ -2,61 +2,14 @@
 
 namespace CodeHuiter\Pattern\Module\Auth\Model;
 
-use CodeHuiter\Core\Application;
-use CodeHuiter\Database\Model;
+use CodeHuiter\Database\RelationalModel;
 use CodeHuiter\Modifier\ArrayModifier;
 use CodeHuiter\Modifier\StringModifier;
 use CodeHuiter\Pattern\Module\Auth\AuthService;
-use CodeHuiter\Pattern\Module\Auth\Event\UserDeletingEvent;
 
-class UserModel extends Model implements UserInterface
+class UserModel extends RelationalModel implements UserInterface
 {
-    protected static $database = 'db'; // database_default config
     protected static $table = 'users';
-    protected static $primaryFields = ['id'];
-    protected static $fields = [
-        'id',
-        'login',
-        'passhash',
-        'sig',
-        'token',
-        'regtime',
-        'sigtime',
-        'lastact',
-        'groups',
-        'lastip',
-        'timezone',
-        'has_picture',
-        'picture_id',
-        'picture_orig',
-        'picture',
-        'picture_preview',
-        'rating',
-        'email',
-        'email_conf',
-        'settings',
-        'vk_id',
-        'vk_access_token',
-        'fb_id',
-        'gl_id',
-        'tw_id',
-        'od_id',
-        'oauths',
-        'skype_id',
-        'name',
-        'alias',
-        'firstname',
-        'lastname',
-        'birthday',
-        'gender',
-        'city',
-        'longitude',
-        'latitude',
-        'about_me',
-        'notifications_count',
-        'notifications_last',
-        'data_info',
-    ];
 
     /** @var int */
     protected $id;
@@ -105,9 +58,9 @@ class UserModel extends Model implements UserInterface
     protected $data_info = '{}';
 
     /** @var array|null */
-    protected $dataInfoDecoded = null;
+    protected $_dataInfoDecoded = null;
     /** @var array|null */
-    protected $groupsDecoded = null;
+    protected $_groupsDecoded = null;
 
     public function exist(): bool
     {
@@ -289,10 +242,10 @@ class UserModel extends Model implements UserInterface
      */
     public function getDataInfo(): array
     {
-        if ($this->dataInfoDecoded === null) {
-            $this->dataInfoDecoded = StringModifier::jsonDecode($this->data_info,true);
+        if ($this->_dataInfoDecoded === null) {
+            $this->_dataInfoDecoded = StringModifier::jsonDecode($this->data_info,true);
         }
-        return $this->dataInfoDecoded;
+        return $this->_dataInfoDecoded;
     }
 
     /**
@@ -300,7 +253,7 @@ class UserModel extends Model implements UserInterface
      */
     public function setDataInfo(array $data): void
     {
-        $this->dataInfoDecoded = null;
+        $this->_dataInfoDecoded = null;
         $newDataInfo = StringModifier::jsonEncode($data);
         if ($newDataInfo !== $this->data_info) {
             $this->touch('data_info');
@@ -323,24 +276,24 @@ class UserModel extends Model implements UserInterface
 
     public function getGroups(): array
     {
-        if ($this->groupsDecoded === null) {
-            $this->groupsDecoded = StringModifier::jsonDecode($this->groups);
+        if ($this->_groupsDecoded === null) {
+            $this->_groupsDecoded = StringModifier::jsonDecode($this->groups);
         }
-        return $this->groupsDecoded;
+        return $this->_groupsDecoded;
     }
 
     public function setGroups(array $groups, bool $withSave = true): void
     {
         sort($groups);
 
-        $diff = ArrayModifier::diff($this->groupsDecoded, $groups);
+        $diff = ArrayModifier::diff($this->_groupsDecoded, $groups);
         if (!$diff) {
             return;
         }
 
         // Saving
         $this->groups = StringModifier::jsonEncode($groups);
-        $this->groupsDecoded = null;
+        $this->_groupsDecoded = null;
 
         if ($withSave) {
             $this->update(['groups' => $this->groups]);
@@ -397,12 +350,5 @@ class UserModel extends Model implements UserInterface
         /** @var self $user */
         $user = parent::save(true);
         return $user;
-    }
-
-    /** @inheritdoc */
-    public function deleteUser(): void
-    {
-        Application::getInstance()->fireEvent(new UserDeletingEvent($this));
-        $this->delete();
     }
 }

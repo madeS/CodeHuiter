@@ -2,23 +2,52 @@
 
 namespace CodeHuiter\Core;
 
-use CodeHuiter\Database\AbstractDatabase;
+use CodeHuiter\Config\Config;
+use CodeHuiter\Database\RelationalDatabase;
+use CodeHuiter\Exception\Runtime\RuntimeAppContainerException;
+use CodeHuiter\Service;
 
 /**
  * The base controller
  *
  * @property-read CodeLoader $loader
- * @property-read Router $router
+ * @see Config::SERVICE_KEY_LOADER There are Forward Usages
+ *
+ * @property-read Service\Logger $log
+ * @see Config::SERVICE_KEY_LOG There are Forward Usages
+ *
+ * @property-read Service\Console $console
+ * @see Config::SERVICE_KEY_CONSOLE There are Forward Usages
+ *
+ * @property-read Service\Debug $debug
+ * @see Config::SERVICE_KEY_DEBUG There are Forward Usages
+ *
+ * @property-read Service\DateService $date
+ * @see Config::SERVICE_KEY_DATE There are Forward Usages
+ *
+ * @property-read Service\Network $network
+ * @see Config::SERVICE_KEY_NETWORK There are Forward Usages
+ *
+ * @property-read Service\Language $lang
+ * @see Config::SERVICE_KEY_LANG There are Forward Usages
+ *
+ * @property-read Service\HtmlParser $htmlParser
+ * @see Config::SERVICE_KEY_HTML_PARSER There are Forward Usages
+ *
+ * @property-read Service\Mailer $email
+ * @see Config::SERVICE_KEY_EMAIL There are Forward Usages
+ *
  * @property-read Request $request
+ * @see Config::SERVICE_KEY_REQUEST There are Forward Usages
+ *
  * @property-read Response $response
- * @property-read AbstractDatabase $db
- * @property-read \CodeHuiter\Service\Logger $log
- * @property-read \CodeHuiter\Service\Console $console
- * @property-read \CodeHuiter\Service\Debug $debug
- * @property-read \CodeHuiter\Service\Language $lang
- * @property-read \CodeHuiter\Service\DateService $date
- * @property-read \CodeHuiter\Service\Network $network
- * @property-read \CodeHuiter\Service\HtmlParser $htmlParser
+ * @see Config::SERVICE_KEY_RESPONSE There are Forward Usages
+ *
+ * @property-read Router $router
+ * @see Config::SERVICE_KEY_ROUTER There are Forward Usages
+ *
+ * @property-read RelationalDatabase $db
+ * @see Config::SERVICE_KEY_DB_DEFAULT There are Forward Usages
  */
 class Controller
 {
@@ -39,18 +68,39 @@ class Controller
     /**
      * @param $name
      * @return mixed
+     * @throws RuntimeAppContainerException
      */
     public function __get($name)
     {
-        $this->$name = $this->app->get($name);
+        if (isset($this->app->config->injectedServices[$name])) {
+            $this->$name = $this->app->get($this->app->config->injectedServices[$name]);
+            return $this->$name;
+        }
+        throw new RuntimeAppContainerException("injected field $name not found");
+    }
 
-        return $this->$name;
+    /**
+     * @param $name
+     * @param $value
+     */
+    public function __set($name, $value)
+    {
+        $this->$name = $value;
+    }
+
+    /**
+     * @param $name
+     * @return bool
+     */
+    public function __isset($name)
+    {
+        return isset($this->app->config->injectedServices[$name]);
     }
 
     /**
      * @return Controller
      */
-    public static function getInstance()
+    public static function getInstance(): Controller
     {
         return self::$instance;
     }

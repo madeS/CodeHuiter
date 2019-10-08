@@ -91,13 +91,7 @@ class Application
             || !isset($this->config->services[$name][Config::OPT_KEY_SINGLE])
             || !$this->config->services[$name][Config::OPT_KEY_SINGLE]
         ) {
-            if (isset($this->config->services[$name][Config::OPT_KEY_CONFIG_METHOD]) && $this->config->services[$name][Config::OPT_KEY_CONFIG_METHOD]) {
-                $configMethod = $this->config->services[$name][Config::OPT_KEY_CONFIG_METHOD];
-                $this->container[$name] = $this->config->$configMethod();
-            } elseif (isset($this->config->services[$name][Config::OPT_KEY_CONFIG_METHOD_APP]) && $this->config->services[$name][Config::OPT_KEY_CONFIG_METHOD_APP]) {
-                $configMethod = $this->config->services[$name][Config::OPT_KEY_CONFIG_METHOD_APP];
-                $this->container[$name] = $this->config->$configMethod($this);
-            } elseif (isset($this->config->services[$name][Config::OPT_KEY_CALLBACK]) && $this->config->services[$name][Config::OPT_KEY_CALLBACK]) {
+            if (isset($this->config->services[$name][Config::OPT_KEY_CALLBACK]) && $this->config->services[$name][Config::OPT_KEY_CALLBACK]) {
                 $callback = $this->config->services[$name][Config::OPT_KEY_CALLBACK];
                 $this->container[$name] = $callback($this);
             } elseif (isset($this->config->services[$name][Config::OPT_KEY_CLASS]) && $this->config->services[$name][Config::OPT_KEY_CLASS]) {
@@ -110,6 +104,16 @@ class Application
                 $this->fireException(
                     new AppContainerException("Class [$name] not provide object creation information")
                 );
+            }
+            if (isset($this->config->services[$name][Config::OPT_KEY_VALIDATE])) {
+                if (!is_subclass_of($this->container[$name], $this->config->services[$name][Config::OPT_KEY_VALIDATE])) {
+                    $this->fireException(
+                        new AppContainerException(
+                            "Class [$name] provide object with validation fail. "
+                            . "Expect: {$this->config->services[$name][Config::OPT_KEY_VALIDATE]}, got " .get_class()
+                        )
+                    );
+                }
             }
         }
 

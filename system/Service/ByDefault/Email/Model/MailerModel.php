@@ -2,11 +2,11 @@
 
 namespace CodeHuiter\Service\ByDefault\Email\Model;
 
-use CodeHuiter\Database\Model;
+use CodeHuiter\Database\RelationalModel;
 
-class MailerModel extends Model
+class MailerModel extends RelationalModel
 {
-    protected static $database = 'db'; // database_default config
+    protected static $databaseServiceKey = 'db'; // database_default config
     protected static $table = 'mailer';
     protected static $primaryFields = ['id'];
     protected static $fields = [

@@ -1,6 +1,6 @@
 <?php
 
-namespace CodeHuiter\Database;
+namespace CodeHuiter\Database\ByDefault;
 
 use CodeHuiter\Config\Config;
 use CodeHuiter\Core\Application;
@@ -18,19 +18,24 @@ class Model
     protected static $primaryFields = ['id'];
 
     /** @var string[] */
-    protected static $fields = [];
+    protected static $fields;
 
-    /** @var AbstractDatabase */
-    private static $dbHandler;
+    /** @var RelationalDatabase */
+    protected static $dbHandler;
 
     /** @var DateService */
     private static $dateService;
 
     /**
-     * @deprecated TODO replace to repositories
-     * @return AbstractDatabase
+     * @var array
      */
-    protected static function getDb(): AbstractDatabase
+    protected $_origins;
+
+    /**
+     * @return RelationalDatabase
+     *@deprecated TODO replace to repositories
+     */
+    protected static function getDb(): RelationalDatabase
     {
         if (static::$dbHandler === null) {
             static::$dbHandler = Application::getInstance()->get(static::$database);
@@ -39,11 +44,14 @@ class Model
     }
 
     /**
-     * @return AbstractDatabase
+     * @return RelationalDatabase
      */
-    public function getModelDB(): AbstractDatabase
+    public function getModelDB(): RelationalDatabase
     {
-        return self::getDb();
+        if (static::$dbHandler === null) {
+            static::$dbHandler = Application::getInstance()->get(static::$database);
+        }
+        return static::$dbHandler;
     }
 
     /**
@@ -51,7 +59,7 @@ class Model
      */
     public function getModelTable(): string
     {
-        return self::$table;
+        return static::$table;
     }
 
     /**
@@ -59,7 +67,23 @@ class Model
      */
     public function getModelFields(): array
     {
-        return self::$fields;
+        if (static::$fields === null) {
+            static::$fields = [];
+            foreach ($this as $field => $value) {
+                if ($field[0] !== '_') {
+                    static::$fields[] = $field;
+                }
+            }
+        }
+        return static::$fields;
+    }
+
+    public function initOrigins(): void
+    {
+        $fields = $this->getModelFields();
+        foreach ($fields as $field) {
+            $this->_origins[$field] = $this->$field;
+        }
     }
 
     /**
@@ -67,7 +91,7 @@ class Model
      */
     public function getModelPrimaryFields(): array
     {
-        return self::$primaryFields;
+        return static::$primaryFields;
     }
 
     /**
@@ -75,7 +99,7 @@ class Model
      */
     public function getClass(): string
     {
-        return self::class;
+        return static::class;
     }
 
     /**
@@ -155,7 +179,7 @@ class Model
         }
 
         $setArray = [];
-        $fields = $onlyTouched && $filledPrimaryKeys ? $this->_touchedFields : static::$fields;
+        $fields = $onlyTouched && $filledPrimaryKeys ? $this->_touchedFields : $this->getModelFields();
         foreach ($fields as $field) {
             $setArray[$field] = $this->$field;
         }

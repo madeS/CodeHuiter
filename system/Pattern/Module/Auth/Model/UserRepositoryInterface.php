@@ -28,4 +28,15 @@ interface UserRepositoryInterface
      * @return UserInterface|null
      */
     public function findOne(array $where, array $opt = []): ?UserInterface;
+
+    /**
+     * @param UserInterface $user
+     * @return UserInterface
+     */
+    public function save(UserInterface $user): UserInterface;
+
+    /**
+     * @param UserInterface $user
+     */
+    public function delete(UserInterface $user): void;
 }

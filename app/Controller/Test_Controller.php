@@ -2,7 +2,10 @@
 
 namespace App\Controller;
 
+use CodeHuiter\Database\RelationalModelRepository;
 use CodeHuiter\Pattern\Controller\Base\BaseController;
+use CodeHuiter\Pattern\Module\Shop\Model\ShopCategoryProductModel;
+use CodeHuiter\Pattern\Module\Shop\Model\SomeServiceInterface;
 
 class Test_Controller extends BaseController
 {
@@ -12,6 +15,31 @@ class Test_Controller extends BaseController
         //echo 'Is Test index function';
         phpinfo();
     }
+
+
+    public function testPartModel(): void
+    {
+        /** @var ShopCategoryProductModel $model */
+        $model = ShopCategoryProductModel::getEmpty();
+        $model->setCreatedAt($this->date->sqlTime());
+        $model->setOnePrimaryField(555);
+
+        $repository = new RelationalModelRepository($this->app, new ShopCategoryProductModel());
+        $repository->save($model);
+
+        echo $model;
+
+        $this->debug->outToHtml($this->app->config->services);
+
+        $this->console->log('Its work yesss');
+
+        /** @var SomeServiceInterface $someService */
+        $someService = $this->app->get(SomeServiceInterface::class);
+        $someService->doSomething();
+
+    }
+
+
 
     public function bench($data1 = '', $data2 = '')
     {

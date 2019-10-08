@@ -92,7 +92,7 @@ abstract class AbstractLog implements Logger
     public function emergency(string $message, array $context = []): void
     {
         $this->log($message, $context, 'emergency', $this->tag);
-        $this->tag = '';
+        $this->clearAdditional();
     }
 
     //--------------------------------------------------------------------
@@ -109,7 +109,7 @@ abstract class AbstractLog implements Logger
     public function alert(string $message, array $context = []): void
     {
         $this->log($message, $context, 'alert', $this->tag);
-        $this->tag = '';
+        $this->clearAdditional();
     }
 
     //--------------------------------------------------------------------
@@ -125,7 +125,7 @@ abstract class AbstractLog implements Logger
     public function critical(string $message, array $context = []): void
     {
         $this->log($message, $context, 'critical', $this->tag);
-        $this->tag = '';
+        $this->clearAdditional();
     }
 
     //--------------------------------------------------------------------
@@ -140,7 +140,7 @@ abstract class AbstractLog implements Logger
     public function error(string $message, array $context = []): void
     {
         $this->log($message, $context, 'error', $this->tag);
-        $this->tag = '';
+        $this->clearAdditional();
     }
 
 
@@ -156,7 +156,7 @@ abstract class AbstractLog implements Logger
     public function warning(string $message, array $context = []): void
     {
         $this->log($message, $context, 'warning', $this->tag);
-        $this->tag = '';
+        $this->clearAdditional();
     }
 
     /**
@@ -168,7 +168,7 @@ abstract class AbstractLog implements Logger
     public function notice(string $message, array $context = []): void
     {
         $this->log($message, $context, 'notice', $this->tag);
-        $this->tag = '';
+        $this->clearAdditional();
     }
 
     /**
@@ -182,7 +182,7 @@ abstract class AbstractLog implements Logger
     public function info(string $message, array $context = []): void
     {
         $this->log($message, $context, 'info', $this->tag);
-        $this->tag = '';
+        $this->clearAdditional();
     }
 
     /**
@@ -194,6 +194,12 @@ abstract class AbstractLog implements Logger
     public function debug(string $message, array $context = []): void
     {
         $this->log($message, $context, 'debug', $this->tag);
+        $this->clearAdditional();
+    }
+
+    private function clearAdditional(): void
+    {
         $this->tag = '';
+        $this->traceData = [];
     }
 }
