@@ -2,6 +2,8 @@
 
 /** @var \App\Controller\DefaultController $those */
 $those = null;
+/** @var \CodeHuiter\Service\ByDefault\PhpRenderer $renderer */
+$renderer = null;
 
 /** @var string $bodyAjax */
 $bodyAjax = '';

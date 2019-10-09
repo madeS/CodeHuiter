@@ -90,7 +90,7 @@ class BaseController extends Controller
         $this->data['bodyAfterTpl'] = $this->app->config->projectConfig->bodyAfterTpl;
         $this->data['contentTpl'] = $contentTpl;
 
-        $this->response->render($this->data['patternTemplate'] . '/main', $this->data, $return);
+        $this->renderer->render($this->data['patternTemplate'] . '/main', $this->data, $return);
     }
 
     protected function initWithAuth(
@@ -102,13 +102,13 @@ class BaseController extends Controller
         $customActions = []
     ) {
         $those = $this;
-        $success = $this->auth->initUser($require, $requiredGroups , ([
+        $success = $this->auth->initUser($require, $requiredGroups , [
             AuthService::GROUP_AUTH_SUCCESS => function(/** @noinspection PhpUnusedParameterInspection */UserInterface $user) use ($those) {
                 // User Not authed
                 if ($those->request->isMjsaAJAX()) {
                     $this->data['in_popup'] = true;
                     $this->mjsa->openPopupWithData(
-                        $this->response->render($this->auth->getViewsPath() . 'login', $this->data, true),
+                        $this->renderer->render($this->auth->getViewsPath() . 'login', $this->data, true),
                         'authPopup',
                         ['maxWidth' => 600, 'close' => true,]
                     );
@@ -141,7 +141,7 @@ class BaseController extends Controller
                     $those->response->location($those->auth->config->urlActive, true);
                 }
             },
-        ] + $customActions));
+        ] + $customActions);
 
         $this->data['userInfo'] = ($success) ? $this->auth->user : $this->auth->getDefaultUser();
         return $success;

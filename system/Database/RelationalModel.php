@@ -178,7 +178,7 @@ class RelationalModel
     protected static function getDateService(): DateService
     {
         if (static::$dateService === null) {
-            static::$dateService = Application::getInstance()->get(Config::SERVICE_KEY_DATE);
+            static::$dateService = Application::getInstance()->get(DateService::class);
         }
         return static::$dateService;
     }

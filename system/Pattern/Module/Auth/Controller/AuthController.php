@@ -32,7 +32,7 @@ class AuthController extends BaseController
         if ($this->request->isMjsaAJAX() && $this->request->getGet('in_popup')) {
             $this->data['in_popup'] = true;
             $this->mjsa->openPopupWithData(
-                $this->response->render($this->auth->getViewsPath() . 'login', $this->data, true),
+                $this->renderer->render($this->auth->getViewsPath() . 'login', $this->data, true),
                 'authPopup',
                 ['maxWidth' => 600, 'close' => true,]
             )->send();
@@ -55,7 +55,7 @@ class AuthController extends BaseController
             //$this->mjsa->successMessage($result->getMessage());
             $this->mjsa->closePopups()->reload()->send();
         } elseif ($result->isSpecific() && isset($result->getFields()['confirmation'])) {
-            $this->mjsa->formReplace($this->response->render(
+            $this->mjsa->formReplace($this->renderer->render(
                 $this->auth->getViewsPath() . 'formMessage',
                 ['message' => $result->getMessage(), 'messageType' => 'success'],
                 true
@@ -85,7 +85,7 @@ class AuthController extends BaseController
                 . 'else mjsa.bodyUpdate();'
                 . '</script>';
         } elseif ($result->isSpecific() && isset($result->getFields()['confirmation'])) {
-            $this->mjsa->formReplace($this->response->render(
+            $this->mjsa->formReplace($this->renderer->render(
                 $this->auth->getViewsPath() . 'formMessage',
                 ['message' => $result->getMessage(), 'messageType' => 'success'],
                 true
@@ -135,7 +135,7 @@ class AuthController extends BaseController
             $this->request->getPost('logemail', '')
         );
         if ($result->isSuccess()) {
-            $this->mjsa->formReplace($this->response->render(
+            $this->mjsa->formReplace($this->renderer->render(
                 $this->auth->getViewsPath() . 'formMessage',
                 ['message' => $this->lang->get('auth_sign:recovery_link_sent'), 'messageType' => 'success'],
                 true

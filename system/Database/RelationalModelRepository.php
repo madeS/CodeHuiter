@@ -2,7 +2,6 @@
 
 namespace CodeHuiter\Database;
 
-use CodeHuiter\Config\Config;
 use CodeHuiter\Core\Application;
 use CodeHuiter\Service\DateService;
 use CodeHuiter\Service\Logger;
@@ -175,7 +174,7 @@ class RelationalModelRepository
     private function getDateService(): DateService
     {
         if ($this->dateService === null) {
-            $this->dateService = $this->application->get(Config::SERVICE_KEY_DATE);
+            $this->dateService = $this->application->get(DateService::class);
         }
         return $this->dateService;
     }

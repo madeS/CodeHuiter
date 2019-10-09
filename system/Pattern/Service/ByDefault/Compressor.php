@@ -4,7 +4,7 @@ namespace CodeHuiter\Pattern\Service\ByDefault;
 
 use CodeHuiter\Config\CompressorConfig;
 use CodeHuiter\Core\Request;
-use CodeHuiter\Core\Response;
+use CodeHuiter\Service\ByDefault\PhpRenderer;
 
 class Compressor implements \CodeHuiter\Pattern\Service\Compressor
 {
@@ -14,19 +14,19 @@ class Compressor implements \CodeHuiter\Pattern\Service\Compressor
     /** @var Request $request */
     protected $request;
 
-    /** @var Response $response */
-    protected $response;
+    /** @var PhpRenderer $renderer */
+    protected $renderer;
 
     /**
      * @param CompressorConfig $config
      * @param Request $request
-     * @param Response $response
+     * @param PhpRenderer $renderer
      */
-    public function __construct(CompressorConfig $config, Request $request, Response $response)
+    public function __construct(CompressorConfig $config, Request $request, PhpRenderer $renderer)
     {
         $this->config = $config;
         $this->request = $request;
-        $this->response = $response;
+        $this->renderer = $renderer;
     }
 
     /**
@@ -42,12 +42,12 @@ class Compressor implements \CodeHuiter\Pattern\Service\Compressor
         $exts = ['css' => 'resultCss','js' => 'resultJs'];
         foreach ($exts as $ext => $resultProp) {
             $outputFile = PUB_PATH . $outputFileTemplate . '.' . $ext;
-            if (!file_exists($outputFile) || $this->config->version === 'dev') {
+            if ($this->config->version === 'dev' || !file_exists($outputFile)) {
                 $fp = fopen($outputFile, 'wb');
                 foreach ($this->config->$ext as $connected) {
                     $connectedExtArr = explode('.',$connected);
                     if (end($connectedExtArr) === 'php') {
-                        $connected_content = $this->response->render(PUB_PATH . $connected, [],true);
+                        $connected_content = $this->renderer->render(PUB_PATH . $connected, [],true);
                     } else {
                         $connected_content = file_get_contents(PUB_PATH . $connected);
                     }

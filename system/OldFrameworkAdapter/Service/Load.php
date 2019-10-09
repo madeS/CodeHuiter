@@ -24,7 +24,7 @@ namespace {
     function lang($key): string
     {
         /** @var Language $lang */
-        $lang = Application::getInstance()->get(Config::SERVICE_KEY_LANG);
+        $lang = Application::getInstance()->get(Language::class);
         return $lang->get('quotar_old:'.$key);
     }
 }

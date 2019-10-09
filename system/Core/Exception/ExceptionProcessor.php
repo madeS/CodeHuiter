@@ -4,9 +4,10 @@ namespace CodeHuiter\Core\Exception;
 
 use CodeHuiter\Config\Config;
 use CodeHuiter\Core\Application;
+use CodeHuiter\Core\Response;
 use CodeHuiter\Service\Logger;
 use CodeHuiter\Core\Request;
-use CodeHuiter\Core\Response;
+use CodeHuiter\Service\Renderer;
 use CodeHuiter\Exception\PhpErrorException;
 use Exception;
 
@@ -29,7 +30,7 @@ class ExceptionProcessor
         try {
             $app = Application::getInstance();
             /** @var Request $request */
-            $request = $app->get(Config::SERVICE_KEY_REQUEST);
+            $request = $app->get(Request::class);
 
             $show_debug_backtrace = $app->config->frameworkConfig->showDebugBacktrace;
             $show_errors = $app->config->frameworkConfig->showErrors;
@@ -45,7 +46,7 @@ class ExceptionProcessor
                     $is_error = (((E_ERROR | E_PARSE | E_COMPILE_ERROR | E_CORE_ERROR | E_USER_ERROR) & $severity) === $severity);
                 }
                 if ($is_error) {
-                    header('HTTP/1.1' . ' ' . 500 . ' ' . Response::$httpCodes[500], TRUE, 500);
+                    header('HTTP/1.1' . ' ' . 500 . ' ' . Response::HTTP_CODES[500], TRUE, 500);
                 }
             }
             /** @var Logger $log */

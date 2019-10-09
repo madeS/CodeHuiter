@@ -62,9 +62,9 @@
 
 		<div class="profile">
 			<?php if($userInfo->exist()):?>
-				<?php $those->response->render($patternTemplate . 'page_parts/header_profile_block')?>
+				<?php $renderer->render($patternTemplate . 'page_parts/header_profile_block')?>
 			<?php else:?>
-				<?php $those->response->render($patternTemplate . 'page_parts/header_login_block')?>
+				<?php $renderer->render($patternTemplate . 'page_parts/header_login_block')?>
 			<?php endif;?>
 		</div>
 		<div class="clearline"></div>

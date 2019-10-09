@@ -10,9 +10,9 @@ define('VIEW_PATH', APP_PATH . 'View/');
 define('CACHE_PATH', STORAGE_PATH . 'framework/cache/');
 
 require SYSTEM_PATH . 'Core/CodeLoader.php';
-$benchmark = new \CodeHuiter\Core\CodeLoader();
+$codeLoader = new \CodeHuiter\Core\CodeLoader();
 if ($_GET['debug_bench'] ?? null) {
-    $benchmark->setBenchMode(\CodeHuiter\Core\CodeLoader::BENCH_MODE_BENCH_TIMES_AND_MEMORY);
+    $codeLoader->setBenchMode(\CodeHuiter\Core\CodeLoader::BENCH_MODE_BENCH_TIMES_AND_MEMORY);
 }
 
 /*
@@ -45,7 +45,7 @@ if (isset($_GET['codeerror']) && !isset($_COOKIE['developer'])){
  * Using The Composer AutoLoader
  */
 $composerAutoloader = require __DIR__.'/../vendor/autoload.php';
-$benchmark->setAutoloader($composerAutoloader);
+$codeLoader->setAutoloader($composerAutoloader);
 
 /*
 |--------------------------------------------------------------------------
@@ -76,5 +76,5 @@ register_shutdown_function('_shutdown_handler');
 // --------------------------------------------------
 
 $app = \CodeHuiter\Core\Application::getInstance();
-$app->set(\CodeHuiter\Config\Config::SERVICE_KEY_LOADER, $benchmark);
+$app->set(\CodeHuiter\Core\CodeLoader::class, $codeLoader);
 $app->run();

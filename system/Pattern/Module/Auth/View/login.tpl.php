@@ -1,5 +1,5 @@
 <div class="regauth_form_container<?php echo (isset($in_popup)?' popup':'')?>">
-	<input class="continue_url" type="hidden" name="continue_url" value="<?php echo $those->response->html($those->request->getGet('url'))?>">
+	<input class="continue_url" type="hidden" name="continue_url" value="<?php echo $renderer->textForHtml($those->request->getGet('url'))?>">
 	<div class="social_login">
 		<h3><?php echo $those->lang->get('auth_ui:sign_in_with_social');?></h3>
 		<p><?php echo $those->lang->get('auth_ui:sign_in_by_2_clicks');?> <a href="http://ru.wikipedia.org/wiki/OAuth" target="_blank"><?php echo $those->lang->get('auth_ui:how_it_work');?></a></p>

@@ -5,10 +5,11 @@ namespace CodeHuiter\Config;
 use CodeHuiter\Config\Data\MimeTypes;
 use CodeHuiter\Core\Application;
 use CodeHuiter\Core\CodeLoader;
+use CodeHuiter\Core\Response;
 use CodeHuiter\Service\Console;
 use CodeHuiter\Service\Logger;
 use CodeHuiter\Core\Request;
-use CodeHuiter\Core\Response;
+use CodeHuiter\Service\Renderer;
 use CodeHuiter\Core\Router;
 use CodeHuiter\Database\RelationalDatabase;
 use CodeHuiter\Database\Drivers\PDODriver;
@@ -39,8 +40,8 @@ abstract class Config
     public const SERVICE_KEY_NETWORK = 'network';
     public const SERVICE_KEY_LANG = 'lang';
     public const SERVICE_KEY_HTML_PARSER = 'htmlParser';
-    public const SERVICE_KEY_MIME_TYPES = 'mimeTypes';
     public const SERVICE_KEY_EMAIL = 'email';
+    public const SERVICE_KEY_RENDERER = 'renderer';
     public const SERVICE_KEY_REQUEST = 'request';
     public const SERVICE_KEY_RESPONSE = 'response';
     public const SERVICE_KEY_ROUTER = 'router';
@@ -67,7 +68,8 @@ abstract class Config
     public $dateConfig;
     /** @var EmailConfig */
     public $emailConfig;
-
+    /** @var RendererConfig */
+    public $rendererConfig;
     /** @var RequestConfig */
     public $requestConfig;
     /** @var ResponseConfig */
@@ -196,6 +198,29 @@ abstract class Config
         $this->emailConfig = new EmailConfig();
 
         /**
+         * Renderer Service
+         */
+        $this->services[Renderer::class] = [
+            self::OPT_KEY_CALLBACK => static function (Application $app) {
+                return new ByDefault\PhpRenderer($app->config->rendererConfig, $app->get(Response::class), $app->get(Logger::class));
+            },
+            self::OPT_KEY_VALIDATE => Renderer::class,
+            self::OPT_KEY_SINGLE => true
+        ];
+        $this->injectedServices[self::SERVICE_KEY_RENDERER] = Renderer::class;
+
+        /**
+         * PhpRenderer Service
+         */
+        $this->services[ByDefault\PhpRenderer::class] = [
+            self::OPT_KEY_CALLBACK => static function (Application $app) {
+                return new ByDefault\PhpRenderer($app->config->rendererConfig, $app->get(Response::class), $app->get(Logger::class));
+            },
+            self::OPT_KEY_VALIDATE => ByDefault\PhpRenderer::class,
+            self::OPT_KEY_SINGLE => true
+        ];
+
+        /**
          * Request Service
          */
         $this->services[Request::class] = [
@@ -213,12 +238,12 @@ abstract class Config
          */
         $this->services[Response::class] = [
             self::OPT_KEY_CALLBACK => static function (Application $app) {
-                return new Response($app, $app->config->responseConfig, $app->get(Request::class));
+                return new \CodeHuiter\Core\ByDefault\Response($app, $app->config->responseConfig, $app->get(Request::class));
             },
             self::OPT_KEY_VALIDATE => Response::class,
             self::OPT_KEY_SINGLE => true
         ];
-        $this->injectedServices[self::SERVICE_KEY_RESPONSE] = Response::class;
+        $this->injectedServices[self::SERVICE_KEY_RESPONSE] = Renderer::class;
         $this->responseConfig = new ResponseConfig();
 
         /**
@@ -314,6 +339,12 @@ class FrameworkConfig implements InitializedConfig
             ini_set('display_errors', 0);
         }
     }
+}
+
+class RendererConfig
+{
+    /** @var string  */
+    public $templateNameAppend = '.tpl.php';
 }
 
 class RequestConfig

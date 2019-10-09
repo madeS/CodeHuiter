@@ -3,7 +3,6 @@
 namespace CodeHuiter\Pattern\Module\Auth;
 
 use CodeHuiter\Config\AuthConfig;
-use CodeHuiter\Config\Config;
 use CodeHuiter\Core\Application;
 use CodeHuiter\Core\Request;
 use CodeHuiter\Core\Response;
@@ -76,17 +75,31 @@ class AuthService
 
     protected $commonHash = '8dc66b2be10c6882c4565f74a2f9f21f';
 
+    /**
+     * @param Application $application
+     * @param AuthConfig $config
+     * @param DateService $dateService
+     * @param Language $language
+     * @param Request $request
+     * @param Response $response
+     * @param UserRepositoryInterface $userRepository
+     */
     public function __construct(
         Application $application,
+        AuthConfig $config,
+        DateService $dateService,
+        Language $language,
+        Request $request,
+        Response $response,
         UserRepositoryInterface $userRepository
     ) {
         $this->app = $application;
+        $this->config = $config;
+        $this->date = $dateService;
+        $this->lang = $language;
+        $this->request = $request;
+        $this->response = $response;
         $this->userRepository = $userRepository;
-        $this->date = $application->get(Config::SERVICE_KEY_DATE);
-        $this->lang = $application->get(Config::SERVICE_KEY_LANG);
-        $this->request = $application->get(Config::SERVICE_KEY_REQUEST);
-        $this->response = $application->get(Config::SERVICE_KEY_RESPONSE);
-        $this->config = $application->config->authConfig;
 
         $this->groups = array_merge($this->groups, $this->config->groups); // Additional groups
     }
@@ -97,7 +110,7 @@ class AuthService
     protected function getEmail()
     {
         /** @var Mailer $email */
-        $email = $this->app->get('email');
+        $email = $this->app->get(Mailer::class);
         return $email;
     }
 
@@ -777,6 +790,7 @@ class AuthService
             }
         }
         $this->updateSig($user);
+        return ClientResult::createSuccess();
     }
 
     /**

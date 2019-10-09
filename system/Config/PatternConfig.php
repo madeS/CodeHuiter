@@ -5,6 +5,8 @@ namespace CodeHuiter\Config;
 use CodeHuiter\Core\Application;
 use CodeHuiter\Core\Request;
 use CodeHuiter\Core\Response;
+use CodeHuiter\Service\ByDefault\PhpRenderer;
+use CodeHuiter\Service\DateService;
 use CodeHuiter\Pattern\Module\Auth\AuthService;
 use CodeHuiter\Pattern\Module\Auth\Model\UserModelRepository;
 use CodeHuiter\Pattern\Module\Auth\Model\UserRepositoryInterface;
@@ -48,7 +50,7 @@ class PatternConfig extends Config
                 return new \CodeHuiter\Pattern\Service\ByDefault\Compressor(
                     $app->config->compressorConfig,
                     $app->get(Request::class),
-                    $app->get(Response::class)
+                    $app->get(PhpRenderer::class)
                 );
             },
             self::OPT_KEY_VALIDATE => Compressor::class,
@@ -129,7 +131,15 @@ class PatternConfig extends Config
          */
         $this->services[AuthService::class] = [
             self::OPT_KEY_CALLBACK => static function (Application $app) {
-                return new AuthService($app, $app->get(UserRepositoryInterface::class));
+                return new AuthService(
+                    $app,
+                    $app->config->authConfig,
+                    $app->get(DateService::class),
+                    $app->get(Language::class),
+                    $app->get(Request::class),
+                    $app->get(Response::class),
+                    $app->get(UserRepositoryInterface::class)
+                );
             },
             self::OPT_KEY_VALIDATE => AuthService::class,
             self::OPT_KEY_SINGLE => true

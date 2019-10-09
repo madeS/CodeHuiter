@@ -6,6 +6,7 @@ use CodeHuiter\Config\Config;
 use CodeHuiter\Database\RelationalDatabase;
 use CodeHuiter\Exception\Runtime\RuntimeAppContainerException;
 use CodeHuiter\Service;
+use CodeHuiter\Service\Renderer;
 
 /**
  * The base controller
@@ -36,6 +37,9 @@ use CodeHuiter\Service;
  *
  * @property-read Service\Mailer $email
  * @see Config::SERVICE_KEY_EMAIL There are Forward Usages
+ *
+ * @property-read Renderer $renderer
+ * @see Config::SERVICE_KEY_RENDERER There are Forward Usages
  *
  * @property-read Request $request
  * @see Config::SERVICE_KEY_REQUEST There are Forward Usages

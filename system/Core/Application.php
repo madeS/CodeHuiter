@@ -11,6 +11,7 @@ use CodeHuiter\Core\Exception\ExceptionThrower;
 use CodeHuiter\Core\Exception\ExceptionThrowerInterface;
 use CodeHuiter\Exception\AppContainerException;
 use CodeHuiter\Exception\CodeHuiterException;
+use CodeHuiter\Service\Renderer;
 use Exception;
 
 class Application
@@ -185,7 +186,7 @@ class Application
             $router->execute();
 
             /** @var Response $response */
-            $response = $this->get(Config::SERVICE_KEY_RESPONSE);
+            $response = $this->get(Response::class);
             $response->send();
 
         } catch (CodeHuiterException $ex) {

@@ -8,7 +8,7 @@
 <head>
 	<?php require_once $patternTemplate . 'main_parts/head.tpl.php'; ?>
 	<?php if(isset($headAfterTpl) && $headAfterTpl):?>
-		<?php $those->response->render($template . $headAfterTpl); ?>
+		<?php $renderer->render($template . $headAfterTpl); ?>
 	<?php endif;?>
 </head>
 <body>
@@ -23,7 +23,7 @@
 	<?php if(!isset($customTemplate)):?>
 		<?php if (isset($headerTpl)): ?>
 			<?php if ($headerTpl): ?>
-				<?php $those->response->render($template . $headerTpl); ?>
+				<?php $renderer->render($template . $headerTpl); ?>
 			<?php endif; ?>
 		<?php else: ?>
 			<?php require_once $patternTemplate . 'page_parts/header.tpl.php'; ?>
@@ -57,14 +57,14 @@
 				<?php foreach($contentTpl as $content_tpl_item):?>
 					<?php
 						if (strpos($content_tpl_item,':') === 0) $content_tpl_item = $template . substr($content_tpl_item,1);
-						$those->response->render($content_tpl_item);
+                $renderer->render($content_tpl_item);
 					?>
-					<?php $those->response->render($template . $content_tpl_item); ?>
+					<?php $renderer->render($template . $content_tpl_item); ?>
 				<?php endforeach;?>
 			<?php else:?>
 				<?php
 					if (strpos($contentTpl,':') === 0) $contentTpl = $template . substr($contentTpl,1);
-					$those->response->render($contentTpl);
+					$renderer->render($contentTpl);
 				?>
 			<?php endif;?>
 		<?php endif; ?>
@@ -74,7 +74,7 @@
 
 		<?php if (isset($footerTpl)): ?>
 			<?php if ($footerTpl): ?>
-				<?php $those->response->render($template . $footerTpl); ?>
+				<?php $renderer->render($template . $footerTpl); ?>
 			<?php endif; ?>
 		<?php else: ?>
 			<?php require_once $patternTemplate . 'page_parts/footer.tpl.php'; ?>
@@ -97,7 +97,7 @@
 
 	<?php require_once $patternTemplate . 'main_parts/body_cont_after.tpl.php'; ?>
 	<?php if(isset($bodyAfterTpl) && $bodyAfterTpl):?>
-		<?php $those->response->render($template . $bodyAfterTpl); ?>
+		<?php $renderer->render($template . $bodyAfterTpl); ?>
 	<?php endif;?>
 
 </body>
