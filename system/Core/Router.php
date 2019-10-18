@@ -4,7 +4,7 @@ namespace CodeHuiter\Core;
 
 use CodeHuiter\Config\RouterConfig;
 use CodeHuiter\Service\Logger;
-use CodeHuiter\Exception\CoreCodeHuiterException;
+use CodeHuiter\Exception\Runtime\CoreException;
 use CodeHuiter\Exception\InvalidConfigException;
 use CodeHuiter\Exception\InvalidRequestException;
 
@@ -70,11 +70,8 @@ class Router
         $this->processSegments($segments);
     }
 
-    /**
-     * @throws CoreCodeHuiterException
-     */
-    public function execute() {
-
+    public function execute(): void
+    {
         try {
             if (!class_exists($this->controller,true)) {
                 throw new InvalidRequestException("Class '{$this->controller}' not found for this request'");
@@ -117,11 +114,7 @@ class Router
             $this->log->notice('Page not found: ' . $this->request->uri);
 
             if ($this->controller === $this->config->error404['controller']) {
-                throw new CoreCodeHuiterException(
-                    "Can't found '{$this->controller}::{$this->controllerMethod}' for call error 404",
-                    0,
-                    $exception
-                );
+                throw CoreException::onErrorControllerNoFound($this->controller, $this->controllerMethod, $exception);
             }
             $this->setController($this->config->error404['controller'], true);
             $this->setControllerMethod($this->config->error404['controller_method']);

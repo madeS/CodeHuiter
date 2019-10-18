@@ -27,8 +27,8 @@ use CodeHuiter\Pattern\Service\Compressor;
  * @property-read \CodeHuiter\Pattern\Module\Auth\AuthService $auth
  * @see PatternConfig::SERVICE_KEY_AUTH There are Forward Usages
  *
- * @property-read \CodeHuiter\Pattern\Service\Mjsa $mjsa
- * @see PatternConfig::SERVICE_KEY_MJSA There are Forward Usages
+ * @property-read \CodeHuiter\Pattern\Service\MjsaResponse $mjsaResponse
+ * @see PatternConfig::SERVICE_KEY_MJSA_RESPONSE There are Forward Usages
  */
 class BaseController extends Controller
 {
@@ -64,7 +64,7 @@ class BaseController extends Controller
     protected function error500($message = 'Custom 500 error exception', $exception = null)
     {
         try {
-            $this->log->error($exception->getMessage(), ['exception' => $exception], 'exceptions');
+            $this->log->withTag('exceptions')->error($exception->getMessage(), ['exception' => $exception]);
 
             if ($exception === null) {
                 $exception = new ErrorException($message);
@@ -105,13 +105,13 @@ class BaseController extends Controller
         $success = $this->auth->initUser($require, $requiredGroups , [
             AuthService::GROUP_AUTH_SUCCESS => function(/** @noinspection PhpUnusedParameterInspection */UserInterface $user) use ($those) {
                 // User Not authed
-                if ($those->request->isMjsaAJAX()) {
+                if ($this->mjsaResponse->isMjsaRequested($this->request)) {
                     $this->data['in_popup'] = true;
-                    $this->mjsa->openPopupWithData(
+                    $this->mjsaResponse->openPopupWithData(
                         $this->renderer->render($this->auth->getViewsPath() . 'login', $this->data, true),
                         'authPopup',
                         ['maxWidth' => 600, 'close' => true,]
-                    );
+                    )->render($this->response);
                 } else {
                     $addUrl = ($those->request->uri) ? '?url=' . urlencode($those->request->uri) : '';
                     $those->response->location($those->auth->config->urlAuth . $addUrl, true);
@@ -119,11 +119,11 @@ class BaseController extends Controller
             },
             AuthService::GROUP_NOT_BANNED => function(/** @noinspection PhpUnusedParameterInspection */UserInterface $user) use ($those) {
                 // User banned
-                if ($those->request->isMjsaAJAX()) {
-                    $this->mjsa->events()
+                if ($this->mjsaResponse->isMjsaRequested($this->request)) {
+                    $this->mjsaResponse
                         ->errorMessage($this->lang->get('auth:user_banned'))
                         ->closePopups()
-                        ->send();
+                        ->render($this->response);
                 } else {
                     /** TODO Implement this page */
                     $those->response->location($those->auth->config->urlBan, true);
@@ -131,11 +131,11 @@ class BaseController extends Controller
             },
             AuthService::GROUP_ACTIVE => function(/** @noinspection PhpUnusedParameterInspection */UserInterface $user) use ($those) {
                 // User banned
-                if ($those->request->isMjsaAJAX()) {
-                    $this->mjsa->events()
+                if ($this->mjsaResponse->isMjsaRequested($this->request)) {
+                    $this->mjsaResponse
                         ->errorMessage($this->lang->get('auth:user_not_active'))
                         ->closePopups()
-                        ->send();
+                        ->render($this->response);
                 } else {
                     /** TODO Implement this page */
                     $those->response->location($those->auth->config->urlActive, true);
@@ -151,7 +151,7 @@ class BaseController extends Controller
     {
         $this->lang->setLanguage($this->app->config->settingsConfig->language);
         $this->data = [
-            'bodyAjax' => $this->request->isBodyAJAX(),
+            'bodyAjax' => $this->mjsaResponse->isBodyAjax($this->request),
             'language' => $this->app->config->settingsConfig->language,
             'siteUrl' => $this->app->config->settingsConfig->siteUrl,
         ];

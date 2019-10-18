@@ -5,6 +5,8 @@ namespace CodeHuiter\Config;
 use CodeHuiter\Core\Application;
 use CodeHuiter\Core\Request;
 use CodeHuiter\Core\Response;
+use CodeHuiter\Pattern\Service\ByDefault;
+use CodeHuiter\Pattern\Service\MjsaResponse;
 use CodeHuiter\Service\ByDefault\PhpRenderer;
 use CodeHuiter\Service\DateService;
 use CodeHuiter\Pattern\Module\Auth\AuthService;
@@ -13,7 +15,6 @@ use CodeHuiter\Pattern\Module\Auth\Model\UserRepositoryInterface;
 use CodeHuiter\Pattern\Service\Compressor;
 use CodeHuiter\Pattern\Service\Link;
 use CodeHuiter\Pattern\Service\Media;
-use CodeHuiter\Pattern\Service\Mjsa;
 use CodeHuiter\Service\Language;
 
 class PatternConfig extends Config
@@ -31,7 +32,7 @@ class PatternConfig extends Config
     public $authConfig;
 
     public const SERVICE_KEY_COMPRESSOR = 'compressor';
-    public const SERVICE_KEY_MJSA = 'mjsa';
+    public const SERVICE_KEY_MJSA_RESPONSE = 'mjsaResponse';
     public const SERVICE_KEY_LINKS = 'links';
     public const SERVICE_KEY_MEDIA = 'media';
     public const SERVICE_KEY_AUTH = 'auth';
@@ -47,7 +48,7 @@ class PatternConfig extends Config
          */
         $this->services[Compressor::class] = [
             self::OPT_KEY_CALLBACK => static function (Application $app) {
-                return new \CodeHuiter\Pattern\Service\ByDefault\Compressor(
+                return new ByDefault\Compressor(
                     $app->config->compressorConfig,
                     $app->get(Request::class),
                     $app->get(PhpRenderer::class)
@@ -89,16 +90,16 @@ class PatternConfig extends Config
         $this->compressorConfig->js[] = '/pub/js/app.yashare.js';
 
         /**
-         * Mjsa Service
+         * MjsaResponse Service
          */
-        $this->services[Mjsa::class] = [
+        $this->services[MjsaResponse::class] = [
             self::OPT_KEY_CALLBACK => static function (Application $app) {
-                return new Mjsa($app->get(Language::class));
+                return new ByDefault\MjsaResponse($app->get(Language::class));
             },
-            self::OPT_KEY_VALIDATE => Mjsa::class,
+            self::OPT_KEY_VALIDATE => MjsaResponse::class,
             self::OPT_KEY_SINGLE => true
         ];
-        $this->injectedServices[self::SERVICE_KEY_MJSA] = Mjsa::class;
+        $this->injectedServices[self::SERVICE_KEY_MJSA_RESPONSE] = MjsaResponse::class;
 
         /**
          * Links Service

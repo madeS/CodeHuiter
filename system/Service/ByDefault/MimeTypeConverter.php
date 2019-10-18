@@ -1,9 +1,8 @@
 <?php
 
-namespace CodeHuiter\Config\Data;
+namespace CodeHuiter\Service\ByDefault;
 
-
-class MimeTypes
+class MimeTypeConverter implements \CodeHuiter\Service\MimeTypeConverter
 {
     protected $types = [
         'hqx'   => ['application/mac-binhex40', 'application/mac-binhex', 'application/x-binhex40', 'application/x-mac-binhex40'],
@@ -178,7 +177,7 @@ class MimeTypes
         'oth'   => 'application/vnd.oasis.opendocument.text-web'
     ];
 
-    public function getTypeHeader($extensionOrFilename, $charset = null)
+    public function getTypeHeader(string $extensionOrFilename, string $charset = null): string
     {
         $explodedArr = explode('.', $extensionOrFilename);
         $extension = $explodedArr[count($explodedArr) - 1];
@@ -191,7 +190,7 @@ class MimeTypes
         return 'Content-Type: ' . $type . (empty($charset) ? '' : '; charset=' . $charset);
     }
 
-    public function getType($extensionOrFilename)
+    public function getType(string $extensionOrFilename): string
     {
         $explodedArr = explode('.', $extensionOrFilename);
         $extension = $explodedArr[count($explodedArr) - 1];

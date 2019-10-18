@@ -39,6 +39,14 @@ class DateService implements \CodeHuiter\Service\DateService
     }
 
     /**
+     * @return int
+     */
+    public function getCurrentTimestamp(): int
+    {
+        return $this->now;
+    }
+
+    /**
      * @param int|null $timestamp
      * @return \CodeHuiter\Service\DateService
      */

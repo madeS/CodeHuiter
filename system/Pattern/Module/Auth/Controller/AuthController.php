@@ -16,26 +16,28 @@ class AuthController extends BaseController
     {
         $this->initWithAuth(false);
         if ($this->auth->user->exist()) {
-            $redirectUrl = $this->request->getGet('url');
-            if ($redirectUrl) {
-                if (strpos($redirectUrl, 'http') === 0) {
-                    // @todo low check if domain in allowed
-                    $this->response->location('/', true);
-                } else {
-                    $this->response->location($redirectUrl, true);
-                }
-            } else {
-                $this->response->location('/', true);
+            $redirectUrl = '/';
+            $userRedirectUrl = $this->request->getGet('url');
+            if ($userRedirectUrl && strpos($userRedirectUrl, 'http') !== 0) {
+                $redirectUrl = $userRedirectUrl;
             }
+
+            if ($this->mjsaResponse->isMjsaRequested($this->request)) {
+                // TODO mjsa location
+            } else {
+                $this->response->location($redirectUrl, true);
+            }
+
             return;
         }
-        if ($this->request->isMjsaAJAX() && $this->request->getGet('in_popup')) {
+
+        if ($this->mjsaResponse->isMjsaRequested($this->request) && $this->request->getGet('in_popup')) {
             $this->data['in_popup'] = true;
-            $this->mjsa->openPopupWithData(
+            $this->mjsaResponse->openPopupWithData(
                 $this->renderer->render($this->auth->getViewsPath() . 'login', $this->data, true),
                 'authPopup',
                 ['maxWidth' => 600, 'close' => true,]
-            )->send();
+            )->render($this->response);
         } else {
             $this->render($this->auth->getViewsPath() . 'login');
         }
@@ -46,57 +48,61 @@ class AuthController extends BaseController
         $this->initWithAuth(false);
         $targetUi = $this->auth->user->exist() ? $this->auth->user : null;
 
-        $data = $this->auth->registerByEmailValidator($this->mjsa, $_POST, [], $targetUi);
+        $data = $this->auth->registerByEmailValidator($this->mjsaResponse, $_POST, [], $targetUi);
         if (!$data) {
+            // TODO implement for JSON
+            $this->mjsaResponse->render($this->response);
             return;
         }
         $result = $this->auth->registerByEmail($data['email'], $data['password'], $data['login'], $targetUi);
         if ($result->isSuccess()) {
             //$this->mjsa->successMessage($result->getMessage());
-            $this->mjsa->closePopups()->reload()->send();
+            $this->mjsaResponse->closePopups()->reload()->render($this->response);
         } elseif ($result->isSpecific() && isset($result->getFields()['confirmation'])) {
-            $this->mjsa->formReplace($this->renderer->render(
+            $this->mjsaResponse->formReplace($this->renderer->render(
                 $this->auth->getViewsPath() . 'formMessage',
                 ['message' => $result->getMessage(), 'messageType' => 'success'],
                 true
-            ))->send();
+            ))->render($this->response);
         } else {
             if ($result->isIncorrectField()) {
                 foreach ($result->getFields() as $field) {
-                    $this->mjsa->incorrect($field);
+                    $this->mjsaResponse->incorrect($field);
                 }
             }
-            $this->mjsa->errorMessage($result->getMessage())->send();
+            $this->mjsaResponse->errorMessage($result->getMessage())->render($this->response);
         }
     }
 
     public function login_submit(): void
     {
         $this->initWithAuth(false);
-        $data = $this->auth->loginByPasswordValidator($this->mjsa, $_POST);
+        $data = $this->auth->loginByPasswordValidator($this->mjsaResponse, $_POST);
         if (!$data) {
+            // TODO implement for JSON
+            $this->mjsaResponse->render($this->response);
             return;
         }
         $result = $this->auth->loginByPassword($data['logemail'], $data['password']);
         if ($result->isSuccess()) {
-            $this->mjsa->closePopups()->send();
+            $this->mjsaResponse->closePopups()->render($this->response);
             echo '<script>'
                 . 'if ($(".regauth_form_container .continue_url").val()) location.reload();'
                 . 'else mjsa.bodyUpdate();'
                 . '</script>';
         } elseif ($result->isSpecific() && isset($result->getFields()['confirmation'])) {
-            $this->mjsa->formReplace($this->renderer->render(
+            $this->mjsaResponse->formReplace($this->renderer->render(
                 $this->auth->getViewsPath() . 'formMessage',
                 ['message' => $result->getMessage(), 'messageType' => 'success'],
                 true
-            ))->send();
+            ))->render($this->response);
         } else {
             if ($result->isIncorrectField()) {
                 foreach ($result->getFields() as $field) {
-                    $this->mjsa->incorrect($field);
+                    $this->mjsaResponse->incorrect($field);
                 }
             }
-            $this->mjsa->errorMessage($result->getMessage())->send();
+            $this->mjsaResponse->errorMessage($result->getMessage())->render($this->response);
         }
     }
 
@@ -109,7 +115,11 @@ class AuthController extends BaseController
         if ($this->auth->user->exist()) {
             $this->auth->resetSig($this->auth->user, true);
         }
-        $this->response->location($_SERVER['HTTP_REFERER'] ?? $this->links->main(),true);
+        if ($this->mjsaResponse->isMjsaRequested($this->request)) {
+            // TODO mjsa location
+        } else {
+            $this->response->location($_SERVER['HTTP_REFERER'] ?? $this->links->main(),true);
+        }
     }
 
     public function confirm_email(): void
@@ -121,7 +131,11 @@ class AuthController extends BaseController
         if (!$result->isSuccess()) {
             $this->errorPageByCode(Response::HTTP_CODE_FORBIDDEN, $result->getMessage());
         } else {
-            $this->response->location($this->links->userSettings(), true);
+            if ($this->mjsaResponse->isMjsaRequested($this->request)) {
+                // TODO mjsa location
+            } else {
+                $this->response->location($this->links->userSettings(), true);
+            }
         }
     }
 
@@ -135,18 +149,18 @@ class AuthController extends BaseController
             $this->request->getPost('logemail', '')
         );
         if ($result->isSuccess()) {
-            $this->mjsa->formReplace($this->renderer->render(
+            $this->mjsaResponse->formReplace($this->renderer->render(
                 $this->auth->getViewsPath() . 'formMessage',
                 ['message' => $this->lang->get('auth_sign:recovery_link_sent'), 'messageType' => 'success'],
                 true
-            ))->send();
+            ))->render($this->response);
         } else {
             if ($result->isIncorrectField()) {
                 foreach ($result->getFields() as $field) {
-                    $this->mjsa->incorrect($field);
+                    $this->mjsaResponse->incorrect($field);
                 }
             }
-            $this->mjsa->errorMessage($result->getMessage())->send();
+            $this->mjsaResponse->errorMessage($result->getMessage())->render($this->response);
         }
     }
 
@@ -175,12 +189,12 @@ class AuthController extends BaseController
         if (!$this->auth->user->exist()) {
             $user = $this->getUserRepository()->getById((int)$this->request->getGet('user_id', ''));
             if (!$user) {
-                $this->mjsa->errorMessage($this->lang->get('auth_sign:incorrect_id'))->send();
+                $this->mjsaResponse->errorMessage($this->lang->get('auth_sign:incorrect_id'))->render($this->response);
                 return;
             }
             $token = $this->request->getGet('token', '');
             if (!$this->auth->isValidToken($user, $token, AuthService::TOKEN_TYPE_RECOVERY)) {
-                $this->mjsa->errorMessage($this->lang->get('auth_sign:incorrect_token'))->send();
+                $this->mjsaResponse->errorMessage($this->lang->get('auth_sign:incorrect_token'))->render($this->response);
                 return;
             }
             $this->auth->user = $user;
@@ -193,15 +207,16 @@ class AuthController extends BaseController
             'newpassword' => array('required' => true, 'required_text' => $this->lang->get('auth_sign:need_password')),
             'newpassword_conf' => array('required' => true, 'required_text' => $this->lang->get('auth_sign:need_password_conf')),
         ]);
-        $pdata = $this->mjsa->validator($_POST, $validatorConfig);
+        $pdata = $this->mjsaResponse->validator($_POST, $validatorConfig);
         if (!$pdata) {
+            $this->mjsaResponse->render($this->response);
             return;
         }
         if ($pdata['newpassword'] !== $pdata['newpassword_conf']) {
-            $this->mjsa
+            $this->mjsaResponse
                 ->incorrect('newpassword_conf')
                 ->errorMessage($this->lang->get('auth_sign:incorrect_password_conf'))
-                ->send();
+                ->render($this->response);
             return;
         }
 
@@ -217,7 +232,8 @@ class AuthController extends BaseController
         ))->send();
     }
 
-    public function set_new_password(){
+    public function set_new_password(): void
+    {
         $this->mm->request_type = 'mjsa_ajax';
         $this->initWithAuth(false);
         $pdata = $this->mm->mjsaValidator($_POST, array(
@@ -250,9 +266,9 @@ class AuthController extends BaseController
             return;
         }
         $timeStr = $this->date->fromTime()->forUser($this->auth->user)->toFormat('H:i:s',false,true);
-        $this->mjsa->successMessage(
+        $this->mjsaResponse->successMessage(
             $this->lang->get('auth_actions:timezone_synced', ['{#time}' => $timeStr])
-        )->send();
+        )->render($this->response);
 
         echo '<script>'
             . '$("#body_cont").attr("data-timezoneoffset","'.$timzoneOffset.'");'
@@ -283,9 +299,10 @@ class AuthController extends BaseController
         ));
     }
 
-    public function user_edit_submit(){
+    public function user_edit_submit(): void
+    {
         $this->mm->request_type = 'mjsa_ajax';
-        if (!$this->initWithAuth(true)) return false;
+        if (!$this->initWithAuth(true)) return;
         if ($this->mm->g($_POST['birthday_day']) && $this->mm->g($_POST['birthday_month']) && $this->mm->g($_POST['birthday_year'])) {
             $_POST['birthday'] = $_POST['birthday_year'].'-'.$_POST['birthday_month'].'-'.$_POST['birthday_day'];
         }
@@ -295,9 +312,10 @@ class AuthController extends BaseController
             'success' => lang('musers:user_info_changed'), 'reload' => true, 'closePopups' => true,
         ));
     }
-    public function user_edit_logemail_submit(){
+    public function user_edit_logemail_submit(): void
+    {
         $this->mm->request_type = 'mjsa_ajax';
-        if (!$this->initWithAuth(true)) return false;
+        if (!$this->initWithAuth(true)) return;
         $registered = $this->mauth->registerUserByEmail(
             $this->mm->g($_POST['email']),
             $this->mm->g($_POST['password']),
@@ -324,11 +342,12 @@ class AuthController extends BaseController
     }
 
 
-    public function unactive_me(){
+    public function unactive_me(): void
+    {
         $this->mm->request_type = 'mjsa_ajax';
         $this->initWithAuth(false);
         if ($this->mauth->userUnactiveSet($this->data['ui']) === false){
-            echo $this->mm->mjsaError($this->mauth->getErrorMessage()); return false;
+            echo $this->mm->mjsaError($this->mauth->getErrorMessage()); return;
         }
         $this->mm->mjsaPrintEvent(array(
             'redirect' => $this->links->user($this->data['ui']), 'closePopups' => true,

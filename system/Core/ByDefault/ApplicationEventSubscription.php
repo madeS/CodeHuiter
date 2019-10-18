@@ -1,9 +1,10 @@
 <?php
 
-namespace CodeHuiter\Core\Event;
+namespace CodeHuiter\Core\ByDefault;
 
 use CodeHuiter\Core\Application;
-use CodeHuiter\Exception\InvalidFlowException;
+use CodeHuiter\Core\Event\ApplicationEventSubscriber;
+use CodeHuiter\Exception\Runtime\EventException;
 
 class ApplicationEventSubscription
 {
@@ -28,25 +29,22 @@ class ApplicationEventSubscription
     }
 
     /**
-     * @param Application|null $application
+     * @param Application $application
+     * @param string $eventClass
      * @return ApplicationEventSubscriber
      */
-    public function getSubscriber(Application $application): ?ApplicationEventSubscriber
+    public function getSubscriber(Application $application, string $eventClass): ApplicationEventSubscriber
     {
         if ($this->subscriber instanceof ApplicationEventSubscriber) {
             return $this->subscriber;
         }
         if ($application->serviceExist($this->subscriber)) {
             return $application->get($this->subscriber);
-        } elseif (class_exists($this->subscriber)) {
+        }
+        if (class_exists($this->subscriber)) {
             $class = $this->subscriber;
             return new $class();
-        } else {
-            $application->fireException(new InvalidFlowException(sprintf(
-                'Invalid subscriber [%s]',
-                $this->subscriber
-            )));
-            return null;
         }
+        throw EventException::onInvalidSubscriber($eventClass, get_class($this->subscriber));
     }
 }

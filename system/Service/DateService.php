@@ -7,6 +7,11 @@ use CodeHuiter\Pattern\Module\Auth\Model\UserInterface;
 interface DateService
 {
     /**
+     * @return int
+     */
+    public function getCurrentTimestamp(): int;
+
+    /**
      * @param int|null $timestamp
      * @return DateService
      */

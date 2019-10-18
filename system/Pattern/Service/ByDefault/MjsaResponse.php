@@ -1,18 +1,21 @@
 <?php
 
-namespace CodeHuiter\Pattern\Service;
+namespace CodeHuiter\Pattern\Service\ByDefault;
 
+use CodeHuiter\Core\Request;
+use CodeHuiter\Core\Response;
 use CodeHuiter\Modifier\Filter;
 use CodeHuiter\Modifier\StringModifier;
 use CodeHuiter\Modifier\Validator;
+use CodeHuiter\Pattern\Service\MjsaResponse as MjsaResponseInterface;
 use CodeHuiter\Service\Language;
 
-class Mjsa
+class MjsaResponse implements MjsaResponseInterface
 {
     /**
-     * @var string|null
+     * @var string
      */
-    protected $eventResponse;
+    protected $eventResponse = '';
 
     /**
      * @var string
@@ -38,193 +41,144 @@ class Mjsa
     }
 
     /**
-     * Start events
-     * @return self
+     * {@inheritDoc}
      */
-    public function events()
+    public function isMjsaRequested(Request $request): bool
+    {
+        return $request->isAJAX()
+            && ($request->getRequestValue('mjsaAjax') || $request->getRequestValue('bodyAjax'));
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function isBodyAjax(Request $request): bool
+    {
+        return $request->isAJAX() && $request->getRequestValue('bodyAjax');
+    }
+
+
+    /**
+     * {@inheritDoc}
+     */
+    public function events(): MjsaResponseInterface
     {
         $this->eventResponse = '';
         return $this;
     }
 
     /**
-     * End events
-     * @param bool $print
-     * @return null|string
+     * {@inheritDoc}
      */
-    public function send($print = true)
+    public function render(?Response $response = null): string
     {
-        $result = null;
-        if ($print) {
-            echo $this->eventResponse;
-        } else {
-            $result = $this->eventResponse;
-        }
+        $result = $this->eventResponse;
         $this->eventResponse = null;
+        if ($response !== null) {
+            $response->append($result);
+        }
         return $result;
     }
 
     /**
-     * Choose action with event
-     * @param bool $print
-     * @return self|null|string
+     * {@inheritDoc}
      */
-    protected function actionChoose($print)
+    public function location(string $url): MjsaResponseInterface
     {
-        if ($this->eventResponse !== null) {
-            $this->eventResponse .= $this->response;
-            return $this;
-        }
-        if (!$print) {
-            return $this->response;
-        }
-        echo $this->response;
-        return null;
+        $this->eventResponse .= $this->mjsaMark . '<stop_separator/><location_separator/>'.$url.'<location_separator/>';
+        return $this;
     }
 
     /**
-     * User redirect
-     * @param string $url
-     * @param bool $print
-     * @return self|null|string
+     * {@inheritDoc}
      */
-    public function location($url, $print = true)
+    public function insert(string $selector, string $content): MjsaResponseInterface
     {
-        $this->response = $this->mjsaMark . '<stop_separator/><location_separator/>'.$url.'<location_separator/>';
-
-        return $this->actionChoose($print);
-    }
-
-    /**
-     * Insert content into selector block
-     * @param string $selector
-     * @param string $content
-     * @param bool $print
-     * @return self|null|string
-     */
-    public function insert($selector, $content, $print = true)
-    {
-        $this->response = $this->mjsaMark . '<noservice_separator/>'
+        $this->eventResponse .= $this->mjsaMark . '<noservice_separator/>'
             . '<html_replace_separator/>'.$selector.'<html_replace_to/>'
             . $content
             . '<html_replace_separator/>'
             . '<noservice_separator/>';
-
-        return $this->actionChoose($print);
+        return $this;
     }
 
     /**
-     * Append content into selector block
-     * @param string $selector
-     * @param string $content
-     * @param bool $print
-     * @return self|null|string
+     * {@inheritDoc}
      */
-    public function append($selector, $content, $print = true)
+    public function append(string $selector, string $content): MjsaResponseInterface
     {
-        $this->response = $this->mjsaMark . '<noservice_separator/>'
+        $this->eventResponse .= $this->mjsaMark . '<noservice_separator/>'
             .'<html_append_separator/>'.$selector.'<html_append_to/>'
             . $content
             .'<html_append_separator/>'
             .'<noservice_separator/>';
-
-        return $this->actionChoose($print);
+        return $this;
     }
 
     /**
-     * Show success message
-     * @param string $message
-     * @param bool $print
-     * @return self|null|string
+     * {@inheritDoc}
      */
-    public function successMessage($message, $print = true)
+    public function successMessage(string $message): MjsaResponseInterface
     {
-        $this->response = $this->mjsaMark . '<success_separator/>' . $message . '<success_separator/>';
-
-        return $this->actionChoose($print);
+        $this->eventResponse .= $this->mjsaMark . '<success_separator/>' . $message . '<success_separator/>';
+        return $this;
     }
 
     /**
-     * Show error message
-     * @param string $message
-     * @param bool $print
-     * @return self|null|string
+     * {@inheritDoc}
      */
-    public function errorMessage($message, $print = true)
+    public function errorMessage(string $message): MjsaResponseInterface
     {
-        $this->response = $this->mjsaMark . '<error_separator/>' . $message . '<error_separator/>';
-
-        return $this->actionChoose($print);
+        $this->eventResponse .= $this->mjsaMark . '<error_separator/>' . $message . '<error_separator/>';
+        return $this;
     }
 
     /**
-     * Indication fields with errors in form
-     * @param string $class
-     * @param bool $print
-     * @return self|null|string
+     * {@inheritDoc}
      */
-    public function incorrect($class, $print = true)
+    public function incorrect(string $class): MjsaResponseInterface
     {
-        $this->response = $this->mjsaMark . '<incorrect_separator/>' . $class . '<incorrect_separator/>';
-
-        return $this->actionChoose($print);
+        $this->eventResponse .= $this->mjsaMark . '<incorrect_separator/>' . $class . '<incorrect_separator/>';
+        return $this;
     }
 
     /**
-     * Replace form content in form
-     * @param string $content
-     * @param bool $print
-     * @return self|null|string
+     * {@inheritDoc}
      */
-    public function formReplace($content, $print = true)
+    public function formReplace(string $content): MjsaResponseInterface
     {
-        $this->response = $this->mjsaMark . '<form_replace_separator/>' . $content . '<form_replace_separator/>';
-
-        return $this->actionChoose($print);
+        $this->eventResponse .= $this->mjsaMark . '<form_replace_separator/>' . $content . '<form_replace_separator/>';
+        return $this;
     }
 
-
-
     /**
-     * Reload page
-     * @param bool $print
-     * @return self|null|string
+     * {@inheritDoc}
      */
-    public function reload($print = true)
+    public function reload(): MjsaResponseInterface
     {
-        $this->response = $this->mjsaMark . '<script>mjsa.bodyUpdate();</script>';
-
-        return $this->actionChoose($print);
+        $this->eventResponse .= $this->mjsaMark . '<script>mjsa.bodyUpdate();</script>';
+        return $this;
     }
 
     /**
-     * Close all popups
-     * @param bool $print
-     * @return self|null|string
+     * {@inheritDoc}
      */
-    public function closePopups($print = true)
+    public function closePopups(): MjsaResponseInterface
     {
-        $this->response = $this->mjsaMark . '<script>mjsa.popups.closeAll();</script>';
-
-        return $this->actionChoose($print);
+        $this->eventResponse .= $this->mjsaMark . '<script>mjsa.popups.closeAll();</script>';
+        return $this;
     }
 
     /**
-     * @param string $content
-     * @param string $name
-     * @param array $options
-     * <br/> maxWidth => int
-     * <br/> close => bool
-     * @param bool $print
-     * @return Mjsa|null|string
+     * {@inheritDoc}
      */
-    public function openPopupWithData($content, $name, $options, $print = true)
+    public function openPopupWithData(string $content, string $name, array $options): MjsaResponseInterface
     {
         if (isset($options['close']) && $options['close']) {
             unset($options['close']);
             $options['closeBtnClass'] = 'ficon-cancel';
         }
-        $this->response = $this->mjsaMark
+        $this->eventResponse .= $this->mjsaMark
             . '<open_content_popup_separator/>'
             . ($name ? $name : 'defaultPopup')
             . '<open_content_data/>'
@@ -232,11 +186,14 @@ class Mjsa
             . '<open_content_data/>'
             . ($options ? StringModifier::jsonEncode($options) : '{}')
             . '<open_content_popup_separator/>';
-
-        return $this->actionChoose($print);
+        return $this;
     }
 
+
+
+
     /**
+     * TODO implement render on response where it used
      * @param array $input Input array like $_POST
      * @param array $config Array with config input data <pre>
      *   [
@@ -260,7 +217,7 @@ class Mjsa
      * </pre>
      * @return array|null
      */
-    public function validator($input, $config)
+    public function validator(array $input, array $config): ?array
     {
         $focusOneError = true;
 
@@ -345,10 +302,7 @@ class Mjsa
             }
             $result[$field] = $data;
         }
-
-        $response = $this->send(false);
-        if ($response) {
-            echo $response;
+        if ($this->eventResponse) {
             return null;
         }
         return $result;

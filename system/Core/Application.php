@@ -5,13 +5,9 @@ namespace CodeHuiter\Core;
 use App\Config\DefaultConfig;
 use CodeHuiter\Config\Config;
 use CodeHuiter\Core\Event\ApplicationEvent;
-use CodeHuiter\Core\Event\ApplicationEventSubscription;
+use CodeHuiter\Core\ByDefault\ApplicationEventSubscription;
 use CodeHuiter\Core\Exception\ExceptionProcessor;
-use CodeHuiter\Core\Exception\ExceptionThrower;
-use CodeHuiter\Core\Exception\ExceptionThrowerInterface;
-use CodeHuiter\Exception\AppContainerException;
-use CodeHuiter\Exception\CodeHuiterException;
-use CodeHuiter\Service\Renderer;
+use CodeHuiter\Exception\Runtime\CoreException;
 use Exception;
 
 class Application
@@ -79,13 +75,13 @@ class Application
     public function get(string $name)
     {
         if (isset($this->serviceCreateStack[$name])) {
-            $this->fireException(new AppContainerException("Recursive Service [$name] creation found: " . print_r($this->serviceCreateStack, true)));
+            throw CoreException::onRecursiveServiceCreation($name, $this->serviceCreateStack);
         }
         $this->serviceCreateStack[$name] = true;
 
         $result = null;
         if(!isset($this->config->services[$name])) {
-            $this->fireException(new AppContainerException("Class [$name] not found in services"));
+            throw CoreException::onServiceNotFound($name);
         }
         if (
             !isset($this->container[$name])
@@ -102,17 +98,12 @@ class Application
                 $class = $this->config->services[$name][Config::OPT_KEY_CLASS_APP];
                 $this->container[$name] = new $class($this);
             } else {
-                $this->fireException(
-                    new AppContainerException("Class [$name] not provide object creation information")
-                );
+                throw CoreException::onServiceNotProvideCreationInfo($name);
             }
             if (isset($this->config->services[$name][Config::OPT_KEY_VALIDATE])) {
                 if (!is_subclass_of($this->container[$name], $this->config->services[$name][Config::OPT_KEY_VALIDATE])) {
-                    $this->fireException(
-                        new AppContainerException(
-                            "Class [$name] provide object with validation fail. "
-                            . "Expect: {$this->config->services[$name][Config::OPT_KEY_VALIDATE]}, got " .get_class()
-                        )
+                    throw CoreException::onServiceValidationNotPassed(
+                        $name, $this->config->services[$name][Config::OPT_KEY_VALIDATE], get_class($this->container[$name])
                     );
                 }
             }
@@ -152,25 +143,23 @@ class Application
         }
         /** @var ApplicationEventSubscription $subscription */
         foreach ($this->subscriptions[$eventClass] as $subscription) {
-            $subscriber = $subscription->getSubscriber($this);
-            if ($subscriber) {
-                $subscriber->catchEvent($event);
-            }
+            $subscriber = $subscription->getSubscriber($this, $eventClass);
+            $subscriber->catchEvent($event);
         }
     }
 
     /**
      * @param $handler
-     * @param string $event
+     * @param string $eventClass
      * @param int $priority
      */
-    public function subscribe($handler, string $event, int $priority = 1) : void
+    public function subscribe($handler, string $eventClass, int $priority = 1) : void
     {
-        if (!isset($this->subscriptions[$event])) {
-            $this->subscriptions[$event] = [];
+        if (!isset($this->subscriptions[$eventClass])) {
+            $this->subscriptions[$eventClass] = [];
         }
-        $this->subscriptions[$event][] = new ApplicationEventSubscription($handler, $priority);
-        usort($this->subscriptions[$event], static function (ApplicationEventSubscription $a, ApplicationEventSubscription $b) {
+        $this->subscriptions[$eventClass][] = new ApplicationEventSubscription($handler, $priority);
+        usort($this->subscriptions[$eventClass], static function (ApplicationEventSubscription $a, ApplicationEventSubscription $b) {
             return !($a->priority <=> $b->priority);
         });
     }
@@ -188,26 +177,9 @@ class Application
             /** @var Response $response */
             $response = $this->get(Response::class);
             $response->send();
-
-        } catch (CodeHuiterException $ex) {
+        } catch (Exception $ex) {
             ExceptionProcessor::defaultProcessException($ex);
         }
-    }
-
-    /**
-     * @param Exception $exception
-     */
-    public function fireException(Exception $exception): void
-    {
-        $this->getThrower()->fire($exception);
-    }
-
-    /**
-     * @return ExceptionThrowerInterface
-     */
-    protected function getThrower(): ExceptionThrowerInterface
-    {
-        return new ExceptionThrower();
     }
 
     /**
@@ -220,9 +192,7 @@ class Application
         if (file_exists($fileName) && is_file($fileName)) {
             $result = require $fileName;
             if (gettype($result) !== gettype($default)) {
-                $this->fireException(new AppContainerException(
-                    'Invalid type returned from ['.$fileName.'] Returned: ['.gettype($result).'], Expected: ['.gettype($default).']'
-                ));
+                throw CoreException::onInvalidRequireVarType($fileName, gettype($result), gettype($default));
             }
             return $result;
         }

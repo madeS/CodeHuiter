@@ -6,16 +6,16 @@ use CodeHuiter\Config\AuthConfig;
 use CodeHuiter\Core\Application;
 use CodeHuiter\Core\Request;
 use CodeHuiter\Core\Response;
-use CodeHuiter\Exception\InvalidFlowException;
+use CodeHuiter\Pattern\Exception\Runtime\AuthRuntimeException;
 use CodeHuiter\Pattern\Module\Auth\Event\GroupsChangedEvent;
 use CodeHuiter\Pattern\Module\Auth\Event\JoinAccountsEvent;
 use CodeHuiter\Pattern\Module\Auth\Model\UserInterface;
 use CodeHuiter\Pattern\Module\Auth\Model\UserRepositoryInterface;
 use CodeHuiter\Pattern\Result\ClientResult;
+use CodeHuiter\Pattern\Service\MjsaResponse;
 use CodeHuiter\Service\DateService;
 use CodeHuiter\Service\Mailer;
 use CodeHuiter\Service\Language;
-use CodeHuiter\Pattern\Service\Mjsa;
 
 /**
  * TODO Add max 10 logins per minute
@@ -250,12 +250,12 @@ class AuthService
         if ($this->config->logoutIfIpChange && $userInfo->getLastIp() !== $this->request->getClientIP()) {
             return $this->setErrorMessage($this->lang->get('auth:incorrect_ip'));
         }
-        if ($this->date->now > $this->date->addDays($userInfo->getSignatureTime(), 1)) {
+        if ($this->date->getCurrentTimestamp() > $this->date->addDays($userInfo->getSignatureTime(), 1)) {
             // При мультиконнекте продлевает старый sig иначе создает новый и меняет
             $this->updateSig($userInfo);
         }
-        if ($this->date->now - $userInfo->getLastActive() > $this->config->nonactiveUpdateTime) {
-            $userInfo->setLastActive($this->date->now);
+        if ($this->date->getCurrentTimestamp() - $userInfo->getLastActive() > $this->config->nonactiveUpdateTime) {
+            $userInfo->setLastActive($this->date->getCurrentTimestamp());
             $userInfo->saveUser();
         }
         return $userInfo;
@@ -295,17 +295,17 @@ class AuthService
         }
 
         $userInfo->setSignature($newSig);
-        $userInfo->setSignatureTime($this->date->now);
+        $userInfo->setSignatureTime($this->date->getCurrentTimestamp());
         $userInfo->setLastIp($this->request->getClientIP());
         $userInfo->saveUser();
 
         $this->response->setCookie(
             'id', $userInfo->getId(),
-            $this->date->addDays($this->date->now, $this->config->cookieDays), '/', $this->config->cookieDomain
+            $this->date->addDays($this->date->getCurrentTimestamp(), $this->config->cookieDays), '/', $this->config->cookieDomain
         );
         $this->response->setCookie(
             'sig', $newSig,
-            $this->date->addDays($this->date->now, $this->config->cookieDays), '/', $this->config->cookieDomain
+            $this->date->addDays($this->date->getCurrentTimestamp(), $this->config->cookieDays), '/', $this->config->cookieDomain
         );
     }
 
@@ -321,11 +321,11 @@ class AuthService
         if ($withLogout) {
             $this->response->setCookie(
                 'id', null,
-                $this->date->addDays($this->date->now, $this->config->cookieDays), '/', $this->config->cookieDomain
+                $this->date->addDays($this->date->getCurrentTimestamp(), $this->config->cookieDays), '/', $this->config->cookieDomain
             );
             $this->response->setCookie(
                 'sig', null,
-                $this->date->addDays($this->date->now, $this->config->cookieDays), '/', $this->config->cookieDomain
+                $this->date->addDays($this->date->getCurrentTimestamp(), $this->config->cookieDays), '/', $this->config->cookieDomain
             );
         }
     }
@@ -339,7 +339,7 @@ class AuthService
      */
     protected function sigFunc($id, $login, $email, $passHash): string
     {
-        return md5($this->config->salt . $id . $login . $email . $passHash . $this->date->now);
+        return md5($this->config->salt . $id . $login . $email . $passHash . $this->date->getCurrentTimestamp());
     }
 
     /**
@@ -356,9 +356,7 @@ class AuthService
             $email = mb_strtolower($email);
             return md5($login.$email.$pass);
         }
-
-        $this->app->fireException(new InvalidFlowException('Invalid PassFuncMethod'));
-        return '';
+        throw AuthRuntimeException::passFunctionMethodNotImplemented($method);
     }
 
     /**
@@ -380,8 +378,12 @@ class AuthService
         return ($passHash === $user->getPassHash());
     }
 
-
-    public function loginByPasswordValidator(Mjsa $mjsa, $input): ?array
+    /**
+     * @param MjsaResponse $mjsa
+     * @param array $input
+     * @return array|null
+     */
+    public function loginByPasswordValidator(MjsaResponse $mjsa, array $input): ?array
     {
         return $mjsa->validator($input, array_merge([
             'logemail' => [
@@ -534,13 +536,13 @@ class AuthService
     }
 
     /**
-     * @param Mjsa $mjsa
+     * @param MjsaResponse $mjsa
      * @param array $input
      * @param array $additionalValidator
      * @param UserInterface|null $connectUi
      * @return array|bool validatedData or false if not valid
      */
-    public function registerByEmailValidator(Mjsa $mjsa, $input, $additionalValidator = [], $connectUi = null): ?array
+    public function registerByEmailValidator(MjsaResponse $mjsa, $input, $additionalValidator = [], $connectUi = null): ?array
     {
         return $mjsa->validator($input, array_merge([
             'email' => [
@@ -647,7 +649,7 @@ class AuthService
             $user->setEmail($email);
             $user->setLogin($login);
             $user->setPassHash($passHash);
-            $user->setLastActive($this->date->now);
+            $user->setLastActive($this->date->getCurrentTimestamp());
             $user->addGroup(self::GROUP_NOT_BANNED);
             $user->saveUser();
 
@@ -701,11 +703,6 @@ class AuthService
     public function confirmToken(UserInterface $user, string $token, string $tokenType, bool $resetToken): ClientResult
     {
         $tokenKey = $this->getDataInfoTokenKey($tokenType);
-        if (!$tokenKey) {
-            $this->app->fireException(new InvalidFlowException(
-                sprintf('Incorrect token type %s', $tokenType)
-            ));
-        }
         if (!in_array(self::GROUP_NOT_BANNED, $user->getGroups(), true)) {
             return ClientResult::createError($this->lang->get('auth_sign:user_banned'));
         }

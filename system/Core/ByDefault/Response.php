@@ -2,14 +2,13 @@
 
 namespace CodeHuiter\Core\ByDefault;
 
-use CodeHuiter\Config\Data\MimeTypes;
+use CodeHuiter\Service\MimeTypeConverter;
 use CodeHuiter\Config\ResponseConfig;
 use CodeHuiter\Core\Application;
-use CodeHuiter\Core\Controller;
+use CodeHuiter\Core\CodeLoader;
 use CodeHuiter\Core\Exception\ExceptionProcessor;
 use CodeHuiter\Core\Request;
 use CodeHuiter\Exception\InvalidConfigException;
-use CodeHuiter\Pattern\Service\Mjsa;
 
 class Response implements \CodeHuiter\Core\Response
 {
@@ -32,8 +31,6 @@ class Response implements \CodeHuiter\Core\Response
     protected $request;
 
     protected $app;
-
-    protected $cachedData = [];
 
     /**
      * @param Application $app
@@ -79,12 +76,12 @@ class Response implements \CodeHuiter\Core\Response
      */
     public function setMimeType(string $extensionOrFilename, ? string$charset = 'default'): void
     {
-        /** @var \CodeHuiter\Config\Data\MimeTypes $mimeTypes */
-        $mimeTypes = $this->app->get(MimeTypes::class);
+        /** @var \CodeHuiter\Service\MimeTypeConverter $mimeTypeConverter */
+        $mimeTypeConverter = $this->app->get(MimeTypeConverter::class);
         if ($charset === 'default') {
             $charset = $this->config->charset;
         }
-        $this->setHeaders([$mimeTypes->getTypeHeader($extensionOrFilename, $charset)]);
+        $this->setHeaders([$mimeTypeConverter->getTypeHeader($extensionOrFilename, $charset)]);
     }
 
     public function setCookie(string $name, string $value, int $expireTime, string $path, string $domain): void
@@ -165,18 +162,11 @@ class Response implements \CodeHuiter\Core\Response
      */
     public function location(string $url, bool $temperatory = false): void
     {
-        if ($this->request->isMjsaAJAX()) {
-            /** TODO !!!!! Extend Response to MjsaResponse */
-            /** @var Mjsa $mjsaService */
-            $mjsaService = $this->app->get(Mjsa::class);
-            $mjsaService->location($url, true);
+        if($temperatory === true){
+            header("HTTP/1.0 302 Moved Temporarily");
         } else {
-            if($temperatory === true){
-                header("HTTP/1.0 302 Moved Temporarily");
-            } else {
-                header("HTTP/1.0 301 Moved Permanently");
-            }
-            header('Location: '.$url);
+            header("HTTP/1.0 301 Moved Permanently");
         }
+        header('Location: '.$url);
     }
 }

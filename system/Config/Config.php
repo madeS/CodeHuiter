@@ -2,7 +2,7 @@
 
 namespace CodeHuiter\Config;
 
-use CodeHuiter\Config\Data\MimeTypes;
+use CodeHuiter\Service\MimeTypeConverter;
 use CodeHuiter\Core\Application;
 use CodeHuiter\Core\CodeLoader;
 use CodeHuiter\Core\Response;
@@ -176,11 +176,11 @@ abstract class Config
         $this->injectedServices[self::SERVICE_KEY_HTML_PARSER] = HtmlParser::class;
 
         /**
-         * MimeType Service
+         * MimeTypeConverter Service
          */
-        $this->services[MimeTypes::class] = [
-            self::OPT_KEY_CLASS => MimeTypes::class,
-            self::OPT_KEY_VALIDATE => MimeTypes::class,
+        $this->services[MimeTypeConverter::class] = [
+            self::OPT_KEY_CLASS => ByDefault\MimeTypeConverter::class,
+            self::OPT_KEY_VALIDATE => MimeTypeConverter::class,
             self::OPT_KEY_SINGLE => true
         ];
 

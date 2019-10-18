@@ -66,30 +66,6 @@ class Request
     /**
      * @return bool
      */
-    public function isMjsaAJAX(): bool
-    {
-        return (
-            !empty($_SERVER['HTTP_X_REQUESTED_WITH'])
-            && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest'
-            && ($this->getRequestValue('mjsaAjax') || $this->getRequestValue('bodyAjax'))
-        );
-    }
-
-    /**
-     * @return bool
-     */
-    public function isBodyAJAX(): bool
-    {
-        return (
-            !empty($_SERVER['HTTP_X_REQUESTED_WITH'])
-            && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest'
-            && $this->getRequestValue('bodyAjax')
-        );
-    }
-
-    /**
-     * @return bool
-     */
     public function isSecure(): bool
     {
         if ( ! empty($_SERVER['HTTPS']) && strtolower($_SERVER['HTTPS']) !== 'off') {

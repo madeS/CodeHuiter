@@ -2,12 +2,10 @@
 
 namespace CodeHuiter\Core\Exception;
 
-use CodeHuiter\Config\Config;
 use CodeHuiter\Core\Application;
 use CodeHuiter\Core\Response;
 use CodeHuiter\Service\Logger;
 use CodeHuiter\Core\Request;
-use CodeHuiter\Service\Renderer;
 use CodeHuiter\Exception\PhpErrorException;
 use Exception;
 
