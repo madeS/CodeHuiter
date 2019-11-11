@@ -6,14 +6,10 @@ use CodeHuiter\Database\RelationalModel;
 
 class UsersGroupsModel extends RelationalModel
 {
-    protected static $databaseServiceKey = 'db'; // database_default config
-    protected static $table = 'users_groups';
-    protected static $primaryFields = ['user_id', 'group_id'];
-    protected static $fields = [
-        'user_id',
-        'group_id',
-        'created_at',
-    ];
+    protected $_table = 'users_groups';
+    protected $_databaseServiceKey = 'db';
+    protected $_primaryFields = ['user_id', 'group_id'];
+    protected $_autoIncrementField = '';
 
     public $user_id;
     public $group_id;

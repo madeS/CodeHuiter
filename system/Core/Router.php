@@ -47,27 +47,30 @@ class Router
      * @param Application $app
      * @param RouterConfig $config
      * @param Logger $log
-     * @param Request $request
      * @param CodeLoader $loader
      */
     public function __construct(
         Application $app,
         RouterConfig $config,
         Logger $log,
-        Request $request,
         CodeLoader $loader
     ) {
         $this->config = $config;
         $this->app = $app;
-        $this->request = $request;
         $this->loader = $loader;
         $this->log = $log;
+    }
+
+    public function init(Request $request): Router
+    {
+        $this->request = $request;
 
         $segments = $this->checkRoutingRewriteSegments();
         if ($segments === null) {
-            $segments = $this->request->segments;
+            $segments = $this->request->getSegments();
         }
         $this->processSegments($segments);
+        return $this;
     }
 
     public function execute(): void
@@ -111,7 +114,7 @@ class Router
             }
         } catch (InvalidRequestException $exception) {
 
-            $this->log->notice('Page not found: ' . $this->request->uri);
+            $this->log->notice('Page not found: ' . $this->request->getUri());
 
             if ($this->controller === $this->config->error404['controller']) {
                 throw CoreException::onErrorControllerNoFound($this->controller, $this->controllerMethod, $exception);
@@ -210,15 +213,15 @@ class Router
      */
     protected function checkRoutingRewriteSegments()
     {
-        $uri = implode('/', $this->request->segments);
-        $http_verb = $this->request->method;
+        $uri = implode('/', $this->request->getSegments());
+        $http_verb = $this->request->getMethod();
 
         $routes = $this->config->routes;
         if (isset($this->config->domainRoutes['all'])) {
             $routes = array_merge($routes, $this->config->domainRoutes['all']);
         }
-        if (isset($this->config->domainRoutes[$this->request->domain])) {
-            $routes = array_merge($routes, $this->config->domainRoutes[$this->request->domain]);
+        if (isset($this->config->domainRoutes[$this->request->getDomain()])) {
+            $routes = array_merge($routes, $this->config->domainRoutes[$this->request->getDomain()]);
         }
 
         // Loop through the route array looking for wildcards

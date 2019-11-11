@@ -16,11 +16,21 @@ class UserModelRepository implements UserRepositoryInterface
     private $repository;
 
     /**
+     * @param Application $application
+     */
+    public function __construct(Application $application)
+    {
+        $this->repository = new RelationalModelRepository($application, new UserModel());
+    }
+
+    /**
      * @return UserInterface
      */
     public function newInstance(): UserInterface
     {
-        return new UserModel();
+        /** @var UserInterface $userModel */
+        $userModel = UserModel::getEmpty();
+        return $userModel;
     }
 
     /**
@@ -60,6 +70,9 @@ class UserModelRepository implements UserRepositoryInterface
     public function save(UserInterface $user): UserInterface
     {
         if ($user instanceof UserModel) {
+            if (!$user->getId()) {
+                $user->setRegtime($this->repository->getDateService()->sqlTime());
+            }
             /** @var UserModel|null $model */
             $model = $this->repository->save($user);
             return $model;
@@ -76,6 +89,7 @@ class UserModelRepository implements UserRepositoryInterface
         if ($user instanceof UserModel) {
             Application::getInstance()->fireEvent(new UserDeletingEvent($user));
             $this->repository->delete($user);
+            return;
         }
         throw RuntimeWrongClassException::wrongObjectGot(UserModel::class, $user);
     }

@@ -6,14 +6,10 @@ use CodeHuiter\Database\RelationalModel;
 
 class ShopCategoryProductModel extends RelationalModel
 {
-    /** @var string */
-    protected static $databaseServiceKey = 'db';
-    /** @var string */
-    protected static $table = 'TestWithTwoAutoIncrement';
-    /** @var string[] */
-    protected static $primaryFields = ['onePrimaryField', 'secondPrimaryField'];
-    /** @var string */
-    protected static $autoIncrementField = 'secondPrimaryField';
+    protected $_databaseServiceKey = 'db';
+    protected $_table = 'TestWithTwoAutoIncrement';
+    protected $_primaryFields = ['onePrimaryField', 'secondPrimaryField'];
+    protected $_autoIncrementField = 'secondPrimaryField';
 
     /**
      * @var int

@@ -155,9 +155,8 @@ interface UserInterface
 
     /**
      * @param int[] $groups
-     * @param bool $withSave
      */
-    public function setGroups(array $groups, bool $withSave = true): void;
+    public function setGroups(array $groups): void;
 
     /**
      * @param int $group
@@ -174,8 +173,4 @@ interface UserInterface
      */
     public function getGroups(): array;
 
-    /**
-     * @return UserInterface
-     */
-    public function saveUser(): UserInterface;
 }

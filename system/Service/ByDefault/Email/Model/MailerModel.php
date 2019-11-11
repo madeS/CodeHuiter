@@ -6,27 +6,25 @@ use CodeHuiter\Database\RelationalModel;
 
 class MailerModel extends RelationalModel
 {
-    protected static $databaseServiceKey = 'db'; // database_default config
-    protected static $table = 'mailer';
-    protected static $primaryFields = ['id'];
-    protected static $fields = [
-        'id',
-        'user_id',
-        'subject',
-        'email',
-        'message',
-        'created_at',
-        'updated_at',
-        'sended',
-    ];
+    protected $_table = 'mailer';
+    protected $_databaseServiceKey = 'db';
+    protected $_primaryFields = ['id'];
+    protected $_autoIncrementField = 'id';
 
+    /** @var int|null */
     public $id;
+    /** @var int */
     public $user_id;
+    /** @var string */
     public $subject;
+    /** @var string */
     public $email;
+    /** @var string */
     public $message;
+    /** @var string */
     public $created_at;
+    /** @var string */
     public $updated_at;
+    /** @var bool */
     public $sended;
-
 }

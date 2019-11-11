@@ -2,32 +2,24 @@
 
 namespace CodeHuiter\Database;
 
-use CodeHuiter\Config\Config;
-use CodeHuiter\Core\Application;
-use CodeHuiter\Service\DateService;
+use CodeHuiter\Exception\CodeHuiterRuntimeException;
 
-class RelationalModel
+abstract class RelationalModel
 {
     /** @var string */
-    protected static $databaseServiceKey = 'db';
+    protected $_databaseServiceKey = 'db';
 
     /** @var string */
-    protected static $table = 'tableName';
+    protected $_table = 'tableName';
 
     /** @var string */
-    protected static $autoIncrementField = 'id';
+    protected $_autoIncrementField = 'id';
 
     /** @var string[] */
-    protected static $primaryFields = ['id'];
+    protected $_primaryFields = ['id'];
 
-    /** @var string[] */
-    protected static $fields;
-
-    /** @var RelationalDatabase */
-    protected static $dbHandler;
-
-    /** @var DateService */
-    private static $dateService;
+    /** @var string[] Autofilled */
+    private $_fields;
 
     /**
      * @var array
@@ -45,23 +37,11 @@ class RelationalModel
     }
 
     /**
-     * @return RelationalDatabase
-     *@deprecated TODO replace to repositories
-     */
-    protected static function getDb(): RelationalDatabase
-    {
-        if (static::$dbHandler === null) {
-            static::$dbHandler = Application::getInstance()->get(static::$databaseServiceKey);
-        }
-        return static::$dbHandler;
-    }
-
-    /**
      * @return string
      */
     public function getModelDatabaseServiceKey(): string
     {
-        return static::$databaseServiceKey;
+        return $this->_databaseServiceKey;
     }
 
     /**
@@ -69,7 +49,7 @@ class RelationalModel
      */
     public function getModelTable(): string
     {
-        return static::$table;
+        return $this->_table;
     }
 
     /**
@@ -77,15 +57,15 @@ class RelationalModel
      */
     public function getModelFields(): array
     {
-        if (static::$fields === null) {
-            static::$fields = [];
+        if ($this->_fields === null) {
+            $this->_fields = [];
             foreach ($this as $field => $value) {
                 if ($field[0] !== '_') {
-                    static::$fields[] = $field;
+                    $this->_fields[] = $field;
                 }
             }
         }
-        return static::$fields;
+        return $this->_fields;
     }
 
     public function initOriginals(): void
@@ -101,7 +81,7 @@ class RelationalModel
      */
     public function getModelPrimaryFields(): array
     {
-        return static::$primaryFields;
+        return $this->_primaryFields;
     }
 
     /**
@@ -112,7 +92,7 @@ class RelationalModel
     {
         $set = [];
         $isOriginalInitialized = $this->_origins;
-        foreach (static::$primaryFields as $field) {
+        foreach ($this->_primaryFields as $field) {
             if ($isOriginalInitialized && $this->_origins[$field]) {
                 $set[$field] = $this->_origins[$field];
             } elseif ($this->$field) {
@@ -131,7 +111,7 @@ class RelationalModel
     {
         $set = [];
         $isOriginalInitialized = $this->_origins;
-        foreach (static::$fields as $field) {
+        foreach ($this->getModelFields()  as $field) {
             if ($isOriginalInitialized && $this->_origins[$field] !== $this->$field) {
                 $set[$field] = $this->$field;
             }
@@ -140,12 +120,44 @@ class RelationalModel
     }
 
     /**
+     * @return array
+     */
+    public function getSettledSet(): array
+    {
+        $set = [];
+        foreach ($this->getModelFields() as $field) {
+            if ($this->$field !== null) {
+                $set[$field] = $this->$field;
+            }
+        }
+        return $set;
+    }
+
+    /**
+     * @param array $set
+     * @param bool $optional
+     */
+    public function updateBySet(array $set, bool $optional = false): void
+    {
+        $fields = $this->getModelFields();
+        foreach ($set as $key => $value) {
+            if (in_array($key, $fields, true)) {
+                $this->$key = $value;
+            } elseif (!$optional) {
+                throw new CodeHuiterRuntimeException(sprintf('Model %s does not have field %s',  self::class, $key));
+            }
+        }
+    }
+
+    /**
      * @param string $autoIncrement
      */
     public function setAutoIncrementField(string $autoIncrement): void
     {
-        $field = static::$autoIncrementField;
-        $this->$field = $autoIncrement;
+        $field = $this->_autoIncrementField;
+        if ($field) {
+            $this->$field = $autoIncrement;
+        }
     }
 
     /**
@@ -155,7 +167,7 @@ class RelationalModel
      */
     public function exist(): bool
     {
-        foreach (static::$primaryFields as $field) {
+        foreach ($this->_primaryFields as $field) {
             if (!$this->_origins[$field]) {
                 return false;
             }
@@ -169,136 +181,5 @@ class RelationalModel
     public function getClass(): string
     {
         return static::class;
-    }
-
-    /**
-     * @deprecated TODO Replace to repositories
-     * @return DateService
-     */
-    protected static function getDateService(): DateService
-    {
-        if (static::$dateService === null) {
-            static::$dateService = Application::getInstance()->get(DateService::class);
-        }
-        return static::$dateService;
-    }
-
-    /**
-     * @deprecated
-     * @param array $where Where Key-Value array
-     * @param array $opt [order => [[ field=>string, reverse=>bool ],...]]
-     * @return self|null
-     */
-    public static function getOneWhere($where = [], $opt = []): ?self
-    {
-        /** @var self|null $model */
-        $model = static::getDb()->selectWhereOneObject(static::class, static::$table, $where, $opt);
-        return $model;
-    }
-
-    /**
-     * @deprecated
-     * @param array $where Where Key-Value array
-     * @param array $opt [key=>field, order => [[ field=>string, reverse=>bool ],...], limit=>[count=>,from=>,page=>,per_page=>]]
-     * @return self[]
-     */
-    public static function getWhere($where = [], $opt = []): array
-    {
-        /** @var self[] $model */
-        $model = static::getDb()->selectWhereObjects(static::class, static::$table, $where, $opt);
-        return $model;
-    }
-
-    /**
-     * @deprecated
-     * @param array $set Data
-     * @return string Primary Key
-     */
-    public static function insert($set): string
-    {
-        return static::getDb()->insert(static::$table, $set);
-    }
-
-    /** @var array  */
-    protected $_touchedFields = [];
-
-    /**
-     * @param string $fieldName
-     */
-    protected function touch(string $fieldName): void
-    {
-        if (!in_array($fieldName, $this->_touchedFields, true)) {
-            $this->_touchedFields[] = $fieldName;
-        }
-    }
-
-    /**
-     * @param bool $onlyTouched
-     * @return self
-     */
-    public function save(bool $onlyTouched = false): self
-    {
-        $filledPrimaryKeys = true;
-        $whereArray = [];
-        foreach (static::$primaryFields as $field) {
-            if (!$this->$field) {
-                $filledPrimaryKeys = false;
-            }
-            $whereArray[$field] = $this->$field;
-        }
-
-        $setArray = [];
-        $fields = $onlyTouched && $filledPrimaryKeys ? $this->_touchedFields : $this->getModelFields();
-        foreach ($fields as $field) {
-            $setArray[$field] = $this->$field;
-        }
-        if (!$setArray) {
-            return $this;
-        }
-
-        $db = static::getDb();
-
-        if ($filledPrimaryKeys && $db->selectWhereOneObject(static::class, static::$table, $whereArray)) {
-            $db->update(static::$table, $whereArray, $setArray);
-            return $this;
-        }
-
-        $lastInsertId = $db->insert(static::$table, $setArray);
-        foreach (static::$primaryFields as $field) {
-            $whereArray[$field] = $lastInsertId;
-        }
-        /** @var self $object */
-        $object = $db->selectWhereOneObject(static::class, static::$table, $whereArray);
-        return $object;
-    }
-
-    /**
-     * @param array $setArray
-     */
-    public function update(array $setArray): void
-    {
-        $whereArray = [];
-        foreach (static::$primaryFields as $field) {
-            $whereArray[$field] = $this->$field;
-        }
-        if ($whereArray) {
-            $db = static::getDb();
-            $db->update(static::$table, $whereArray, $setArray);
-        }
-    }
-
-    /**
-     * @return void
-     */
-    public function delete(): void
-    {
-        $whereArray = [];
-        foreach (static::$primaryFields as $field) {
-            $whereArray[$field] = $this->$field;
-        }
-        if ($whereArray) {
-            $db = static::getDb();
-            $db->delete(static::$table, $whereArray);
-        }
     }
 }

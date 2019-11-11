@@ -19,11 +19,11 @@ interface Mailer
      * @return bool
      */
     public function sendFromSite(
-        $subject,
-        $content,
-        $emails,
-        $ccEmails = [],
-        $queued = true,
+        string $subject,
+        string $content,
+        array $emails,
+        array $ccEmails = [],
+        bool $queued = true,
         bool $force = false
     ): bool;
 
@@ -38,12 +38,12 @@ interface Mailer
      * @return bool
      */
     public function send(
-        $subject,
-        $content,
-        $from,
-        $emails,
-        $ccEmails,
-        $queued,
+        string $subject,
+        string $content,
+        array $from,
+        array $emails,
+        array $ccEmails,
+        bool $queued,
         bool $force
     ): bool;
 }

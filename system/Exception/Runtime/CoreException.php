@@ -28,10 +28,10 @@ class CoreException extends CodeHuiterRuntimeException
         );
     }
 
-    public static function onRecursiveServiceCreation(string $serviceName, array $serviceStack): CoreException
+    public static function onRecursiveServiceCreation(string $serviceName, string $scope, array $serviceStack): CoreException
     {
         return new self(
-            "Recursive Service [$serviceName] creation found: " . print_r($serviceStack, true)
+            "Recursive Service [$serviceName] creation found in scope [$scope]: " . print_r($serviceStack, true)
         );
     }
 

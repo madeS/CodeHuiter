@@ -1,20 +1,17 @@
 <?php
 
-namespace App\Config;
+namespace CodeHuiter\Config;
 
-class DevelopingVagrantConfig extends DefaultConfig
+class ConfigTest extends PatternConfig
 {
     public function __construct()
     {
         parent::__construct();
 
-        $this->frameworkConfig->showErrors = true;
+        $this->settingsConfig->domain = 'app.local';
 
         $this->defaultDatabaseConfig->dsn = 'mysql:host=localhost;dbname=app_test_db';
         $this->defaultDatabaseConfig->username = 'appuser';
         $this->defaultDatabaseConfig->password = 'apppassword';
-
-        $this->compressorConfig->version = '20190911143000';
-        //$this->compressorConfig->version = 'dev';
     }
 }

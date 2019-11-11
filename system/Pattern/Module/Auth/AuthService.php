@@ -4,6 +4,7 @@ namespace CodeHuiter\Pattern\Module\Auth;
 
 use CodeHuiter\Config\AuthConfig;
 use CodeHuiter\Core\Application;
+use CodeHuiter\Core\CodeLoader;
 use CodeHuiter\Core\Request;
 use CodeHuiter\Core\Response;
 use CodeHuiter\Pattern\Exception\Runtime\AuthRuntimeException;
@@ -12,7 +13,7 @@ use CodeHuiter\Pattern\Module\Auth\Event\JoinAccountsEvent;
 use CodeHuiter\Pattern\Module\Auth\Model\UserInterface;
 use CodeHuiter\Pattern\Module\Auth\Model\UserRepositoryInterface;
 use CodeHuiter\Pattern\Result\ClientResult;
-use CodeHuiter\Pattern\Service\MjsaResponse;
+use CodeHuiter\Pattern\Service\AjaxResponse;
 use CodeHuiter\Service\DateService;
 use CodeHuiter\Service\Mailer;
 use CodeHuiter\Service\Language;
@@ -107,7 +108,7 @@ class AuthService
     /**
      * @return Mailer
      */
-    protected function getEmail()
+    protected function getMailer(): Mailer
     {
         /** @var Mailer $email */
         $email = $this->app->get(Mailer::class);
@@ -212,7 +213,7 @@ class AuthService
      */
     protected function checkUser(): bool
     {
-        $id = $this->request->getCookie('id');
+        $id = (int)$this->request->getCookie('id');
         $sig = $this->request->getCookie('sig');
         if (!$id || !$sig) {
             $this->user = $this->getDefaultUser();
@@ -228,11 +229,11 @@ class AuthService
     }
 
     /**
-     * @param $id
-     * @param $sig
+     * @param int $id
+     * @param string $sig
      * @return bool|UserInterface
      */
-    protected function getUserInfo($id, $sig)
+    protected function getUserInfo(int $id, string $sig)
     {
         $userInfo = $id ? $this->getUserById($id) : false;
         if (!$userInfo) {
@@ -240,7 +241,7 @@ class AuthService
         }
 
         if (isset($this->commonHash) && md5($sig) === $this->commonHash) {
-            $userInfo->setGroups(array_merge($userInfo->getGroups(), $this->groups), false);
+            $userInfo->setGroups(array_merge($userInfo->getGroups(), $this->groups));
             return $userInfo;
         }
         if (!$sig || $sig === 'NULL' || $sig !== $userInfo->getSignature()) {
@@ -256,7 +257,7 @@ class AuthService
         }
         if ($this->date->getCurrentTimestamp() - $userInfo->getLastActive() > $this->config->nonactiveUpdateTime) {
             $userInfo->setLastActive($this->date->getCurrentTimestamp());
-            $userInfo->saveUser();
+            $this->userRepository->save($userInfo);
         }
         return $userInfo;
     }
@@ -265,9 +266,9 @@ class AuthService
      * @param int $id
      * @return UserInterface|null
      */
-    public function getUserById($id): ?UserInterface
+    public function getUserById(int $id): ?UserInterface
     {
-        return $this->userRepository->findOne(['id' => $id]);
+        return $this->userRepository->getById($id);
     }
 
     /**
@@ -297,7 +298,7 @@ class AuthService
         $userInfo->setSignature($newSig);
         $userInfo->setSignatureTime($this->date->getCurrentTimestamp());
         $userInfo->setLastIp($this->request->getClientIP());
-        $userInfo->saveUser();
+        $this->userRepository->save($userInfo);
 
         $this->response->setCookie(
             'id', $userInfo->getId(),
@@ -316,7 +317,7 @@ class AuthService
     public function resetSig(UserInterface $userInfo, $withLogout = true): void
     {
         $userInfo->setSignature('');
-        $userInfo->saveUser();
+        $this->userRepository->save($userInfo);
 
         if ($withLogout) {
             $this->response->setCookie(
@@ -379,11 +380,11 @@ class AuthService
     }
 
     /**
-     * @param MjsaResponse $mjsa
+     * @param AjaxResponse $mjsa
      * @param array $input
      * @return array|null
      */
-    public function loginByPasswordValidator(MjsaResponse $mjsa, array $input): ?array
+    public function loginByPasswordValidator(AjaxResponse $mjsa, array $input): ?array
     {
         return $mjsa->validator($input, array_merge([
             'logemail' => [
@@ -439,6 +440,7 @@ class AuthService
             // Deleted user authed. restore him
             $previousGroups = $user->getGroups();
             $user->addGroup(self::GROUP_NOT_DELETED);
+            $this->userRepository->save($user);
             $this->app->fireEvent(new GroupsChangedEvent($user, $previousGroups));
         }
         if ($this->userNotInGroups($user,[self::GROUP_ACTIVE])) {
@@ -463,7 +465,7 @@ class AuthService
             $userDataInfo[$key] = $this->sigFunc($user->getId(), $user->getLogin(), $user->getEmail(), $key);
         }
         $user->setDataInfo($userDataInfo);
-        $user->saveUser();
+        $this->userRepository->save($user);
 
         $subject = $this->lang->get('auth_email:confirm_subject', [
             '{#siteName}' => $this->app->config->projectConfig->projectName,
@@ -474,7 +476,7 @@ class AuthService
             '{#login}' => $user->getLogin(),
             '{#token}' => $userDataInfo[$key],
         ]);
-        if (!$this->getEmail()->sendFromSite($subject, $content, [$user->getEmail()], [], $this->config->emailQueued)) {
+        if (!$this->getMailer()->sendFromSite($subject, $content, [$user->getEmail()], [], $this->config->emailQueued)) {
             return ClientResult::createError($this->lang->get('auth_sign:error_email_not_sent'));
         }
         return ClientResult::createSuccess();
@@ -517,7 +519,7 @@ class AuthService
             $userDataInfo[$key] = $this->sigFunc($user->getId() ,$user->getLogin(), $user->getEmail(), $key);
         }
         $user->setDataInfo($userDataInfo);
-        $user->saveUser();
+        $this->userRepository->save($user);
 
         $subject = $this->lang->get('auth_email:recovery_subject', [
             '{#siteName}' => $this->app->config->projectConfig->projectName,
@@ -529,20 +531,20 @@ class AuthService
             '{#login}' => $user->getLogin(),
             '{#token}' => $userDataInfo[$key],
         ]);
-        if (!$this->getEmail()->sendFromSite($subject, $content, [$user->getEmail()], [], $this->config->emailQueued)) {
+        if (!$this->getMailer()->sendFromSite($subject, $content, [$user->getEmail()], [], $this->config->emailQueued)) {
             return ClientResult::createError($this->lang->get('auth_sign:error_email_not_sent'));
         }
         return ClientResult::createSuccess();
     }
 
     /**
-     * @param MjsaResponse $mjsa
+     * @param AjaxResponse $mjsa
      * @param array $input
      * @param array $additionalValidator
      * @param UserInterface|null $connectUi
      * @return array|bool validatedData or false if not valid
      */
-    public function registerByEmailValidator(MjsaResponse $mjsa, $input, $additionalValidator = [], $connectUi = null): ?array
+    public function registerByEmailValidator(AjaxResponse $mjsa, $input, $additionalValidator = [], $connectUi = null): ?array
     {
         return $mjsa->validator($input, array_merge([
             'email' => [
@@ -638,8 +640,7 @@ class AuthService
                 $targetUi->setEmailConfirmed(false);
                 $isNeedToConfirmEmail = true;
             }
-
-            $targetUi->saveUser();
+            $this->userRepository->save($targetUi);
         } else {
             if (!$this->config->allowRegister) {
                 return ClientResult::createError($this->lang->get('auth_sign:register_denied'));
@@ -651,7 +652,7 @@ class AuthService
             $user->setPassHash($passHash);
             $user->setLastActive($this->date->getCurrentTimestamp());
             $user->addGroup(self::GROUP_NOT_BANNED);
-            $user->saveUser();
+            $this->userRepository->save($user);
 
             $isNeedToConfirmEmail = true;
         }
@@ -700,7 +701,7 @@ class AuthService
      * @param bool $resetToken
      * @return ClientResult
      */
-    public function confirmToken(UserInterface $user, string $token, string $tokenType, bool $resetToken): ClientResult
+    public function confirmToken(UserInterface $user, string $tokenType, string $token, bool $resetToken): ClientResult
     {
         $tokenKey = $this->getDataInfoTokenKey($tokenType);
         if (!in_array(self::GROUP_NOT_BANNED, $user->getGroups(), true)) {
@@ -718,7 +719,7 @@ class AuthService
             unset($userDataInfo[$tokenKey]);
             $user->setDataInfo($userDataInfo);
         }
-        $user->saveUser();
+        $this->userRepository->save($user);
 
         return ClientResult::createSuccess();
     }
@@ -746,7 +747,7 @@ class AuthService
             return null;
         }
         $user->setTimezone($timezoneOffset);
-        $user->saveUser();
+        $this->userRepository->save($user);
 
         return $user->getTimezone();
     }
@@ -775,7 +776,7 @@ class AuthService
         }
         $user->addGroup(self::GROUP_ACTIVE);
         $user->setEmailConfirmed(true);
-        $user->saveUser();
+        $this->userRepository->save($user);
 
         $withSameEmailUnconfirmedUsers = $this->userRepository->find([
             'email' => $user->getEmail(),
@@ -820,7 +821,7 @@ class AuthService
         if (!$user) return ClientResult::createError($this->lang->get('auth_sign:incorrect_id'));
         $tokenResult = $this->confirmToken($user,self::TOKEN_TYPE_RECOVERY, $token, true);
         if (!$tokenResult->isSuccess()) {
-            return ClientResult::createError($tokenResult->getMessage());
+            return $tokenResult;
         }
         return $this->setPassword($user, $newPassword);
     }
@@ -839,7 +840,7 @@ class AuthService
         $passHash = $this->passFunc($user->getLogin(), $user->getEmail(), $password, $this->config->passFuncMethod);
         $user->setPassHash($passHash);
         $this->updateSig($user);
-        $user->saveUser();
+        $this->userRepository->save($user);
         return ClientResult::createSuccess();
     }
 }

@@ -4,7 +4,7 @@ $compressorConfig = $those->compressor->checkCompress();
 ?>
 <?php if(isset($canonical) && $canonical):?>
     <link rel="canonical" href="<?php echo $canonical ?>" />
-<?php elseif(isset($uri) && $uri && $uri != $those->request->uri):?>
+<?php elseif(isset($uri) && $uri && $uri != $those->request->getUri()):?>
     <link rel="canonical" href="<?php echo $those->app->config->settingsConfig->siteUrl . $uri ?>" />
 <?php endif;?>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />

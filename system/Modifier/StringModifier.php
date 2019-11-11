@@ -112,16 +112,16 @@ class StringModifier
     /**
      * @param string $encoded json string
      * @param bool $force return empty array if json is broken
-     * @return array|bool
+     * @return array|null
      */
-    public static function jsonDecode($encoded, $force = true)
+    public static function jsonDecode(string $encoded, bool $force = true): ?array
     {
         if ($encoded === '') {
-            return ($force) ? [] : false;
+            return ($force) ? [] : null;
         }
         $result = json_decode($encoded, true);
         if (json_last_error()) {
-            return ($force) ? [] : false;
+            return ($force) ? [] : null;
         }
         return $result;
     }

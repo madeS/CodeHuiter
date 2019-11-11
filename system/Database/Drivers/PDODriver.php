@@ -3,6 +3,7 @@ namespace CodeHuiter\Database\Drivers;
 
 use CodeHuiter\Config\RelationalDatabaseConfig;
 use CodeHuiter\Database\ByDefault\AbstractDatabase;
+use CodeHuiter\Exception\CodeHuiterRuntimeException;
 use PDO;
 use PDOException;
 use Throwable;
@@ -534,6 +535,9 @@ class PDODriver extends AbstractDatabase
      */
     public function insert($table, $set): string
     {
+        if (!$set) {
+            throw new CodeHuiterRuntimeException('Trying to insert with no set');
+        }
         $compiled = self::arrayCompile(null, null, $set, null, null);
         return $this->execute(
             "INSERT INTO `{$table}` \n ({$compiled['insert_keys']}) \n VALUES ({$compiled['insert_values']})",
@@ -685,11 +689,10 @@ class PDODriver extends AbstractDatabase
     public static function sqlOrder(array $orderArray): string
     {
         $orderArrays = [];
-        foreach ($orderArray as $orderItem) {
-            if (isset($orderItem['field'])) {
-                $orderArrays[] =
-                    " `{$orderItem['field']}` "
-                    . ((isset($orderItem['reverse']) && $orderItem['reverse']) ? 'DESC' : 'ASC');
+        foreach ($orderArray as $field => $orderValue) {
+            $orderValue = strtolower($orderValue);
+            if (is_string($field) && in_array($orderValue, ['asc', 'desc'], true)) {
+                $orderArrays[] = " `{$field}` " . ($orderValue === 'asc' ? 'ASC' : 'DESC');
             }
         }
         if (!$orderArrays)  {

@@ -34,8 +34,8 @@ class Compressor implements \CodeHuiter\Pattern\Service\Compressor
      */
     public function checkCompress(): CompressorConfig
     {
-        if (!empty($this->config->domainCompressor[$this->request->domain])) {
-            $this->config = $this->config->domainCompressor[$this->request->domain];
+        if (!empty($this->config->domainCompressor[$this->request->getDomain()])) {
+            $this->config = $this->config->domainCompressor[$this->request->getDomain()];
         }
 
         $outputFileTemplate = $this->config->dir . '/' . $this->config->names . '_' . $this->config->version;

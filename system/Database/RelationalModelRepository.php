@@ -71,13 +71,13 @@ class RelationalModelRepository
      */
     public function getById(array $primaryIdParts): ?RelationalModel
     {
+        $db = $this->getDB();
         $where = [];
         foreach ($this->primaryFields as $key => $primaryField) {
             $where[$primaryField] = $primaryIdParts[$primaryField] ?? $primaryIdParts[$key];
         }
-
         /** @var RelationalModel|null $model */
-        $model = $this->getDB()->selectWhereOneObject($this->modelClass, $this->table, $where);
+        $model = $db->selectWhereOneObject($this->modelClass, $this->table, $where);
         if ($model !== null) {
             $this->initOriginsForModels([$model]);
         }
@@ -106,7 +106,9 @@ class RelationalModelRepository
     {
         /** @var RelationalModel|null $model */
         $model = $this->getDB()->selectWhereOneObject($this->modelClass, $this->table, $where, $opt);
-        $this->initOriginsForModels([$model]);
+        if ($model) {
+            $this->initOriginsForModels([$model]);
+        }
         return $model;
     }
 
@@ -115,14 +117,18 @@ class RelationalModelRepository
     public function save(RelationalModel $model): RelationalModel
     {
         $whereSet = $model->getPrimarySet();
-        $touchedSet = $model->getTouchedSet();
-        if ($whereSet && !$touchedSet) {
-            return $model;
-        }
+        $timeString = $this->getDateService()->sqlTime();
         if ($whereSet) {
-            $this->getDB()->update($this->table, $whereSet, $touchedSet);
+            $model->updateBySet(['updated_at' => $timeString], true);
+            $set = $model->getTouchedSet();
+            if (!$set) {
+                return $model;
+            }
+            $this->getDB()->update($this->table, $whereSet, $set);
         } else {
-            $primaryKey = $this->getDB()->insert($this->table, $touchedSet);
+            $model->updateBySet(['updated_at' => $timeString, 'created_at' => $timeString], true);
+            $set = $model->getSettledSet();
+            $primaryKey = $this->getDB()->insert($this->table, $set);
             $model->setAutoIncrementField($primaryKey);
         }
         $model->initOriginals();
@@ -171,7 +177,7 @@ class RelationalModelRepository
         return $this->dbHandler;
     }
 
-    private function getDateService(): DateService
+    public function getDateService(): DateService
     {
         if ($this->dateService === null) {
             $this->dateService = $this->application->get(DateService::class);

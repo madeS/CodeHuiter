@@ -9,7 +9,10 @@ use CodeHuiter\Pattern\Module\Auth\AuthService;
 
 class UserModel extends RelationalModel implements UserInterface
 {
-    protected static $table = 'users';
+    protected $_table = 'users';
+    protected $_databaseServiceKey = 'db';
+    protected $_primaryFields = ['id'];
+    protected $_autoIncrementField = 'id';
 
     /** @var int */
     protected $id;
@@ -89,7 +92,6 @@ class UserModel extends RelationalModel implements UserInterface
     public function setLogin(string $login): void
     {
         $this->login = $login;
-        $this->touch('login');
     }
 
     /** @inheritdoc */
@@ -102,7 +104,6 @@ class UserModel extends RelationalModel implements UserInterface
     public function setEmail(string $email): void
     {
         $this->email = $email;
-        $this->touch('email');
     }
 
     /** @inheritdoc */
@@ -115,7 +116,6 @@ class UserModel extends RelationalModel implements UserInterface
     public function setEmailConfirmed(bool $confirmed): void
     {
         $this->email_conf = (int)$confirmed;
-        $this->touch('email_conf');
     }
 
     /** @inheritdoc */
@@ -128,7 +128,6 @@ class UserModel extends RelationalModel implements UserInterface
     public function setPassHash(string $passHash): void
     {
         $this->passhash = $passHash;
-        $this->touch('passhash');
     }
 
     /** @inheritdoc */
@@ -141,7 +140,6 @@ class UserModel extends RelationalModel implements UserInterface
     public function setTimezone(string $timezone): void
     {
         $this->timezone = $timezone;
-        $this->touch('timezone');
     }
 
     /** @inheritdoc */
@@ -154,7 +152,6 @@ class UserModel extends RelationalModel implements UserInterface
     public function setSignature(string $signature): void
     {
         $this->sig = $signature;
-        $this->touch('sig');
     }
 
     /** @inheritdoc */
@@ -167,7 +164,6 @@ class UserModel extends RelationalModel implements UserInterface
     public function setSignatureTime(int $timestamp): void
     {
         $this->sigtime = $timestamp;
-        $this->touch('sigtime');
     }
 
     /** @inheritdoc */
@@ -180,7 +176,6 @@ class UserModel extends RelationalModel implements UserInterface
     public function setLastActive(int $lastActive): void
     {
         $this->lastact = $lastActive;
-        $this->touch('lastact');
     }
 
     /** @inheritdoc */
@@ -193,8 +188,25 @@ class UserModel extends RelationalModel implements UserInterface
     public function setLastIp(string $ip): void
     {
         $this->lastip = $ip;
-        $this->touch('lastip');
     }
+
+    /**
+     * @return string
+     */
+    public function getRegtime(): string
+    {
+        return $this->regtime;
+    }
+
+    /**
+     * @param string $regtime
+     */
+    public function setRegtime(string $regtime): void
+    {
+        $this->regtime = $regtime;
+    }
+
+
 
     /** @inheritdoc */
     public function getNotificationsCount(): int
@@ -206,7 +218,6 @@ class UserModel extends RelationalModel implements UserInterface
     public function setNotificationsCount(int $notifications_count): void
     {
         $this->notifications_count = $notifications_count;
-        $this->touch('notifications_count');
     }
 
     /** @inheritdoc */
@@ -219,7 +230,6 @@ class UserModel extends RelationalModel implements UserInterface
     public function setNotificationsLast(int $notifications_last): void
     {
         $this->notifications_last = $notifications_last;
-        $this->touch('notifications_last');
     }
 
     /** @inheritdoc */
@@ -232,7 +242,6 @@ class UserModel extends RelationalModel implements UserInterface
     public function setPicturePreview(string $picture_preview): void
     {
         $this->picture_preview = $picture_preview;
-        $this->touch('picture_preview');
     }
 
 
@@ -254,11 +263,7 @@ class UserModel extends RelationalModel implements UserInterface
     public function setDataInfo(array $data): void
     {
         $this->_dataInfoDecoded = null;
-        $newDataInfo = StringModifier::jsonEncode($data);
-        if ($newDataInfo !== $this->data_info) {
-            $this->touch('data_info');
-        }
-        $this->data_info = $newDataInfo;
+        $this->data_info = StringModifier::jsonEncode($data);
     }
 
     public function isInGroup(int $groupCode): bool
@@ -277,12 +282,12 @@ class UserModel extends RelationalModel implements UserInterface
     public function getGroups(): array
     {
         if ($this->_groupsDecoded === null) {
-            $this->_groupsDecoded = StringModifier::jsonDecode($this->groups);
+            $this->_groupsDecoded = StringModifier::jsonDecode($this->groups, true);
         }
         return $this->_groupsDecoded;
     }
 
-    public function setGroups(array $groups, bool $withSave = true): void
+    public function setGroups(array $groups): void
     {
         sort($groups);
 
@@ -290,14 +295,8 @@ class UserModel extends RelationalModel implements UserInterface
         if (!$diff) {
             return;
         }
-
-        // Saving
         $this->groups = StringModifier::jsonEncode($groups);
-        $this->_groupsDecoded = null;
-
-        if ($withSave) {
-            $this->update(['groups' => $this->groups]);
-        }
+        $this->_groupsDecoded = $groups;
     }
 
     public function addGroup(int $group): void
@@ -339,16 +338,5 @@ class UserModel extends RelationalModel implements UserInterface
             // @todo set deleted photo
         }
 
-    }
-
-    /** @inheritdoc */
-    public function saveUser(): UserInterface
-    {
-        if (!$this->id) {
-            $this->regtime = self::getDateService()->sqlTime();
-        }
-        /** @var self $user */
-        $user = parent::save(true);
-        return $user;
     }
 }

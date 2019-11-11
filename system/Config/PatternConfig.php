@@ -6,7 +6,7 @@ use CodeHuiter\Core\Application;
 use CodeHuiter\Core\Request;
 use CodeHuiter\Core\Response;
 use CodeHuiter\Pattern\Service\ByDefault;
-use CodeHuiter\Pattern\Service\MjsaResponse;
+use CodeHuiter\Pattern\Service\AjaxResponse;
 use CodeHuiter\Service\ByDefault\PhpRenderer;
 use CodeHuiter\Service\DateService;
 use CodeHuiter\Pattern\Module\Auth\AuthService;
@@ -32,7 +32,7 @@ class PatternConfig extends Config
     public $authConfig;
 
     public const SERVICE_KEY_COMPRESSOR = 'compressor';
-    public const SERVICE_KEY_MJSA_RESPONSE = 'mjsaResponse';
+    public const SERVICE_KEY_MJSA_RESPONSE = 'ajaxResponse';
     public const SERVICE_KEY_LINKS = 'links';
     public const SERVICE_KEY_MEDIA = 'media';
     public const SERVICE_KEY_AUTH = 'auth';
@@ -92,21 +92,30 @@ class PatternConfig extends Config
         /**
          * MjsaResponse Service
          */
-        $this->services[MjsaResponse::class] = [
+        $this->services[AjaxResponse::class] = [
             self::OPT_KEY_CALLBACK => static function (Application $app) {
-                return new ByDefault\MjsaResponse($app->get(Language::class));
+                /** @var Request $request */
+                $request = $app->get(Request::class);
+                if ($request->getRequestValue('mjsaAjax') || $request->getRequestValue('bodyAjax')) {
+                    return new ByDefault\MjsaAjaxResponse($app->get(Language::class));
+                }
+                if ($request->getRequestValue('jsonAjax') || $request->getRequestValue('bodyJsonAjax')) {
+                    return new ByDefault\JsonAjaxResponse($app->get(Language::class));
+                }
+                return new ByDefault\JsonAjaxResponse($app->get(Language::class));
             },
-            self::OPT_KEY_VALIDATE => MjsaResponse::class,
+            self::OPT_KEY_VALIDATE => AjaxResponse::class,
+            self::OPT_KEY_SCOPE => self::OPT_KEY_SCOPE_REQUEST,
             self::OPT_KEY_SINGLE => true
         ];
-        $this->injectedServices[self::SERVICE_KEY_MJSA_RESPONSE] = MjsaResponse::class;
+        $this->injectedServices[self::SERVICE_KEY_MJSA_RESPONSE] = AjaxResponse::class;
 
         /**
          * Links Service
          */
         $this->services[Link::class] = [
             self::OPT_KEY_CALLBACK => static function (Application $app) {
-                return new Link($app->get(Language::class), $app->config->linksConfig);
+                return new Link($app, $app->config->linksConfig);
             },
             self::OPT_KEY_VALIDATE => Link::class,
             self::OPT_KEY_SINGLE => true
@@ -143,14 +152,15 @@ class PatternConfig extends Config
                 );
             },
             self::OPT_KEY_VALIDATE => AuthService::class,
-            self::OPT_KEY_SINGLE => true
+            self::OPT_KEY_SINGLE => true,
+            self::OPT_KEY_SCOPE => self::OPT_KEY_SCOPE_REQUEST,
         ];
         $this->injectedServices[self::SERVICE_KEY_AUTH] = AuthService::class;
         $this->authConfig = new AuthConfig();
         $this->authConfig->cookieDomain = '.' . $this->settingsConfig->domain;
 
 
-        $this->services[UserRepositoryInterface::class] = [self::OPT_KEY_CLASS => UserModelRepository::class, self::OPT_KEY_VALIDATE => UserRepositoryInterface::class, self::OPT_KEY_SINGLE => true];
+        $this->services[UserRepositoryInterface::class] = [self::OPT_KEY_CLASS_APP => UserModelRepository::class, self::OPT_KEY_VALIDATE => UserRepositoryInterface::class, self::OPT_KEY_SINGLE => true];
     }
 }
 

@@ -76,8 +76,10 @@ interface Response
      * Set Headers
      * array of strings or array of key => values
      * @param array $headerStrings
+     * @param bool $replace
+     * @param int|null $code
      */
-    public function setHeaders(array $headerStrings): void;
+    public function setHeaders(array $headerStrings, bool $replace = false, ?int $code = null): void;
 
     /**
      * Append body to response
@@ -117,4 +119,19 @@ interface Response
      * @param boolean $temperatory Is 302 Moved Temperatory
      */
     public function location(string $url, bool $temperatory = false): void;
+
+    /**
+     * @return array
+     */
+    public function getHeaders(): array;
+
+    /**
+     * @return array
+     */
+    public function getCookies(): array;
+
+    /**
+     * @return string
+     */
+    public function getContent(): string;
 }

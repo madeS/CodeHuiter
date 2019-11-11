@@ -42,6 +42,11 @@ class CodeLoader
         $this->benchmarkPoint(self::APP_START);
     }
 
+    public static function getInstance(): CodeLoader
+    {
+        return Application::getInstance()->get(CodeLoader::class);
+    }
+
     public function setBenchMode(int $benchMode)
     {
         $this->benchMode = $benchMode;

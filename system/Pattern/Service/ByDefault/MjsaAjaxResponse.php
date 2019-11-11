@@ -7,20 +7,15 @@ use CodeHuiter\Core\Response;
 use CodeHuiter\Modifier\Filter;
 use CodeHuiter\Modifier\StringModifier;
 use CodeHuiter\Modifier\Validator;
-use CodeHuiter\Pattern\Service\MjsaResponse as MjsaResponseInterface;
+use CodeHuiter\Pattern\Service\AjaxResponse;
 use CodeHuiter\Service\Language;
 
-class MjsaResponse implements MjsaResponseInterface
+class MjsaAjaxResponse implements AjaxResponse
 {
     /**
      * @var string
      */
     protected $eventResponse = '';
-
-    /**
-     * @var string
-     */
-    protected $response = '';
 
     /**
      * @var string
@@ -43,7 +38,7 @@ class MjsaResponse implements MjsaResponseInterface
     /**
      * {@inheritDoc}
      */
-    public function isMjsaRequested(Request $request): bool
+    public function isAjaxRequested(Request $request): bool
     {
         return $request->isAJAX()
             && ($request->getRequestValue('mjsaAjax') || $request->getRequestValue('bodyAjax'));
@@ -61,7 +56,7 @@ class MjsaResponse implements MjsaResponseInterface
     /**
      * {@inheritDoc}
      */
-    public function events(): MjsaResponseInterface
+    public function events(): AjaxResponse
     {
         $this->eventResponse = '';
         return $this;
@@ -73,7 +68,7 @@ class MjsaResponse implements MjsaResponseInterface
     public function render(?Response $response = null): string
     {
         $result = $this->eventResponse;
-        $this->eventResponse = null;
+        $this->eventResponse = '';
         if ($response !== null) {
             $response->append($result);
         }
@@ -83,7 +78,7 @@ class MjsaResponse implements MjsaResponseInterface
     /**
      * {@inheritDoc}
      */
-    public function location(string $url): MjsaResponseInterface
+    public function location(string $url): AjaxResponse
     {
         $this->eventResponse .= $this->mjsaMark . '<stop_separator/><location_separator/>'.$url.'<location_separator/>';
         return $this;
@@ -92,7 +87,7 @@ class MjsaResponse implements MjsaResponseInterface
     /**
      * {@inheritDoc}
      */
-    public function insert(string $selector, string $content): MjsaResponseInterface
+    public function insert(string $selector, string $content): AjaxResponse
     {
         $this->eventResponse .= $this->mjsaMark . '<noservice_separator/>'
             . '<html_replace_separator/>'.$selector.'<html_replace_to/>'
@@ -105,7 +100,7 @@ class MjsaResponse implements MjsaResponseInterface
     /**
      * {@inheritDoc}
      */
-    public function append(string $selector, string $content): MjsaResponseInterface
+    public function append(string $selector, string $content): AjaxResponse
     {
         $this->eventResponse .= $this->mjsaMark . '<noservice_separator/>'
             .'<html_append_separator/>'.$selector.'<html_append_to/>'
@@ -118,7 +113,7 @@ class MjsaResponse implements MjsaResponseInterface
     /**
      * {@inheritDoc}
      */
-    public function successMessage(string $message): MjsaResponseInterface
+    public function successMessage(string $message): AjaxResponse
     {
         $this->eventResponse .= $this->mjsaMark . '<success_separator/>' . $message . '<success_separator/>';
         return $this;
@@ -127,7 +122,7 @@ class MjsaResponse implements MjsaResponseInterface
     /**
      * {@inheritDoc}
      */
-    public function errorMessage(string $message): MjsaResponseInterface
+    public function errorMessage(string $message): AjaxResponse
     {
         $this->eventResponse .= $this->mjsaMark . '<error_separator/>' . $message . '<error_separator/>';
         return $this;
@@ -136,16 +131,16 @@ class MjsaResponse implements MjsaResponseInterface
     /**
      * {@inheritDoc}
      */
-    public function incorrect(string $class): MjsaResponseInterface
+    public function incorrect(string $field): AjaxResponse
     {
-        $this->eventResponse .= $this->mjsaMark . '<incorrect_separator/>' . $class . '<incorrect_separator/>';
+        $this->eventResponse .= $this->mjsaMark . '<incorrect_separator/>' . $field . '<incorrect_separator/>';
         return $this;
     }
 
     /**
      * {@inheritDoc}
      */
-    public function formReplace(string $content): MjsaResponseInterface
+    public function formReplace(string $content): AjaxResponse
     {
         $this->eventResponse .= $this->mjsaMark . '<form_replace_separator/>' . $content . '<form_replace_separator/>';
         return $this;
@@ -154,7 +149,7 @@ class MjsaResponse implements MjsaResponseInterface
     /**
      * {@inheritDoc}
      */
-    public function reload(): MjsaResponseInterface
+    public function reload(): AjaxResponse
     {
         $this->eventResponse .= $this->mjsaMark . '<script>mjsa.bodyUpdate();</script>';
         return $this;
@@ -163,7 +158,7 @@ class MjsaResponse implements MjsaResponseInterface
     /**
      * {@inheritDoc}
      */
-    public function closePopups(): MjsaResponseInterface
+    public function closePopups(): AjaxResponse
     {
         $this->eventResponse .= $this->mjsaMark . '<script>mjsa.popups.closeAll();</script>';
         return $this;
@@ -172,7 +167,7 @@ class MjsaResponse implements MjsaResponseInterface
     /**
      * {@inheritDoc}
      */
-    public function openPopupWithData(string $content, string $name, array $options): MjsaResponseInterface
+    public function openPopupWithData(string $content, string $name, array $options): AjaxResponse
     {
         if (isset($options['close']) && $options['close']) {
             unset($options['close']);
@@ -242,7 +237,7 @@ class MjsaResponse implements MjsaResponseInterface
             }
 
             if (($options['required'] ?? null) && $data === '') {
-                $this->errorMessage(($options['required_text'] ?? $this->language->get('mjsa_validator:required')));
+                $this->errorMessage(($options['required_text'] ?? $this->language->get('ajax_validator:required')));
                 $this->incorrect($field);
                 if ($focusOneError) break;
                 else continue;
@@ -254,7 +249,7 @@ class MjsaResponse implements MjsaResponseInterface
             if (($options['max_length'] ?? null) && strlen($data) > $options['max_length']) {
                 $this->errorMessage(
                     $options['max_length_text']
-                    ?? $this->language->get('mjsa_validator:max_length',['{#max_length}' => $options['max_length']])
+                    ?? $this->language->get('ajax_validator:max_length',['{#max_length}' => $options['max_length']])
                 );
                 $this->incorrect($field);
                 if ($focusOneError) break;
@@ -263,7 +258,7 @@ class MjsaResponse implements MjsaResponseInterface
             if (($options['length'] ?? null) && strlen($data) !== $options['length']) {
                 $this->errorMessage(
                     $options['length_text']
-                    ?? $this->language->get('mjsa_validator:length',['{#length}' => $options['length']])
+                    ?? $this->language->get('ajax_validator:length',['{#length}' => $options['length']])
                 );
                 $this->incorrect($field);
                 if ($focusOneError) break;
@@ -272,7 +267,7 @@ class MjsaResponse implements MjsaResponseInterface
             if (($options['email'] ?? null) && !Validator::isValidEmail($data)) {
                 $this->errorMessage(
                     $options['email_text']
-                    ?? $this->language->get('mjsa_validator:email')
+                    ?? $this->language->get('ajax_validator:email')
                 );
                 $this->incorrect($field);
                 if ($focusOneError) break;
@@ -282,7 +277,7 @@ class MjsaResponse implements MjsaResponseInterface
                 $this->errorMessage(
                     $options['phone_length_text']
                     ?? $this->language->get(
-                        'mjsa_validator:phone_length',
+                        'ajax_validator:phone_length',
                         ['{#phone_length}' => $options['phone_length']]
                     )
                 );

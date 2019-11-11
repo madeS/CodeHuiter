@@ -5,7 +5,7 @@ namespace CodeHuiter\Service\ByDefault\Email;
 use CodeHuiter\Config\EmailConfig;
 use CodeHuiter\Service\Logger;
 
-abstract class AbstractEmail
+abstract class AbstractEmail implements \CodeHuiter\Service\Mailer
 {
     /**
      * @var Logger
@@ -49,8 +49,14 @@ abstract class AbstractEmail
      * @param bool $force
      * @return bool
      */
-    public function sendFromSite($subject, $content, $emails, $ccEmails = [], $queued = true, bool $force = false)
-    {
+    public function sendFromSite(
+        string $subject,
+        string $content,
+        array $emails,
+        array $ccEmails = [],
+        bool $queued = true,
+        bool $force = false
+    ): bool {
         $from = [$this->config->siteRobotEmail => $this->config->siteRobotName];
         return $this->send($subject, $content, $from, $emails, $ccEmails, $queued, $force);
     }
@@ -65,5 +71,13 @@ abstract class AbstractEmail
      * @param bool $force
      * @return bool
      */
-    abstract public function send($subject, $content, $from, $emails, $ccEmails, $queued, bool $force);
+    abstract public function send(
+        string $subject,
+        string $content,
+        array $from,
+        array $emails,
+        array $ccEmails,
+        bool $queued,
+        bool $force
+    ): bool;
 }

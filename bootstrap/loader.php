@@ -1,13 +1,6 @@
 <?php
 
-chdir(__DIR__);
-define('BASE_PATH', dirname(__DIR__) . '/');
-define('SYSTEM_PATH', BASE_PATH . 'system/');
-define('PUB_PATH', BASE_PATH . 'public_html/');
-define('APP_PATH', BASE_PATH . 'app/');
-define('STORAGE_PATH', BASE_PATH . 'storage/');
-define('VIEW_PATH', APP_PATH . 'View/');
-define('CACHE_PATH', STORAGE_PATH . 'framework/cache/');
+require __DIR__ . '/paths.php';
 
 require SYSTEM_PATH . 'Core/CodeLoader.php';
 $codeLoader = new \CodeHuiter\Core\CodeLoader();
@@ -77,4 +70,5 @@ register_shutdown_function('_shutdown_handler');
 
 $app = \CodeHuiter\Core\Application::getInstance();
 $app->set(\CodeHuiter\Core\CodeLoader::class, $codeLoader);
-$app->run();
+$response = $app->run(null);
+if ($response) $response->send();

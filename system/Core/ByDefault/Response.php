@@ -14,9 +14,11 @@ class Response implements \CodeHuiter\Core\Response
 {
     /** @var array */
     protected $finalHeaders = [];
+    /** @var array */
+    protected $finalCookies = [];
 
     /** @var string */
-    protected $finalOutput;
+    protected $finalOutput = '';
 
     /**
      * @var ResponseConfig
@@ -51,17 +53,14 @@ class Response implements \CodeHuiter\Core\Response
     }
 
     /**
-     * @param array $headerStrings
+     * @param string[] $headerStrings
+     * @param bool $replace
+     * @param int|null $code
      */
-    public function setHeaders(array $headerStrings): void
+    public function setHeaders(array $headerStrings, bool $replace = false, ?int $code = null): void
     {
         foreach ($headerStrings as $key => $headerString) {
-            if (is_string($key)) {
-                $this->finalHeaders[$key] = [$headerString];
-            } else {
-                $headerArr = explode(':', $headerString);
-                $this->finalHeaders[trim($headerArr[0])] = [$headerString];
-            }
+            $this->finalHeaders[$key] = [$headerString, $replace, $code];
         }
     }
 
@@ -86,21 +85,31 @@ class Response implements \CodeHuiter\Core\Response
 
     public function setCookie(string $name, string $value, int $expireTime, string $path, string $domain): void
     {
-        setcookie($name, $value, $expireTime, $path, $domain);
+        $this->finalCookies[] = [$name, $value, $expireTime, $path, $domain];
     }
 
     private function sendHeaders(): void
     {
         foreach ($this->finalHeaders as $header) {
-            header($header);
+            [$headerContent, $replace, $code] = $header;
+            header($headerContent, $replace, $code);
         }
         $this->finalHeaders = [];
+    }
+
+    private function sendCookies(): void
+    {
+        foreach ($this->finalCookies as $finalCookie) {
+            [$name, $value, $expireTime, $path, $domain] = $finalCookie;
+            setcookie($name, $value, $expireTime, $path, $domain);
+        }
     }
 
 
     public function send(): void
     {
         $this->sendHeaders();
+        $this->sendCookies();
         if ($this->config->profiler) {
             /** @var CodeLoader $loader */
             $loader = $this->app->get(CodeLoader::class);
@@ -123,17 +132,11 @@ class Response implements \CodeHuiter\Core\Response
     }
 
     /**
-     * * @todo set and replace any uses 'set_status_header'
-     *
      * @param int $code
      * @param string|null $text
      */
     public function setStatus(int $code, ?string $text = null): void
     {
-        if ($this->request->isCli()) {
-            return;
-        }
-
         if ($text === null) {
             $code = (int) $code;
 
@@ -146,12 +149,11 @@ class Response implements \CodeHuiter\Core\Response
             }
         }
 
-        if (strpos(PHP_SAPI, 'cgi') === 0) {
-            header('Status: '.$code.' '.$text, TRUE);
+        if ($this->request->isCli()) {
+            $this->setHeaders(["Status: $code $text"], true, $code);
         } else {
-            $server_protocol = (isset($_SERVER['SERVER_PROTOCOL']) && in_array($_SERVER['SERVER_PROTOCOL'], array('HTTP/1.0', 'HTTP/1.1', 'HTTP/2'), TRUE))
-                ? $_SERVER['SERVER_PROTOCOL'] : 'HTTP/1.1';
-            header($server_protocol.' '.$code.' '.$text, TRUE, $code);
+            $protocol = $this->request->getProtocol();
+            $this->setHeaders(["$protocol $code $text"], true, $code);
         }
     }
 
@@ -163,10 +165,28 @@ class Response implements \CodeHuiter\Core\Response
     public function location(string $url, bool $temperatory = false): void
     {
         if($temperatory === true){
-            header("HTTP/1.0 302 Moved Temporarily");
+            $this->setStatus(302, 'Moved Temporarily');
         } else {
-            header("HTTP/1.0 301 Moved Permanently");
+            $this->setStatus(301, 'Moved Permanently');
         }
-        header('Location: '.$url);
+        $this->setHeaders(["Location: $url"], true);
+    }
+
+    /**
+     * @return string[]
+     */
+    public function getHeaders(): array
+    {
+        return $this->finalHeaders;
+    }
+
+    public function getCookies(): array
+    {
+        return $this->finalCookies;
+    }
+
+    public function getContent(): string
+    {
+        return $this->finalOutput;
     }
 }

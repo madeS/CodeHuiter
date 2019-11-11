@@ -30,6 +30,9 @@ abstract class Config
     public const OPT_KEY_CLASS = 'class';
     public const OPT_KEY_CALLBACK = 'callback';
     public const OPT_KEY_VALIDATE = 'validate';
+    public const OPT_KEY_SCOPE = 'scope';
+    public const OPT_KEY_SCOPE_PERMANENT = 'scope_permanent';
+    public const OPT_KEY_SCOPE_REQUEST = 'scope_request';
 
     // TODO Check usages of KEYS
     public const SERVICE_KEY_LOADER = 'loader';
@@ -93,7 +96,7 @@ abstract class Config
             self::OPT_KEY_VALIDATE => CodeLoader::class,
             self::OPT_KEY_SINGLE => true
         ];
-        $this->injectedServices[self::SERVICE_KEY_LOADER];
+        $this->injectedServices[self::SERVICE_KEY_LOADER] = CodeLoader::class;
 
         /**
          * Logger service
@@ -202,12 +205,13 @@ abstract class Config
          */
         $this->services[Renderer::class] = [
             self::OPT_KEY_CALLBACK => static function (Application $app) {
-                return new ByDefault\PhpRenderer($app->config->rendererConfig, $app->get(Response::class), $app->get(Logger::class));
+                return $app->get(ByDefault\PhpRenderer::class);
             },
             self::OPT_KEY_VALIDATE => Renderer::class,
             self::OPT_KEY_SINGLE => true
         ];
         $this->injectedServices[self::SERVICE_KEY_RENDERER] = Renderer::class;
+        $this->rendererConfig = new RendererConfig();
 
         /**
          * PhpRenderer Service
@@ -225,7 +229,7 @@ abstract class Config
          */
         $this->services[Request::class] = [
             self::OPT_KEY_CALLBACK => static function (Application $app) {
-                return new Request($app->config->requestConfig);
+                return new \CodeHuiter\Core\ByDefault\Request($app->config->requestConfig);
             },
             self::OPT_KEY_VALIDATE => Request::class,
             self::OPT_KEY_SINGLE => true
@@ -241,9 +245,10 @@ abstract class Config
                 return new \CodeHuiter\Core\ByDefault\Response($app, $app->config->responseConfig, $app->get(Request::class));
             },
             self::OPT_KEY_VALIDATE => Response::class,
+            self::OPT_KEY_SCOPE => self::OPT_KEY_SCOPE_REQUEST,
             self::OPT_KEY_SINGLE => true
         ];
-        $this->injectedServices[self::SERVICE_KEY_RESPONSE] = Renderer::class;
+        $this->injectedServices[self::SERVICE_KEY_RESPONSE] = Response::class;
         $this->responseConfig = new ResponseConfig();
 
         /**
@@ -255,11 +260,11 @@ abstract class Config
                     $app,
                     $app->config->routerConfig,
                     $app->get(Logger::class),
-                    $app->get(Request::class),
                     $app->get(CodeLoader::class)
                 );
             },
             self::OPT_KEY_VALIDATE => Router::class,
+            self::OPT_KEY_SCOPE => self::OPT_KEY_SCOPE_REQUEST,
             self::OPT_KEY_SINGLE => true
         ];
         $this->injectedServices[self::SERVICE_KEY_ROUTER] = Router::class;
@@ -360,8 +365,6 @@ class ResponseConfig
 {
     /** @var string  */
     public $charset = 'UTF-8'; // Recommended
-    /** @var string  */
-    public $templateNameAppend = '.tpl.php';
     /**
      * Placeholders:
      *   {#result_time_table}

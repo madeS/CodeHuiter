@@ -3,7 +3,7 @@ namespace CodeHuiter\Exception;
 
 use Throwable;
 
-class ServerConfigException extends CodeHuiterException
+class ServerConfigException extends CodeHuiterRuntimeException
 {
     public function __construct(string $message = "", int $code = 0, Throwable $previous = null)
     {

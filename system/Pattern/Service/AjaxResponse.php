@@ -5,13 +5,13 @@ namespace CodeHuiter\Pattern\Service;
 use CodeHuiter\Core\Request;
 use CodeHuiter\Core\Response;
 
-interface MjsaResponse
+interface AjaxResponse
 {
     /**
      * @param Request $request
      * @return bool
      */
-    public function isMjsaRequested(Request $request): bool;
+    public function isAjaxRequested(Request $request): bool;
 
     /**
      * @param Request $request
@@ -23,7 +23,7 @@ interface MjsaResponse
      * Start events
      * @return self
      */
-    public function events(): MjsaResponse;
+    public function events(): AjaxResponse;
 
     /**
      * End events and render response (And can append result to response)
@@ -37,7 +37,7 @@ interface MjsaResponse
      * @param string $url
      * @return self
      */
-    public function location(string $url): MjsaResponse;
+    public function location(string $url): AjaxResponse;
 
     /**
      * Insert content into selector block
@@ -45,7 +45,7 @@ interface MjsaResponse
      * @param string $content
      * @return self
      */
-    public function insert(string $selector, string $content): MjsaResponse;
+    public function insert(string $selector, string $content): AjaxResponse;
 
     /**
      * Append content into selector block
@@ -53,47 +53,47 @@ interface MjsaResponse
      * @param string $content
      * @return self
      */
-    public function append(string $selector, string $content): MjsaResponse;
+    public function append(string $selector, string $content): AjaxResponse;
 
     /**
      * Show success message
      * @param string $message
      * @return self
      */
-    public function successMessage(string $message): MjsaResponse;
+    public function successMessage(string $message): AjaxResponse;
 
     /**
      * Show error message
      * @param string $message
      * @return self
      */
-    public function errorMessage(string $message): MjsaResponse;
+    public function errorMessage(string $message): AjaxResponse;
 
     /**
      * Indication fields with errors in form
-     * @param string $class
+     * @param string $field
      * @return self
      */
-    public function incorrect(string $class): MjsaResponse;
+    public function incorrect(string $field): AjaxResponse;
 
     /**
      * Replace form content in form
      * @param string $content
      * @return self
      */
-    public function formReplace(string $content): MjsaResponse;
+    public function formReplace(string $content): AjaxResponse;
 
     /**
      * Reload page
      * @return self
      */
-    public function reload(): MjsaResponse;
+    public function reload(): AjaxResponse;
 
     /**
      * Close all popups
      * @return self
      */
-    public function closePopups(): MjsaResponse;
+    public function closePopups(): AjaxResponse;
 
     /**
      * @param string $content
@@ -103,7 +103,7 @@ interface MjsaResponse
      * <br/> close => bool
      * @return self
      */
-    public function openPopupWithData(string $content, string $name, array $options): MjsaResponse;
+    public function openPopupWithData(string $content, string $name, array $options): AjaxResponse;
 
     /**
      * TODO move out to validator service

@@ -11,7 +11,7 @@
 						<div class="in_error"><?php echo $those->lang->get('auth:incorrect_token')?></div>
 					<?php endif;?>
 
-					<input class="in" name="id" type="hidden" value="<?php echo $user->getId()?>" />
+					<input class="in" name="user_id" type="hidden" value="<?php echo $user->getId()?>" />
 					<?php if (isset($email_token)):?>
 						<input class="in" name="token" type="hidden" value="<?php echo $email_token?>" />
 					<?php else: ?>

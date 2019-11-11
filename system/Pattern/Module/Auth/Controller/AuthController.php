@@ -5,7 +5,6 @@ namespace CodeHuiter\Pattern\Module\Auth\Controller;
 use CodeHuiter\Core\Response;
 use CodeHuiter\Pattern\Controller\Base\BaseController;
 use CodeHuiter\Pattern\Module\Auth\AuthService;
-use CodeHuiter\Pattern\Module\Auth\Model\UserRepositoryInterface;
 
 class AuthController extends BaseController
 {
@@ -22,7 +21,7 @@ class AuthController extends BaseController
                 $redirectUrl = $userRedirectUrl;
             }
 
-            if ($this->mjsaResponse->isMjsaRequested($this->request)) {
+            if ($this->ajaxResponse->isAjaxRequested($this->request)) {
                 // TODO mjsa location
             } else {
                 $this->response->location($redirectUrl, true);
@@ -31,9 +30,9 @@ class AuthController extends BaseController
             return;
         }
 
-        if ($this->mjsaResponse->isMjsaRequested($this->request) && $this->request->getGet('in_popup')) {
+        if ($this->ajaxResponse->isAjaxRequested($this->request) && $this->request->getGet('in_popup')) {
             $this->data['in_popup'] = true;
-            $this->mjsaResponse->openPopupWithData(
+            $this->ajaxResponse->openPopupWithData(
                 $this->renderer->render($this->auth->getViewsPath() . 'login', $this->data, true),
                 'authPopup',
                 ['maxWidth' => 600, 'close' => true,]
@@ -48,18 +47,17 @@ class AuthController extends BaseController
         $this->initWithAuth(false);
         $targetUi = $this->auth->user->exist() ? $this->auth->user : null;
 
-        $data = $this->auth->registerByEmailValidator($this->mjsaResponse, $_POST, [], $targetUi);
+        $data = $this->auth->registerByEmailValidator($this->ajaxResponse, $this->request->getPostAsArray(), [], $targetUi);
         if (!$data) {
-            // TODO implement for JSON
-            $this->mjsaResponse->render($this->response);
+            $this->ajaxResponse->render($this->response);
             return;
         }
         $result = $this->auth->registerByEmail($data['email'], $data['password'], $data['login'], $targetUi);
         if ($result->isSuccess()) {
             //$this->mjsa->successMessage($result->getMessage());
-            $this->mjsaResponse->closePopups()->reload()->render($this->response);
+            $this->ajaxResponse->closePopups()->reload()->render($this->response);
         } elseif ($result->isSpecific() && isset($result->getFields()['confirmation'])) {
-            $this->mjsaResponse->formReplace($this->renderer->render(
+            $this->ajaxResponse->formReplace($this->renderer->render(
                 $this->auth->getViewsPath() . 'formMessage',
                 ['message' => $result->getMessage(), 'messageType' => 'success'],
                 true
@@ -67,31 +65,33 @@ class AuthController extends BaseController
         } else {
             if ($result->isIncorrectField()) {
                 foreach ($result->getFields() as $field) {
-                    $this->mjsaResponse->incorrect($field);
+                    $this->ajaxResponse->incorrect($field);
                 }
             }
-            $this->mjsaResponse->errorMessage($result->getMessage())->render($this->response);
+            $this->ajaxResponse->errorMessage($result->getMessage())->render($this->response);
         }
     }
 
     public function login_submit(): void
     {
         $this->initWithAuth(false);
-        $data = $this->auth->loginByPasswordValidator($this->mjsaResponse, $_POST);
+        $data = $this->auth->loginByPasswordValidator($this->ajaxResponse, $this->request->getPostAsArray());
         if (!$data) {
-            // TODO implement for JSON
-            $this->mjsaResponse->render($this->response);
+            $this->ajaxResponse->render($this->response);
             return;
         }
         $result = $this->auth->loginByPassword($data['logemail'], $data['password']);
         if ($result->isSuccess()) {
-            $this->mjsaResponse->closePopups()->render($this->response);
-            echo '<script>'
-                . 'if ($(".regauth_form_container .continue_url").val()) location.reload();'
-                . 'else mjsa.bodyUpdate();'
-                . '</script>';
+            $this->ajaxResponse->closePopups();
+            $continueUri = $this->request->getPost('continue_url');
+            if ($continueUri && $continueUri[0] === '/') {
+                $this->ajaxResponse->location($continueUri);
+            } else {
+                $this->ajaxResponse->reload();
+            }
+            $this->ajaxResponse->render($this->response);
         } elseif ($result->isSpecific() && isset($result->getFields()['confirmation'])) {
-            $this->mjsaResponse->formReplace($this->renderer->render(
+            $this->ajaxResponse->formReplace($this->renderer->render(
                 $this->auth->getViewsPath() . 'formMessage',
                 ['message' => $result->getMessage(), 'messageType' => 'success'],
                 true
@@ -99,10 +99,10 @@ class AuthController extends BaseController
         } else {
             if ($result->isIncorrectField()) {
                 foreach ($result->getFields() as $field) {
-                    $this->mjsaResponse->incorrect($field);
+                    $this->ajaxResponse->incorrect($field);
                 }
             }
-            $this->mjsaResponse->errorMessage($result->getMessage())->render($this->response);
+            $this->ajaxResponse->errorMessage($result->getMessage())->render($this->response);
         }
     }
 
@@ -115,7 +115,7 @@ class AuthController extends BaseController
         if ($this->auth->user->exist()) {
             $this->auth->resetSig($this->auth->user, true);
         }
-        if ($this->mjsaResponse->isMjsaRequested($this->request)) {
+        if ($this->ajaxResponse->isAjaxRequested($this->request)) {
             // TODO mjsa location
         } else {
             $this->response->location($_SERVER['HTTP_REFERER'] ?? $this->links->main(),true);
@@ -131,8 +131,8 @@ class AuthController extends BaseController
         if (!$result->isSuccess()) {
             $this->errorPageByCode(Response::HTTP_CODE_FORBIDDEN, $result->getMessage());
         } else {
-            if ($this->mjsaResponse->isMjsaRequested($this->request)) {
-                // TODO mjsa location
+            if ($this->ajaxResponse->isAjaxRequested($this->request)) {
+                $this->ajaxResponse->location($this->links->userSettings())->render($this->response);
             } else {
                 $this->response->location($this->links->userSettings(), true);
             }
@@ -149,7 +149,7 @@ class AuthController extends BaseController
             $this->request->getPost('logemail', '')
         );
         if ($result->isSuccess()) {
-            $this->mjsaResponse->formReplace($this->renderer->render(
+            $this->ajaxResponse->formReplace($this->renderer->render(
                 $this->auth->getViewsPath() . 'formMessage',
                 ['message' => $this->lang->get('auth_sign:recovery_link_sent'), 'messageType' => 'success'],
                 true
@@ -157,17 +157,17 @@ class AuthController extends BaseController
         } else {
             if ($result->isIncorrectField()) {
                 foreach ($result->getFields() as $field) {
-                    $this->mjsaResponse->incorrect($field);
+                    $this->ajaxResponse->incorrect($field);
                 }
             }
-            $this->mjsaResponse->errorMessage($result->getMessage())->render($this->response);
+            $this->ajaxResponse->errorMessage($result->getMessage())->render($this->response);
         }
     }
 
     public function recovery(): void
     {
         $this->initWithAuth(false);
-        $user = $this->getUserRepository()->getById((int)$this->request->getGet('user_id', ''));
+        $user = $this->auth->getUserById((int)$this->request->getGet('user_id', ''));
         if (!$user) {
             $this->errorPageByCode(Response::HTTP_CODE_FORBIDDEN, $this->lang->get('auth_sign:incorrect_id'));
             return;
@@ -185,75 +185,57 @@ class AuthController extends BaseController
     public function user_edit_password_submit(): void
     {
         $this->initWithAuth(false);
-        $validatorConfig = [];
-        if (!$this->auth->user->exist()) {
-            $user = $this->getUserRepository()->getById((int)$this->request->getGet('user_id', ''));
-            if (!$user) {
-                $this->mjsaResponse->errorMessage($this->lang->get('auth_sign:incorrect_id'))->render($this->response);
+        $token = $this->request->getPost('token', '');
+        if ($token) {
+            // By Token
+            $validatorConfig = [
+                'token' => ['required' => true, 'required_text' => $this->lang->get('auth_sign:recovery_need_old_password')],
+                'user_id' => ['required' => true, 'required_text' => $this->lang->get('auth_sign:recovery_need_user_id')],
+                'newpassword' => array('required' => true, 'required_text' => $this->lang->get('auth_sign:need_password')),
+                'newpassword_conf' => array('required' => true, 'required_text' => $this->lang->get('auth_sign:need_password_conf')),
+            ];
+            $pdata = $this->ajaxResponse->validator($this->request->getPostAsArray(), $validatorConfig);
+            if (!$pdata) {
+                $this->ajaxResponse->render($this->response);
                 return;
             }
-            $token = $this->request->getGet('token', '');
-            if (!$this->auth->isValidToken($user, $token, AuthService::TOKEN_TYPE_RECOVERY)) {
-                $this->mjsaResponse->errorMessage($this->lang->get('auth_sign:incorrect_token'))->render($this->response);
+            if ($pdata['newpassword'] !== $pdata['newpassword_conf']) {
+                $this->ajaxResponse->incorrect('newpassword_conf')->errorMessage($this->lang->get('auth_sign:incorrect_password_conf'))->render($this->response);
                 return;
             }
-            $this->auth->user = $user;
+            $result  = $this->auth->setNewPasswordByToken((int)$pdata['user_id'], $pdata['token'], $pdata['newpassword']);
+            if (!$result->isSuccess()) {
+                $this->ajaxResponse->errorMessage($result->getMessage())->render($this->response);
+                return;
+            }
+            $this->ajaxResponse->successMessage('auth_sign:user_info_changed')->location($this->links->userSettings())->closePopups()->render($this->response);
         } else {
-            $validatorConfig = array_merge($validatorConfig, [
+            // By Password
+            if ($this->auth->user->exist()) {
+                $this->ajaxResponse->errorMessage($this->lang->get('auth_sign:recovery_need_to_be_sign'))->render($this->response);
+            }
+            $validatorConfig = [
                 'password' => ['required' => true, 'required_text' => $this->lang->get('auth_sign:recovery_need_old_password')],
-            ]);
+                'newpassword' => array('required' => true, 'required_text' => $this->lang->get('auth_sign:need_password')),
+                'newpassword_conf' => array('required' => true, 'required_text' => $this->lang->get('auth_sign:need_password_conf')),
+            ];
+            $pdata = $this->ajaxResponse->validator($this->request->getPostAsArray(), $validatorConfig);
+            if (!$pdata) {
+                $this->ajaxResponse->render($this->response);
+                return;
+            }
+            if ($pdata['newpassword'] !== $pdata['newpassword_conf']) {
+                $this->ajaxResponse->incorrect('newpassword_conf')->errorMessage($this->lang->get('auth_sign:incorrect_password_conf'))->render($this->response);
+                return;
+            }
+            $result = $this->auth->setNewPasswordByOldPassword($this->auth->user->getId(), $pdata['password'], $pdata['newpassword']);
+            if (!$result->isSuccess()) {
+                $this->ajaxResponse->errorMessage($result->getMessage())->render($this->response);
+                return;
+            }
+            $this->ajaxResponse->successMessage('auth_sign:user_info_changed')->reload()->closePopups()->render($this->response);
         }
-        $validatorConfig = array_merge($validatorConfig, [
-            'newpassword' => array('required' => true, 'required_text' => $this->lang->get('auth_sign:need_password')),
-            'newpassword_conf' => array('required' => true, 'required_text' => $this->lang->get('auth_sign:need_password_conf')),
-        ]);
-        $pdata = $this->mjsaResponse->validator($_POST, $validatorConfig);
-        if (!$pdata) {
-            $this->mjsaResponse->render($this->response);
-            return;
-        }
-        if ($pdata['newpassword'] !== $pdata['newpassword_conf']) {
-            $this->mjsaResponse
-                ->incorrect('newpassword_conf')
-                ->errorMessage($this->lang->get('auth_sign:incorrect_password_conf'))
-                ->render($this->response);
-            return;
-        }
-
-        // TODO
-
-        $success = $this->mauth->setNewPasswordByOldPassword($this->data['ui']['id'], $pdata['password'], $pdata['newpassword']);
-        if (!$success) {
-            $this->mm->mjsaPrintError($this->mauth->getErrorMessage())->send();
-            return;
-        }
-        $this->mm->mjsaPrintEvent(array(
-            'success' => lang('musers:user_info_changed'), 'reload' => true, 'closePopups' => true,
-        ))->send();
     }
-
-    public function set_new_password(): void
-    {
-        $this->mm->request_type = 'mjsa_ajax';
-        $this->initWithAuth(false);
-        $pdata = $this->mm->mjsaValidator($_POST, array(
-            'user_id' => array('required' => true, 'required_text' => lang('mauth.recover.need_more_params')),
-            'token' => array('required' => true, 'required_text' => lang('mauth.recover.need_more_params')),
-            'new_pass' => array('required' => true, 'required_text' => lang('mauth.recover.need_password')),
-            'new_pass_conf' => array('required' => true, 'required_text' => lang('mauth.recover.need_password_conf')),
-        ));
-        if (!$pdata) return false;
-        if ($pdata['new_pass'] !== $pdata['new_pass_conf']){
-            return $this->mm->mjsaPrintError(lang('mauth.recover.incorrect_password_conf').'|{"incorrect":"new_pass_conf"}');
-        }
-        if (!$this->mauth->setNewPasswordByToken($_POST['user_id'], $_POST['token'], $_POST['new_pass'])){
-            return $this->mm->mjsaPrintError($this->mauth->getErrorMessage());
-        }
-        $this->mm->mjsaPrintEvent(array(
-            'redirect' => $this->links->userSettings(), 'closePopups' => true,
-        ));
-    }
-
 
     public function sync_timezone()
     {
@@ -266,7 +248,7 @@ class AuthController extends BaseController
             return;
         }
         $timeStr = $this->date->fromTime()->forUser($this->auth->user)->toFormat('H:i:s',false,true);
-        $this->mjsaResponse->successMessage(
+        $this->ajaxResponse->successMessage(
             $this->lang->get('auth_actions:timezone_synced', ['{#time}' => $timeStr])
         )->render($this->response);
 
@@ -275,17 +257,6 @@ class AuthController extends BaseController
             . '$(".nowtime").html("'.$timeStr.'");'
             . '</script>';
     }
-
-
-    /**
-     * @return UserRepositoryInterface
-     */
-    private function getUserRepository(): UserRepositoryInterface
-    {
-        return $this->app->get(UserRepositoryInterface::class);
-    }
-
-
 
 
 
@@ -307,39 +278,15 @@ class AuthController extends BaseController
             $_POST['birthday'] = $_POST['birthday_year'].'-'.$_POST['birthday_month'].'-'.$_POST['birthday_day'];
         }
         $success = $this->musers->setUserInfo($this->data['ui'], $_POST);
-        if (!$success) return $this->mm->mjsaPrintError($this->musers->getErrorMessage());
-        $this->mm->mjsaPrintEvent(array(
-            'success' => lang('musers:user_info_changed'), 'reload' => true, 'closePopups' => true,
-        ));
-    }
-    public function user_edit_logemail_submit(): void
-    {
-        $this->mm->request_type = 'mjsa_ajax';
-        if (!$this->initWithAuth(true)) return;
-        $registered = $this->mauth->registerUserByEmail(
-            $this->mm->g($_POST['email']),
-            $this->mm->g($_POST['password']),
-            $this->mm->g($_POST['login']),
-            $this->mm->g($_POST['name']),
-            $this->data['ui']
-        );
-        if ($registered === false){
-            return $this->mm->mjsaPrintError($this->mauth->getErrorMessage());
-        }
-        if ($registered === 'SENDED'){
-            return $this->mm->mjsaPrintEvent(array(
-                'redirect' => '/auth/email_conf_sended',
-            ));
-        }
-        if ($registered === 'LOGINED'){
-            // не бывает в данном случае
-            return $this->mm->mjsaPrintError('LOGINED'); // ?? что это
+        if (!$success) {
+            $this->mm->mjsaPrintError($this->musers->getErrorMessage());
+            return;
         }
         $this->mm->mjsaPrintEvent(array(
             'success' => lang('musers:user_info_changed'), 'reload' => true, 'closePopups' => true,
         ));
-        //[false][LOGINED][SENDED][REGISTERED/or/$ui]
     }
+
 
 
     public function unactive_me(): void

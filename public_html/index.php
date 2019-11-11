@@ -1,7 +1,7 @@
 <?php
 
-$bTimeStart = microtime(true);
+$simpleBench = require __DIR__ . '/../bootstrap/SimpleBench.php';
 
 require __DIR__ . '/../bootstrap/loader.php';
 
-require_once __DIR__ . '/../bootstrap/SimpleBench.php';
+//$simpleBench->end();

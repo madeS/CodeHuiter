@@ -1,5 +1,5 @@
 <?php
-//return 'Developing';
-//return 'DevelopingMopServer';
-//return 'DevelopingVagrant';
-return 'Production';
+//return '\\App\\Config\\DevelopingConfig';
+//return '\\App\\Config\\DevelopingMopServerConfig';
+//return '\\App\\Config\\DevelopingVagrantConfig';
+return \App\Config\ProductionConfig::class;

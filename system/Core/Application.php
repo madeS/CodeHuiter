@@ -28,10 +28,10 @@ class Application
         return self::$instance;
     }
 
-    /**
-     * @var string
-     */
-    protected $environment;
+    public function destroy(): void
+    {
+        self::$instance = null;
+    }
 
     /**
      * @var DefaultConfig
@@ -51,20 +51,26 @@ class Application
     protected $serviceCreateStack = [];
 
     /**
-     * Application constructor.
+     * @var Request
      */
+    private $request;
+
     protected function __construct()
     {
-        $this->environment = $this->requireVarIfFileExist(APP_PATH . 'Config/Env.php', 'Developing');
-
-        $configClassName = "\\App\\Config\\{$this->environment}Config";
-        $this->config = new $configClassName();
-        $this->config->initialize($this);
+        $this->init();
     }
 
-    public function getEnvironment(): string
+    /**
+     * @param string|null $environmentConfigClass
+     */
+    public function init(?string $environmentConfigClass = null): void
     {
-        return $this->environment;
+        if ($environmentConfigClass === null) {
+            $environmentConfigClass = $this->requireVarIfFileExist(APP_PATH . 'Config/Env.php', 'Developing');
+        }
+
+        $this->config = new $environmentConfigClass();
+        $this->config->initialize($this);
     }
 
     /**
@@ -74,43 +80,46 @@ class Application
      */
     public function get(string $name)
     {
-        if (isset($this->serviceCreateStack[$name])) {
-            throw CoreException::onRecursiveServiceCreation($name, $this->serviceCreateStack);
-        }
-        $this->serviceCreateStack[$name] = true;
-
         $result = null;
         if(!isset($this->config->services[$name])) {
             throw CoreException::onServiceNotFound($name);
         }
-        if (
-            !isset($this->container[$name])
-            || !isset($this->config->services[$name][Config::OPT_KEY_SINGLE])
-            || !$this->config->services[$name][Config::OPT_KEY_SINGLE]
-        ) {
+
+        $scope = $this->config->services[$name][Config::OPT_KEY_SCOPE] ?? Config::OPT_KEY_SCOPE_PERMANENT;
+        if ($scope === Config::OPT_KEY_SCOPE_REQUEST) {
+            $scope .= $this->request->getId();
+        }
+        if (isset($this->serviceCreateStack[$scope][$name])) {
+            throw CoreException::onRecursiveServiceCreation($name, $scope, $this->serviceCreateStack);
+        }
+        $this->serviceCreateStack[$scope][$name] = true;
+
+        if (!isset($this->container[$scope][$name]) || !isset($this->config->services[$name][Config::OPT_KEY_SINGLE])) {
+            $obj = null;
             if (isset($this->config->services[$name][Config::OPT_KEY_CALLBACK]) && $this->config->services[$name][Config::OPT_KEY_CALLBACK]) {
                 $callback = $this->config->services[$name][Config::OPT_KEY_CALLBACK];
-                $this->container[$name] = $callback($this);
+                $obj = $callback($this);
             } elseif (isset($this->config->services[$name][Config::OPT_KEY_CLASS]) && $this->config->services[$name][Config::OPT_KEY_CLASS]) {
                 $class = $this->config->services[$name][Config::OPT_KEY_CLASS];
-                $this->container[$name] = new $class();
+                $obj = new $class();
             } elseif (isset($this->config->services[$name][Config::OPT_KEY_CLASS_APP]) && $this->config->services[$name][Config::OPT_KEY_CLASS_APP]) {
                 $class = $this->config->services[$name][Config::OPT_KEY_CLASS_APP];
-                $this->container[$name] = new $class($this);
+                $obj = new $class($this);
             } else {
                 throw CoreException::onServiceNotProvideCreationInfo($name);
             }
             if (isset($this->config->services[$name][Config::OPT_KEY_VALIDATE])) {
-                if (!is_subclass_of($this->container[$name], $this->config->services[$name][Config::OPT_KEY_VALIDATE])) {
+                if (!is_a($obj, $this->config->services[$name][Config::OPT_KEY_VALIDATE])) {
                     throw CoreException::onServiceValidationNotPassed(
-                        $name, $this->config->services[$name][Config::OPT_KEY_VALIDATE], get_class($this->container[$name])
+                        $name, $this->config->services[$name][Config::OPT_KEY_VALIDATE], get_class($obj)
                     );
                 }
             }
+            $this->container[$scope][$name] = $obj;
         }
 
-        unset($this->serviceCreateStack[$name]);
-        return $this->container[$name];
+        unset($this->serviceCreateStack[$scope][$name]);
+        return $this->container[$scope][$name];
     }
 
     /**
@@ -129,7 +138,19 @@ class Application
      */
     public function set(string $name, $instance): void
     {
-        $this->container[$name] = $instance;
+        if(!isset($this->config->services[$name])) {
+            throw CoreException::onServiceNotFound($name);
+        }
+
+        $scope = $this->config->services[$name][Config::OPT_KEY_SCOPE] ?? Config::OPT_KEY_SCOPE_PERMANENT;
+        if ($scope === Config::OPT_KEY_SCOPE_REQUEST) {
+            $scope .= $this->request->getId();
+        }
+
+        $this->container[$scope][$name] = $instance;
+        if ($instance === null) {
+            unset($this->container[$scope][$name]);
+        }
     }
 
     /**
@@ -166,20 +187,34 @@ class Application
 
     /**
      * Run the application
+     * @param Request|null $request
+     * @return Response
      */
-    public function run(): void
+    public function run(?Request $request): ?Response
     {
         try {
+            if ($request === null) {
+                $request = $this->get(Request::class);
+            } else {
+                $this->set(Request::class, $request);
+            }
+            $this->request = $request;
+
             /** @var Router $router */
-            $router = $this->get(Config::SERVICE_KEY_ROUTER);
-            $router->execute();
+            $router = $this->get(Router::class);
+            $router->init($this->request)->execute();
 
             /** @var Response $response */
             $response = $this->get(Response::class);
-            $response->send();
+
+            $this->destroyScope(Config::OPT_KEY_SCOPE_REQUEST . $this->request->getId());
+
+            $this->request = null;
+            return $response;
         } catch (Exception $ex) {
             ExceptionProcessor::defaultProcessException($ex);
         }
+        return null;
     }
 
     /**
@@ -197,5 +232,14 @@ class Application
             return $result;
         }
         return $default;
+    }
+
+    /**
+     * Destroy container scope
+     * @param string $scope
+     */
+    private function destroyScope(string $scope): void
+    {
+        unset($this->container[$scope]);
     }
 }

@@ -3,13 +3,15 @@
 namespace CodeHuiter\Service\ByDefault\Email;
 
 use CodeHuiter\Config\EmailConfig;
+use CodeHuiter\Core\Application;
+use CodeHuiter\Database\RelationalModelRepository;
 use CodeHuiter\Service\ByDefault\Email\Model\MailerModel;
 use CodeHuiter\Service\ByDefault\Email\Sender\EmailSender;
 use CodeHuiter\Service\Logger;
 use CodeHuiter\Exception\TagException;
 use CodeHuiter\Service\DateService;
 
-class Mailer extends AbstractEmail implements \CodeHuiter\Service\Mailer
+class Mailer extends AbstractEmail
 {
     /**
      * @var EmailSender
@@ -22,6 +24,11 @@ class Mailer extends AbstractEmail implements \CodeHuiter\Service\Mailer
     protected $date;
 
     /**
+     * @var RelationalModelRepository
+     */
+    protected $mailerRepository;
+
+    /**
      * @param EmailConfig $config
      * @param Logger $log
      * @param DateService $dateService
@@ -29,6 +36,7 @@ class Mailer extends AbstractEmail implements \CodeHuiter\Service\Mailer
     public function __construct(EmailConfig $config, Logger $log, DateService $dateService)
     {
         $this->date = $dateService;
+        $this->mailerRepository = new RelationalModelRepository(Application::getInstance(), new MailerModel());
         parent::__construct($config, $log);
     }
 
@@ -45,24 +53,39 @@ class Mailer extends AbstractEmail implements \CodeHuiter\Service\Mailer
     }
 
     /**
-     * @inheritdoc
+     * @param string $subject
+     * @param string $content
+     * @param array $from [email => name]
+     * @param array $emails [email1, email2, email3]
+     * @param array $ccEmails [email1, email2, email3]
+     * @param bool $queued
+     * @param bool $force
+     * @return bool
      */
-    public function send($subject, $content, $from, $emails, $ccEmails, $queued, bool $force): bool
-    {
+    public function send(
+        string $subject,
+        string $content,
+        array $from,
+        array $emails,
+        array $ccEmails,
+        bool $queued,
+        bool $force
+    ): bool {
         if ($queued) {
             foreach ($emails as $email) {
-                $mailerData = [
+                /** @var MailerModel $model */
+                $model = MailerModel::getEmpty();
+                // TODO rewrite by sets ?
+                $model->updateBySet([
                     'user_id' => 0,
                     'subject' => $subject,
                     'email' => $email,
                     'message' => $content,
-                    'created_at'=> $this->date->fromTime()->toTime(),
-                    'updated_at' => $this->date->fromTime()->toTime()(),
                     'sended' => 0,
-                ];
-                $mailerId = MailerModel::insert($mailerData);
+                ]);
+                $this->mailerRepository->save($model);
                 if ($this->config->queueForce || $force) {
-                    return $this->sendFromQueue(1, $mailerId);
+                    return $this->sendFromQueue(1, $model->id);
                 }
             }
             return true;
@@ -127,13 +150,13 @@ class Mailer extends AbstractEmail implements \CodeHuiter\Service\Mailer
     protected function sendFromQueue($count = 1, $id = null): bool
     {
         /** @var MailerModel[] $messages */
-        $messages = MailerModel::getWhere(
-            ($id ? ['id' => $id] : []),
+        $messages = $this->mailerRepository->find([
+            $id ? ['id' => $id] : [],
             [
-                'order' => ['field' => 'updated_at'],
+                'order' => ['updated_at' => 'asc'],
                 'limit' => ['count' => $count],
             ]
-        );
+        ]);
         $success = false;
         foreach($messages as $message){
             $success = $this->sendFromSite(
@@ -144,15 +167,10 @@ class Mailer extends AbstractEmail implements \CodeHuiter\Service\Mailer
                 false
             );
             if ($success){
-                $message->update([
-                    'sended' => 1,
-                    'updated_at' => $this->date->fromTime()->toTime(),
-                ]);
-            } else {
-                $message->update([
-                    'updated_at' => $this->date->fromTime()->toTime(),
-                ]);
+                $message->sended = 1;
             }
+            $message->updated_at = $this->date->fromTime()->toTime();
+            $this->mailerRepository->save($message);
         }
         return $success;
     }
