@@ -80,7 +80,7 @@ class CodeLoader
                 file_put_contents(
                     CACHE_PATH . self::CLASSES_CACHE_FILE_CLEAR_LOG,
                     "Invalid cache for class [$class] got[{$this->loadedClasses[$class]}]. File cleared" . ";\n",
-                    FILE_APPEND
+                    FILE_APPEND | LOCK_EX
                 );
             }
         }
@@ -114,7 +114,7 @@ class CodeLoader
         file_put_contents(
             CACHE_PATH . self::CLASSES_CACHE_FILE_CLEAR_LOG,
             gmdate ('Y-m-d H:i:s') . ": Added $class class;\n",
-            FILE_APPEND
+            FILE_APPEND | LOCK_EX
         );
         return $success;
     }

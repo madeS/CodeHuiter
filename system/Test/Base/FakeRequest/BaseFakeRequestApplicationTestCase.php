@@ -5,6 +5,7 @@ namespace CodeHuiter\Test\Base\FakeRequest;
 use CodeHuiter\Core\Application;
 use CodeHuiter\Core\Response;
 use CodeHuiter\Modifier\StringModifier;
+use CodeHuiter\Service\HtmlParser;
 use CodeHuiter\Service\Language;
 use PHPUnit\Framework\TestCase;
 
@@ -20,16 +21,30 @@ class BaseFakeRequestApplicationTestCase extends TestCase
         return self::getApplicationTestExecutor()->getApplication();
     }
 
-    protected static function runWithGet(string $uri): Response
+    protected static function runWithGet(BaseFakeRequestApplicationTestCase $those, string $uri, array $cookie = []): Response
     {
         $applicationTestExecutor = self::getApplicationTestExecutor();
-        return $applicationTestExecutor->runWithGetRequest($uri);
+        $response = $applicationTestExecutor->runWithGetRequest($uri, $cookie);
+        if ($those->getActualOutput()) {
+            self::fail("While run with GET URI [$uri] got output [{$those->getActualOutput()}]");
+        }
+        if ($response === null) {
+            self::fail("Response by URI [$uri] is null");
+        }
+        return $response;
     }
 
-    protected static function runWithPost(string $uri, array $data): Response
+    protected static function runWithPost(BaseFakeRequestApplicationTestCase $those, string $uri, array $data, array $cookie = []): Response
     {
         $applicationTestExecutor = self::getApplicationTestExecutor();
-        return $applicationTestExecutor->runWithPostRequest($uri, $data);
+        $response = $applicationTestExecutor->runWithPostRequest($uri, $data, $cookie);
+        if ($those->getActualOutput()) {
+            self::fail("While run with GET URI [$uri] got output [{$those->getActualOutput()}]");
+        }
+        if ($response === null) {
+            self::fail("Response by URI $uri is null");
+        }
+        return $response;
     }
 
 
@@ -107,7 +122,7 @@ class BaseFakeRequestApplicationTestCase extends TestCase
         return null;
     }
 
-    protected static function getHeaderCode(Response $response): ?int
+    protected static function getHeaderCode(Response $response): int
     {
         $headers = $response->getHeaders();
         foreach ($headers as $header) {
@@ -115,7 +130,7 @@ class BaseFakeRequestApplicationTestCase extends TestCase
                 return $header[2];
             }
         }
-        return null;
+        return 200;
     }
 
     protected static function getCookies(Response $response): array
@@ -128,7 +143,7 @@ class BaseFakeRequestApplicationTestCase extends TestCase
         return $result;
     }
 
-    protected static function assertHasIncorrectInputs($input, Response $response): void
+    protected static function assertHasIncorrectInputs(string $input, Response $response): void
     {
         $incorrectFields = self::getJsonAjaxIncorrectInputs($response);
         if (!in_array($input, $incorrectFields, true)) {
@@ -168,6 +183,25 @@ class BaseFakeRequestApplicationTestCase extends TestCase
                 $responseSuccessMessage
             )
         );
+    }
+
+    protected static function assertResponseWithoutError(Response $response): void
+    {
+        self::assertEquals(
+            200,
+            self::getHeaderCode($response),
+            'Response has invalid status code. Expected: 200, Got: ' . self::getHeaderCode($response)
+        );
+        self::assertStringNotContainsString(
+            '[!APP-FAILED!]',
+            $response->getContent(),
+            'Response contain an error on page'
+        );
+    }
+
+    protected static function getParser(): HtmlParser
+    {
+        return self::getApplication()->get(HtmlParser::class);
     }
 
     protected static function getLang(): Language

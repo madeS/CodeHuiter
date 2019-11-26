@@ -2,17 +2,7 @@
 
 #### High:
 
-[ ] AuthModule Registration
-
 [ ] AuthModule Check Email sending
-
-[ ] AuthModule Email confirmation
-
-[ ] AuthModule Login by registration
-
-[ ] AuthModule Login
-
-[ ] AuthModule Password remember
 
 [ ] AuthModule Login via VK
 

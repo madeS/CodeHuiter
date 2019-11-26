@@ -41,7 +41,7 @@ class ApplicationTestExecutor
         $this->application = $application;
     }
 
-    public function runWithGetRequest(string $uri): ?Response
+    public function runWithGetRequest(string $uri, array $cookie = []): ?Response
     {
         $request = new Request(
             $this->application->config->requestConfig,
@@ -51,13 +51,14 @@ class ApplicationTestExecutor
                     'HTTP_HOST' => $this->application->config->settingsConfig->domain,
                     'REQUEST_URI' => $uri
                 ],
+                INPUT_COOKIE => $cookie,
             ]
         );
 
         return $this->application->run($request);
     }
 
-    public function runWithPostRequest(string $uri, array $data): ?Response
+    public function runWithPostRequest(string $uri, array $data, array $cookie = []): ?Response
     {
         $request = new Request(
             $this->application->config->requestConfig,
@@ -67,7 +68,8 @@ class ApplicationTestExecutor
                     'HTTP_HOST' => $this->application->config->settingsConfig->domain,
                     'REQUEST_URI' => $uri
                 ],
-                INPUT_POST => $data
+                INPUT_POST => $data,
+                INPUT_COOKIE => $cookie,
             ]
         );
 

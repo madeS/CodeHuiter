@@ -4,9 +4,7 @@ namespace CodeHuiter\Pattern\Service\ByDefault;
 
 use CodeHuiter\Core\Request;
 use CodeHuiter\Core\Response;
-use CodeHuiter\Modifier\Filter;
 use CodeHuiter\Modifier\StringModifier;
-use CodeHuiter\Modifier\Validator;
 use CodeHuiter\Pattern\Service\AjaxResponse;
 use CodeHuiter\Service\Language;
 
@@ -217,118 +215,13 @@ class JsonAjaxResponse implements AjaxResponse
         return $this;
     }
 
-    /**
-     * @param array $input Input array like $_POST
-     * @param array $config Array with config input data <pre>
-     *   [
-     *   'filters' => [
-     *      'trim' => true,
-     *      'html_chars' => true,
-     *      'phone' => ['8029' => +37529, '80' => '+375'],
-     *   ],
-     *   'required' => true,
-     *   'required_text' => 'This field is required',
-     *   'allow_empty' => true,
-     *   'max_length' => 255,
-     *   'max_length_text' => 'This field with maximum 255 chars',
-     *   'length' => 8,
-     *   'length_text' => 'This field need with with length is 8 chars',
-     *   'email' => true,
-     *   'email_text' => 'This field will need to be email',
-     *   'phone_length' => strlen('+37529xxxyyzz'),
-     *   'phone_length_text' => 'This field neet to me valid phone',
-     * ]
-     * </pre>
-     * @return array|null
-     */
-    public function validator(array $input, array $config): ?array
+    public function clearEvents(): void
     {
-        $focusOneError = true;
-
         $this->events();
-        $result = [];
-        foreach ($config as $field => $options) {
-            $data = $input[$field] ?? '';
+    }
 
-            $filters = $options['filters'] ?? [];
-            if ($filters) {
-                foreach ($filters as $filter => $filterParams) {
-                    if ($filter === 'trim') {
-                        $data = trim($data);
-                    }
-                    if ($filter === 'html_chars') {
-                        $data = trim($data);
-                    }
-                    if ($filter === 'phone') {
-                        $data = Filter::phoneClearHard($data, $filterParams);
-                    }
-                }
-            }
-
-            if (($options['required'] ?? null) && $data === '') {
-                $this->errorMessage(($options['required_text'] ?? $this->language->get('ajax_validator:required')));
-                $this->incorrect($field);
-                if ($focusOneError) break;
-                else continue;
-            }
-            if (($options['allow_empty'] ?? null) && $data === '') {
-                $result[$field] = $data;
-                continue;
-            }
-            if (($options['max_length'] ?? null) && strlen($data) > $options['max_length']) {
-                $this->errorMessage(
-                    $options['max_length_text']
-                    ?? $this->language->get('ajax_validator:max_length',['{#max_length}' => $options['max_length']])
-                );
-                $this->incorrect($field);
-                if ($focusOneError) break;
-                else continue;
-            }
-            if (($options['length'] ?? null) && strlen($data) !== $options['length']) {
-                $this->errorMessage(
-                    $options['length_text']
-                    ?? $this->language->get('ajax_validator:length',['{#length}' => $options['length']])
-                );
-                $this->incorrect($field);
-                if ($focusOneError) break;
-                else continue;
-            }
-            if (($options['email'] ?? null) && !Validator::isValidEmail($data)) {
-                $this->errorMessage(
-                    $options['email_text']
-                    ?? $this->language->get('ajax_validator:email')
-                );
-                $this->incorrect($field);
-                if ($focusOneError) break;
-                else continue;
-            }
-            if (($options['phone_length'] ?? null) && strlen($data) !== $options['phone_length']) {
-                $this->errorMessage(
-                    $options['phone_length_text']
-                    ?? $this->language->get(
-                        'ajax_validator:phone_length',
-                        ['{#phone_length}' => $options['phone_length']]
-                    )
-                );
-                $this->incorrect($field);
-                if ($focusOneError) break;
-                else continue;
-            }
-            if (($options['callback'] ?? null) && is_callable($options['callback'])) {
-                $callback = $options['callback'];
-                $callbackResult = $callback($data);
-                if ($callback($data) !== true) {
-                    $this->errorMessage($callbackResult);
-                    $this->incorrect($field);
-                    if ($focusOneError) break;
-                    else continue;
-                }
-            }
-            $result[$field] = $data;
-        }
-        if ($this->eventResponse['events']) {
-            return null;
-        }
-        return $result;
+    public function hasEvents(): bool
+    {
+        return $this->eventResponse['events'] ? true : false;
     }
 }

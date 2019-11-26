@@ -60,7 +60,7 @@ class Response implements \CodeHuiter\Core\Response
     public function setHeaders(array $headerStrings, bool $replace = false, ?int $code = null): void
     {
         foreach ($headerStrings as $key => $headerString) {
-            $this->finalHeaders[$key] = [$headerString, $replace, $code];
+            $this->finalHeaders[] = [$headerString, $replace, $code];
         }
     }
 
@@ -138,8 +138,6 @@ class Response implements \CodeHuiter\Core\Response
     public function setStatus(int $code, ?string $text = null): void
     {
         if ($text === null) {
-            $code = (int) $code;
-
             if (isset(\CodeHuiter\Core\Response::HTTP_CODES[$code])) {
                 $text = \CodeHuiter\Core\Response::HTTP_CODES[$code];
             } else {

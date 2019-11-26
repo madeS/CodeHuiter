@@ -112,8 +112,6 @@ class RelationalModelRepository
         return $model;
     }
 
-
-
     public function save(RelationalModel $model): RelationalModel
     {
         $whereSet = $model->getPrimarySet();

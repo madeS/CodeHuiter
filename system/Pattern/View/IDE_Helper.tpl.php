@@ -10,10 +10,17 @@ $bodyAjax = '';
 /** @var string $language */
 $language = '';
 
-/** @var string $patternTemplate */
-$patternTemplate = '';
 /** @var string $template */
 $template = '';
+
+/** @var array $filters */
+$filters = [];
+/** @var array $pages */
+$pages = [
+    'per_page' => 20,
+    'page' => 1,
+    'total' => 200
+];
 
 /** @var string $headAfterTpl */
 $headAfterTpl = '';

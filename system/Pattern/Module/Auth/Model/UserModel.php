@@ -2,10 +2,14 @@
 
 namespace CodeHuiter\Pattern\Module\Auth\Model;
 
+use CodeHuiter\Core\Application;
 use CodeHuiter\Database\RelationalModel;
+use CodeHuiter\Exception\InvalidFlowException;
 use CodeHuiter\Modifier\ArrayModifier;
 use CodeHuiter\Modifier\StringModifier;
 use CodeHuiter\Pattern\Module\Auth\AuthService;
+use CodeHuiter\Service\DateService;
+use CodeHuiter\Service\Language;
 
 class UserModel extends RelationalModel implements UserInterface
 {
@@ -43,6 +47,7 @@ class UserModel extends RelationalModel implements UserInterface
     protected $fb_id = '';
     protected $gl_id = '';
     protected $tw_id = '';
+    protected $ig_id = '';
     protected $od_id = '';
     protected $oauths = '{}';
     protected $skype_id = '';
@@ -70,28 +75,54 @@ class UserModel extends RelationalModel implements UserInterface
         return (int)$this->id > 0;
     }
 
-    /** @inheritdoc */
     public function getId(): int
     {
         return (int)$this->id;
     }
 
-    /** @inheritdoc */
     public function setId(int $id): void
     {
         $this->id = $id;
     }
 
-    /** @inheritdoc */
     public function getLogin(): string
     {
         return $this->login;
     }
 
-    /** @inheritdoc */
     public function setLogin(string $login): void
     {
         $this->login = $login;
+    }
+
+    public function getName(): string
+    {
+        return $this->name;
+    }
+
+    public function setName(string $name): void
+    {
+        $this->name = $name;
+    }
+
+    public function getFirstName(): string
+    {
+        return $this->firstname;
+    }
+
+    public function setFirstName(string $firstname): void
+    {
+        $this->firstname = $firstname;
+    }
+
+    public function getLastName(): string
+    {
+        return $this->lastname;
+    }
+
+    public function setLastName(string $lastname): void
+    {
+        $this->lastname = $lastname;
     }
 
     /** @inheritdoc */
@@ -232,19 +263,95 @@ class UserModel extends RelationalModel implements UserInterface
         $this->notifications_last = $notifications_last;
     }
 
-    /** @inheritdoc */
+    public function getPictureId(): ?int
+    {
+        return $this->picture_id;
+    }
+
+    public function getPicture(): string
+    {
+        return $this->picture;
+    }
+
     public function getPicturePreview(): string
     {
         return $this->picture_preview;
     }
 
-    /** @inheritdoc */
     public function setPicturePreview(string $picture_preview): void
     {
         $this->picture_preview = $picture_preview;
     }
 
+    public function getAboutMe(): string
+    {
+        return $this->about_me;
+    }
 
+    public function setAboutMe(string $about_me): void
+    {
+        $this->about_me = $about_me;
+    }
+
+    public function getSocialId(string $socialType): ?string
+    {
+        switch ($socialType) {
+            case 'vk': return $this->vk_id;
+            case 'fb': return $this->fb_id;
+            case 'gl': return $this->gl_id;
+            case 'tw': return $this->tw_id;
+            case 'ig': return $this->ig_id;
+            case 'od': return $this->od_id;
+        }
+        throw InvalidFlowException::onInvalidArgument('socialType', $socialType);
+    }
+
+    public function getOauthData(): array
+    {
+        return StringModifier::jsonDecode($this->oauths, true);
+    }
+
+    public function setSocialId(string $socialType, string $socialId): void
+    {
+        switch ($socialType) {
+            case 'vk': $this->vk_id = $socialId; break;
+            case 'fb': $this->fb_id = $socialId; break;
+            case 'gl': $this->gl_id = $socialId; break;
+            case 'tw': $this->tw_id = $socialId; break;
+            case 'od': $this->od_id = $socialId; break;
+        }
+        throw InvalidFlowException::onInvalidArgument('socialType', $socialType);
+    }
+
+    public function getGender(): int
+    {
+        return $this->gender;
+    }
+
+    public function setGender(int $gender): void
+    {
+        $this->gender = $gender;
+    }
+
+    public function getBirthday(): string
+    {
+        return $this->birthday;
+    }
+
+    public function setBirthday(string $birthday): void
+    {
+        $this->birthday = $birthday;
+    }
+
+    public function getCity(): string
+    {
+        return $this->city;
+    }
+
+    public function setCity(string $city): void
+    {
+        $this->city = $city;
+    }
 
     /**
      * @return array

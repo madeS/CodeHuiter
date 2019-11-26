@@ -94,7 +94,7 @@ class Application
         }
         $this->serviceCreateStack[$scope][$name] = true;
 
-        if (!isset($this->container[$scope][$name]) || !isset($this->config->services[$name][Config::OPT_KEY_SINGLE])) {
+        if ($scope === Config::OPT_KEY_SCOPE_NEW || !isset($this->container[$scope][$name])) {
             $obj = null;
             if (isset($this->config->services[$name][Config::OPT_KEY_CALLBACK]) && $this->config->services[$name][Config::OPT_KEY_CALLBACK]) {
                 $callback = $this->config->services[$name][Config::OPT_KEY_CALLBACK];
@@ -108,11 +108,10 @@ class Application
             } else {
                 throw CoreException::onServiceNotProvideCreationInfo($name);
             }
-            if (isset($this->config->services[$name][Config::OPT_KEY_VALIDATE])) {
-                if (!is_a($obj, $this->config->services[$name][Config::OPT_KEY_VALIDATE])) {
-                    throw CoreException::onServiceValidationNotPassed(
-                        $name, $this->config->services[$name][Config::OPT_KEY_VALIDATE], get_class($obj)
-                    );
+            $validateClass = $this->config->services[$name][Config::OPT_KEY_VALIDATE] ?? $name;
+            if ($validateClass !== false) {
+                if (!is_a($obj, $validateClass)) {
+                    throw CoreException::onServiceValidationNotPassed($name, $validateClass, get_class($obj));
                 }
             }
             $this->container[$scope][$name] = $obj;

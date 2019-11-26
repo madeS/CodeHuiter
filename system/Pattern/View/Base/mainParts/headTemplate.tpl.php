@@ -1,4 +1,4 @@
-<?php if (false) require_once __DIR__ . '/../IDE_Helper.tpl.php';
+<?php if (false) require_once SYSTEM_PATH . '/Pattern/View/IDE_Helper.tpl.php';
 
 $compressorConfig = $those->compressor->checkCompress();
 ?>

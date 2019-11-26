@@ -10,7 +10,7 @@ class DevelopingVagrantConfig extends DefaultConfig
 
         $this->frameworkConfig->showErrors = true;
 
-        $this->defaultDatabaseConfig->dsn = 'mysql:host=localhost;dbname=app_test_db';
+        $this->defaultDatabaseConfig->dsn = 'mysql:host=localhost;dbname=app_db';
         $this->defaultDatabaseConfig->username = 'appuser';
         $this->defaultDatabaseConfig->password = 'apppassword';
 

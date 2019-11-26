@@ -14,13 +14,13 @@
 
 <h4>
     <?php if ($exception instanceof \CodeHuiter\Exception\PhpErrorException):?>
-        A PHP Error [<?php echo $exception->getSeverity(); ?>]
+		<span>[!APP-FAILED!]</span> A PHP Error [<?php echo $exception->getSeverity(); ?>]
         <?php
             $fileName = $exception->getErrorFile();
             $fileLine = $exception->getErrorLine();
         ?>
     <?php else:?>
-        An uncaught Exception
+		<span>[!APP-FAILED!]</span> An uncaught Exception
     <?php endif;?>
     was encountered
 </h4>

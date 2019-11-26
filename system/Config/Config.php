@@ -33,6 +33,7 @@ abstract class Config
     public const OPT_KEY_SCOPE = 'scope';
     public const OPT_KEY_SCOPE_PERMANENT = 'scope_permanent';
     public const OPT_KEY_SCOPE_REQUEST = 'scope_request';
+    public const OPT_KEY_SCOPE_NEW = 'scope_new';
 
     // TODO Check usages of KEYS
     public const SERVICE_KEY_LOADER = 'loader';
@@ -91,46 +92,30 @@ abstract class Config
         /**
          * Class Loader service
          */
-        $this->services[CodeLoader::class] = [
-            self::OPT_KEY_CLASS => CodeLoader::class,
-            self::OPT_KEY_VALIDATE => CodeLoader::class,
-            self::OPT_KEY_SINGLE => true
-        ];
+        $this->services[CodeLoader::class] = [self::OPT_KEY_CLASS => CodeLoader::class];
         $this->injectedServices[self::SERVICE_KEY_LOADER] = CodeLoader::class;
 
         /**
          * Logger service
          */
-        $this->services[Logger::class] = [
-            self::OPT_KEY_CALLBACK => static function (Application $app) {
-                return new FileLog($app->config->logConfig);
-            },
-            self::OPT_KEY_VALIDATE => Logger::class,
-            self::OPT_KEY_SINGLE => true
-        ];
+        $this->services[Logger::class] = [self::OPT_KEY_CALLBACK => static function (Application $app) {
+            return new FileLog($app->config->logConfig);
+        }];
         $this->injectedServices[self::SERVICE_KEY_LOG] = Logger::class;
         $this->logConfig = new LogConfig();
 
         /**
          * Console Service
          */
-        $this->services[Console::class] = [
-            self::OPT_KEY_CALLBACK => static function (Application $app) {
-                return new ByDefault\Console($app->get(Logger::class));
-            },
-            self::OPT_KEY_VALIDATE => Console::class,
-            self::OPT_KEY_SINGLE => true
-        ];
+        $this->services[Console::class] = [self::OPT_KEY_CALLBACK => static function (Application $app) {
+            return new ByDefault\Console($app->get(Logger::class));
+        }];
         $this->injectedServices[self::SERVICE_KEY_CONSOLE] = Console::class;
 
         /**
          * Debug Service
          */
-        $this->services[Debug::class] = [
-            self::OPT_KEY_CLASS => ByDefault\Debug::class,
-            self::OPT_KEY_VALIDATE => Debug::class,
-            self::OPT_KEY_SINGLE => true
-        ];
+        $this->services[Debug::class] = [self::OPT_KEY_CLASS => ByDefault\Debug::class];
         $this->injectedServices[self::SERVICE_KEY_DEBUG] = Debug::class;
 
         /**
@@ -140,8 +125,7 @@ abstract class Config
             self::OPT_KEY_CALLBACK => static function (Application $app) {
                 return new ByDefault\DateService($app->config->dateConfig);
             },
-            self::OPT_KEY_VALIDATE => DateService::class,
-            self::OPT_KEY_SINGLE => true
+            self::OPT_KEY_SCOPE => self::OPT_KEY_SCOPE_REQUEST,
         ];
         $this->injectedServices[self::SERVICE_KEY_DATE] = DateService::class;
         $this->dateConfig = new DateConfig();
@@ -149,54 +133,34 @@ abstract class Config
         /**
          * Network Service
          */
-        $this->services[Network::class] = [
-            self::OPT_KEY_CALLBACK => static function (Application $app) {
-                return new ByDefault\Network($app->get(Logger::class));
-            },
-            self::OPT_KEY_VALIDATE => Network::class,
-            self::OPT_KEY_SINGLE => true
-        ];
+        $this->services[Network::class] = [self::OPT_KEY_CALLBACK => static function (Application $app) {
+            return new ByDefault\Network($app->get(Logger::class));
+        }];
         $this->injectedServices[self::SERVICE_KEY_NETWORK] = Network::class;
 
         /**
          * Language Service
          */
-        $this->services[Language::class] = [
-            self::OPT_KEY_CLASS => ByDefault\Language::class,
-            self::OPT_KEY_VALIDATE => Language::class,
-            self::OPT_KEY_SINGLE => true
-        ];
+        $this->services[Language::class] = [self::OPT_KEY_CLASS => ByDefault\Language::class];
         $this->injectedServices[self::SERVICE_KEY_LANG] = Language::class;
 
         /**
          * HtmlParser Service
          */
-        $this->services[HtmlParser::class] = [
-            self::OPT_KEY_CLASS => ByDefault\HtmlParser\SimpleHtmlDomParser::class,
-            self::OPT_KEY_VALIDATE => HtmlParser::class,
-            self::OPT_KEY_SINGLE => true
-        ];
+        $this->services[HtmlParser::class] = [self::OPT_KEY_CLASS => ByDefault\HtmlParser\SimpleHtmlDomParser::class];
         $this->injectedServices[self::SERVICE_KEY_HTML_PARSER] = HtmlParser::class;
 
         /**
          * MimeTypeConverter Service
          */
-        $this->services[MimeTypeConverter::class] = [
-            self::OPT_KEY_CLASS => ByDefault\MimeTypeConverter::class,
-            self::OPT_KEY_VALIDATE => MimeTypeConverter::class,
-            self::OPT_KEY_SINGLE => true
-        ];
+        $this->services[MimeTypeConverter::class] = [self::OPT_KEY_CLASS => ByDefault\MimeTypeConverter::class];
 
         /**
          * Mailer Service
          */
-        $this->services[Mailer::class] = [
-            self::OPT_KEY_CALLBACK => static function (Application $app) {
-                return new ByDefault\Email\Mailer($app->config->emailConfig, $app->get(Logger::class), $app->get(DateService::class));
-            },
-            self::OPT_KEY_VALIDATE => Mailer::class,
-            self::OPT_KEY_SINGLE => true
-        ];
+        $this->services[Mailer::class] = [self::OPT_KEY_CALLBACK => static function (Application $app) {
+            return new ByDefault\Email\Mailer($app->config->emailConfig, $app->get(Logger::class), $app->get(DateService::class));
+        }];
         $this->injectedServices[self::SERVICE_KEY_EMAIL] = Mailer::class;
         $this->emailConfig = new EmailConfig();
 
@@ -207,8 +171,7 @@ abstract class Config
             self::OPT_KEY_CALLBACK => static function (Application $app) {
                 return $app->get(ByDefault\PhpRenderer::class);
             },
-            self::OPT_KEY_VALIDATE => Renderer::class,
-            self::OPT_KEY_SINGLE => true
+            self::OPT_KEY_SCOPE => self::OPT_KEY_SCOPE_REQUEST,
         ];
         $this->injectedServices[self::SERVICE_KEY_RENDERER] = Renderer::class;
         $this->rendererConfig = new RendererConfig();
@@ -220,33 +183,25 @@ abstract class Config
             self::OPT_KEY_CALLBACK => static function (Application $app) {
                 return new ByDefault\PhpRenderer($app->config->rendererConfig, $app->get(Response::class), $app->get(Logger::class));
             },
-            self::OPT_KEY_VALIDATE => ByDefault\PhpRenderer::class,
-            self::OPT_KEY_SINGLE => true
+            self::OPT_KEY_SCOPE => self::OPT_KEY_SCOPE_REQUEST,
         ];
 
         /**
          * Request Service
          */
-        $this->services[Request::class] = [
-            self::OPT_KEY_CALLBACK => static function (Application $app) {
-                return new \CodeHuiter\Core\ByDefault\Request($app->config->requestConfig);
-            },
-            self::OPT_KEY_VALIDATE => Request::class,
-            self::OPT_KEY_SINGLE => true
-        ];
+        $this->services[Request::class] = [self::OPT_KEY_CALLBACK => static function (Application $app) {
+            return new \CodeHuiter\Core\ByDefault\Request($app->config->requestConfig);
+        }];
         $this->injectedServices[self::SERVICE_KEY_REQUEST] = Request::class;
         $this->requestConfig = new RequestConfig();
 
         /**
          * Response Service
          */
-        $this->services[Response::class] = [
-            self::OPT_KEY_CALLBACK => static function (Application $app) {
+        $this->services[Response::class] = [self::OPT_KEY_CALLBACK => static function (Application $app) {
                 return new \CodeHuiter\Core\ByDefault\Response($app, $app->config->responseConfig, $app->get(Request::class));
             },
-            self::OPT_KEY_VALIDATE => Response::class,
             self::OPT_KEY_SCOPE => self::OPT_KEY_SCOPE_REQUEST,
-            self::OPT_KEY_SINGLE => true
         ];
         $this->injectedServices[self::SERVICE_KEY_RESPONSE] = Response::class;
         $this->responseConfig = new ResponseConfig();
@@ -263,9 +218,7 @@ abstract class Config
                     $app->get(CodeLoader::class)
                 );
             },
-            self::OPT_KEY_VALIDATE => Router::class,
             self::OPT_KEY_SCOPE => self::OPT_KEY_SCOPE_REQUEST,
-            self::OPT_KEY_SINGLE => true
         ];
         $this->injectedServices[self::SERVICE_KEY_ROUTER] = Router::class;
         $this->routerConfig = new RouterConfig();
@@ -278,7 +231,6 @@ abstract class Config
                 return new PDODriver($app->get(Logger::class), $app->config->defaultDatabaseConfig);
             },
             self::OPT_KEY_VALIDATE => RelationalDatabase::class,
-            self::OPT_KEY_SINGLE => true
         ];
         $this->injectedServices[self::SERVICE_KEY_DB_DEFAULT] = self::SERVICE_KEY_DB_DEFAULT;
         $this->defaultDatabaseConfig = new RelationalDatabaseConfig();

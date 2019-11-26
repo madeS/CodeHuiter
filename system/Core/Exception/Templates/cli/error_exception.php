@@ -2,7 +2,7 @@
 /** @var \Exception[] $exceptions */
 /** @var bool $show_debug_backtrace */
 
-$output = '';
+$output = '[!APP-FAILED!] ';
 
 foreach ($exceptions as $exception) {
     $message = $exception->getMessage();

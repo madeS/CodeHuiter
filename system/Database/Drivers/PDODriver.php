@@ -698,7 +698,7 @@ class PDODriver extends AbstractDatabase
         if (!$orderArrays)  {
             return '';
         }
-        return " ORDER BY " . implode(',', $orderArrays) . " ";
+        return ' ORDER BY ' . implode(',', $orderArrays) . ' ';
     }
 
     /**

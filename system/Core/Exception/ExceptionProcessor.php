@@ -4,6 +4,7 @@ namespace CodeHuiter\Core\Exception;
 
 use CodeHuiter\Core\Application;
 use CodeHuiter\Core\Response;
+use CodeHuiter\Service\ByDefault\PhpRenderer;
 use CodeHuiter\Service\Logger;
 use CodeHuiter\Core\Request;
 use CodeHuiter\Exception\PhpErrorException;
@@ -49,7 +50,18 @@ class ExceptionProcessor
             }
             /** @var Logger $log */
             $log = $app->get(Logger::class);
-            $log->withTag('exceptions')->error($exception->getMessage(), ['trace' => $exception->getTraceAsString()]);
+            if ($exception instanceof \CodeHuiter\Exception\PhpErrorException) {
+                $log->withTag('exceptions')->error(
+                    "{$exception->getMessage()} on {$exception->getErrorFile()}:{$exception->getErrorLine()}",
+                    ['trace' => $exception->getTraceAsString()]
+                );
+            } else {
+                $log->withTag('exceptions')->error(
+                    "{$exception->getMessage()} on {$exception->getFile()}:{$exception->getLine()}",
+                    ['trace' => $exception->getTraceAsString()]
+                );
+            }
+
 
         } catch (Exception $exceptionInner) {
             $exceptions[] = $exceptionInner;
@@ -68,15 +80,22 @@ class ExceptionProcessor
         }
 
         $obLevel = ob_get_level();
+        /** @var PhpRenderer $phpRenderer */
+        $phpRenderer = null;
+        try {
+            $phpRenderer =  Application::getInstance()->get(PhpRenderer::class);
+        } catch (\Throwable $throwable) {
+            $exceptions[] = $throwable;
+        }
 
-        if (ob_get_level() > 1) {
+        if ($obLevel > ($phpRenderer ? $phpRenderer->getInitLevel() + 1 : 2)) {
             ob_end_flush();
         }
 
         ob_start();
-        include($template);
+        include $template;
         $buffer = ob_get_contents();
-        ob_end_clean();
+        @ob_end_clean();
         echo $buffer;
     }
 

@@ -40,11 +40,6 @@ class PhpRenderer implements Renderer
      */
     protected $cachedData = [];
 
-    /**
-     * @param RendererConfig $config
-     * @param Response $response
-     * @param Logger $logger
-     */
     public function __construct(RendererConfig $config, Response $response, Logger $logger)
     {
         $this->initLevel = ob_get_level();
@@ -53,11 +48,16 @@ class PhpRenderer implements Renderer
         $this->logger = $logger;
     }
 
+    public function getInitLevel(): int
+    {
+        return $this->initLevel;
+    }
+
     /**
      * TODO Implement UnitTest
      * {@inheritDoc}
      */
-    public function render(string $viewFile, array $data = [], $return = false): string
+    public function render(string $viewFile, array $data = [], bool $return = false): string
     {
         $this->controller = Controller::getInstance();
 
@@ -113,7 +113,8 @@ class PhpRenderer implements Renderer
             ob_end_flush();
         } else {
             if ($this->response !== null) {
-                $this->response->append(ob_get_contents());
+                $content = ob_get_contents();
+                $this->response->append($content);
             } else {
                 $this->logger->withTag('PHP_RENDERER')->withTrace()->notice('Rendering without Response');
                 echo ob_get_contents();

@@ -57,6 +57,7 @@ p {
 </head>
 <body>
 	<div id="container">
+		<div>[!APP-FAILED!]</div>
 		<h1><?php echo $heading; ?></h1>
 		<?php echo $message; ?>
 	</div>

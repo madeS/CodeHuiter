@@ -4,13 +4,19 @@ namespace CodeHuiter\Service\ByDefault;
 
 use CodeHuiter\Config\DateConfig;
 use CodeHuiter\Core\Application;
+use CodeHuiter\Exception\Runtime\DateTimeConvertException;
 use CodeHuiter\Pattern\Module\Auth\Model\UserInterface;
 use DateInterval;
 use DateTime;
+use DateTimeImmutable;
+use DateTimeZone;
 use Exception;
 
 class DateService implements \CodeHuiter\Service\DateService
 {
+    private const UTC_TIMEZONE = 'UTC';
+    private const STRING_FORMAT = 'Y-m-d H:i:s';
+
     /** @var int */
     public $now = 0;
 
@@ -186,4 +192,64 @@ class DateService implements \CodeHuiter\Service\DateService
         return (new DateTime())->setTimestamp($timeStamp)->add(new DateInterval("P{$days}D"))->getTimestamp();
     }
 
+    public function diffDateTime(string $stringMin, ?string $stringMax = null): DateInterval
+    {
+        $dateTimeMax = ($stringMax !== null) ? $this->timeStringToDateTime($stringMax) : $this->getCurrentDateTime();
+        $dateTimeMin = $this->timeStringToDateTime($stringMin);
+        return $dateTimeMin->diff($dateTimeMax);
+    }
+
+    public function getCurrentDateTime(): DateTimeImmutable
+    {
+        try {
+            return (new DateTimeImmutable())->setTimezone($this->getUTCTimeZone());
+        } catch (Exception $exception) {
+            throw DateTimeConvertException::cantCreateCurrentDateTime($exception);
+        }
+    }
+
+    public function addSeconds(DateTimeImmutable $time, int $seconds): DateTimeImmutable
+    {
+        try {
+            return $time->add(new DateInterval('PT' . $seconds . 'S'));
+        } catch (Exception $exception) {
+            throw DateTimeConvertException::cantCreateDateInterval('PT' . $seconds . 'S', $exception);
+        }
+    }
+
+    public function subSeconds(DateTimeImmutable $time, int $seconds): DateTimeImmutable
+    {
+        try {
+            return $time->sub(new DateInterval('PT' . $seconds . 'S'));
+        } catch (Exception $exception) {
+            throw DateTimeConvertException::cantCreateDateInterval('PT' . $seconds . 'S', $exception);
+        }
+    }
+
+    public function timeStringToDateTime(string $string): DateTimeImmutable
+    {
+        if ($string && strpos($string, ' ') === false) {
+            $string .= ' 00:00:00';
+        }
+        $result = DateTimeImmutable::createFromFormat(self::STRING_FORMAT, $string, $this->getUTCTimeZone());
+        if ($result === false) {
+            throw DateTimeConvertException::cantConvertStringToDateTime($string);
+        }
+        return $result;
+    }
+
+    public function dateTimeToTimeString(DateTimeImmutable $datetime): string
+    {
+        return $datetime->format(self::STRING_FORMAT);
+    }
+
+    public function getCurrentTimeAsString(): string
+    {
+        return $this->getCurrentDateTime()->format(self::STRING_FORMAT);
+    }
+
+    private function getUTCTimeZone(): DateTimeZone
+    {
+        return new DateTimeZone(self::UTC_TIMEZONE);
+    }
 }

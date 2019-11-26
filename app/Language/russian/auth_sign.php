@@ -29,3 +29,4 @@ $lang['auth_sign:recovery_need_user_id'] = 'auth_sign:recovery_need_user_id';
 $lang['auth_sign:need_password'] = 'auth_sign:need_password';
 $lang['auth_sign:need_password_conf'] = 'auth_sign:need_password_conf';
 $lang['auth_sign:user_info_changed'] = 'auth_sign:user_info_changed';
+$lang['auth_sign:need_email'] = 'auth_sign:need_email';

@@ -1,18 +1,19 @@
-<?php if (false) require_once __DIR__ . '/IDE_Helper.tpl.php';
-
+<?php if (false) require_once SYSTEM_PATH . '/Pattern/View/IDE_Helper.tpl.php';
+/** @define "$baseTemplatePath" "./" */
+$baseTemplatePath = $those->app->config->projectConfig->baseTemplatePath;
 ?>
 
 <?php if(!$bodyAjax):?>
 <!DOCTYPE html>
 <html prefix="og: http://ogp.me/ns#">
 <head>
-	<?php require_once $patternTemplate . 'main_parts/head.tpl.php'; ?>
+	<?php require_once $baseTemplatePath . 'mainParts/headTemplate.tpl.php'; ?>
 	<?php if(isset($headAfterTpl) && $headAfterTpl):?>
 		<?php $renderer->render($template . $headAfterTpl); ?>
 	<?php endif;?>
 </head>
 <body>
-<?php require_once $patternTemplate . 'main_parts/body_cont_before.tpl.php'; ?>
+<?php require_once $baseTemplatePath . 'mainParts/bodyContBeforeTemplate.tpl.php'; ?>
 
 <div id="body_cont" <?=($userInfo->exist())?'data-timezoneoffset="'.$userInfo->getTimezone().'"':''?>>
 <?php else:?>
@@ -26,20 +27,20 @@
 				<?php $renderer->render($template . $headerTpl); ?>
 			<?php endif; ?>
 		<?php else: ?>
-			<?php require_once $patternTemplate . 'page_parts/header.tpl.php'; ?>
+			<?php require_once $baseTemplatePath . 'pageParts/headerTemplate.tpl.php'; ?>
 		<?php endif; ?>
 
 		<div id="container" class="<?=($those->app->config->projectConfig->pageStyle === 'backed')?'':'centerwrap'?><?=(isset($wrap_classes))?' '.$wrap_classes:''?>">
 	<?php endif;?>
 
 		<?php if(isset($intervalstack) && $intervalstack):?>
-			<?php require_once $patternTemplate . 'page_parts/intervalstack.tpl.php'; ?>
+			<?php require_once $baseTemplatePath . 'pageParts/intervalstackTemplate.tpl.php'; ?>
 		<?php endif;?>
 		<?php if(isset($keybinds) && $keybinds):?>
-			<?php require_once $patternTemplate . 'page_parts/keybinds.tpl.php'; ?>
+			<?php require_once $baseTemplatePath . 'pageParts/keybindsTemplate.tpl.php'; ?>
 		<?php endif;?>
 		<?php if(isset($breadcrumbs)):?>
-			<?php require_once $patternTemplate . 'page_parts/breadcrumbs.tpl.php'; ?>
+			<?php require_once $baseTemplatePath . 'pageParts/breadcrumbsTemplate.tpl.php'; ?>
 		<?php endif;?>
 
 		<?php if (isset($content_data)):?>
@@ -77,7 +78,7 @@
 				<?php $renderer->render($template . $footerTpl); ?>
 			<?php endif; ?>
 		<?php else: ?>
-			<?php require_once $patternTemplate . 'page_parts/footer.tpl.php'; ?>
+			<?php require_once $baseTemplatePath . 'pageParts/footerTemplate.tpl.php'; ?>
 		<?php endif; ?>
 	<?php endif;?>
 
@@ -95,7 +96,7 @@
 <?php else:?>
 </div>
 
-	<?php require_once $patternTemplate . 'main_parts/body_cont_after.tpl.php'; ?>
+	<?php require_once $baseTemplatePath . 'mainParts/bodyContAfterTemplate.tpl.php'; ?>
 	<?php if(isset($bodyAfterTpl) && $bodyAfterTpl):?>
 		<?php $renderer->render($template . $bodyAfterTpl); ?>
 	<?php endif;?>

@@ -1,7 +1,7 @@
 <?php
 
 
-echo "\nERROR: ",
+echo "\n[!APP-FAILED!] ERROR: ",
 	$heading,
 	"\n\n",
 	$message,

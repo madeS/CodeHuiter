@@ -4,153 +4,108 @@ namespace CodeHuiter\Pattern\Module\Auth\Model;
 
 interface UserInterface
 {
+    public const GENDER_MALE = 1;
+    public const GENDER_FEMALE = 2;
+
     public function exist(): bool;
 
-    /**
-     * @return int
-     */
     public function getId(): int;
 
-    /**
-     * @param int $id
-     */
     public function setId(int $id): void;
 
-    /**
-     * @return string
-     */
     public function getLogin(): string;
 
-    /**
-     * @param string $login
-     */
     public function setLogin(string $login): void;
 
-    /**
-     * @return string
-     */
+    public function getName(): string;
+
+    public function setName(string $name): void;
+
+    public function getFirstName(): string;
+
+    public function setFirstName(string $firstname): void;
+
+    public function getLastName(): string;
+
+    public function setLastName(string $lastname): void;
+
     public function getEmail(): string;
 
-    /**
-     * @param string $email
-     */
     public function setEmail(string $email): void;
 
-    /**
-     * @return bool
-     */
     public function getEmailConfirmed(): bool;
 
-    /**
-     * @param bool $confirmed
-     */
     public function setEmailConfirmed(bool $confirmed): void;
 
-    /**
-     * @return string
-     */
     public function getPassHash(): string;
 
-    /**
-     * @param string $passHash
-     */
     public function setPassHash(string $passHash): void;
 
     /**
      * TODO rename timezone offset
-     * @return string
      */
     public function getTimezone(): string;
 
-    /**
-     * @param string $timezone
-     */
     public function setTimezone(string $timezone): void;
 
-    /**
-     * @return string
-     */
     public function getSignature(): string;
 
-    /**
-     * @param string $signature
-     */
     public function setSignature(string $signature): void;
 
-    /**
-     * @return int
-     */
     public function getSignatureTime(): int;
 
-    /**
-     * @param int $timestamp
-     */
     public function setSignatureTime(int $timestamp): void;
 
-    /**
-     * @return int
-     */
     public function getLastActive(): int;
 
-    /**
-     * @param int $lastActive
-     */
     public function setLastActive(int $lastActive): void;
 
-    /**
-     * @return string
-     */
     public function getLastIp(): string;
 
-    /**
-     * @param string $ip
-     */
     public function setLastIp(string $ip): void;
 
-    /**
-     * @return int
-     */
     public function getNotificationsCount(): int;
 
-    /**
-     * @param int $notifications_count
-     */
     public function setNotificationsCount(int $notifications_count): void;
 
-    /**
-     * @return int
-     */
     public function getNotificationsLast(): int;
 
-    /**
-     * @param int $notifications_last
-     */
     public function setNotificationsLast(int $notifications_last): void;
 
-    /**
-     * @return string
-     */
+    public function getPictureId(): ?int;
+
+    public function getPicture(): string;
+
     public function getPicturePreview(): string;
 
-    /**
-     * @param string $picture_preview
-     */
     public function setPicturePreview(string $picture_preview): void;
 
-    /**
-     * @return array
-     */
+    public function getAboutMe(): string;
+
+    public function setAboutMe(string $about_me): void;
+
+    public function getSocialId(string $socialType): ?string;
+
+    public function getOauthData(): array;
+
+    public function setSocialId(string $socialType, string $socialId): void;
+
+    public function getGender(): int;
+
+    public function setGender(int $gender): void;
+
+    public function getBirthday(): string;
+
+    public function setBirthday(string $birthday): void;
+
+    public function getCity(): string;
+
+    public function setCity(string $city): void;
+
     public function getDataInfo(): array;
 
-    /**
-     * @param array $data
-     */
     public function setDataInfo(array $data): void;
 
-    /**
-     * @param int $groupCode
-     * @return bool
-     */
     public function isInGroup(int $groupCode): bool;
 
     /**
@@ -158,14 +113,8 @@ interface UserInterface
      */
     public function setGroups(array $groups): void;
 
-    /**
-     * @param int $group
-     */
     public function addGroup(int $group): void;
 
-    /**
-     * @param int $group
-     */
     public function removeGroup(int $group): void;
 
     /**

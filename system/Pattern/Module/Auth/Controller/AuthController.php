@@ -33,12 +33,12 @@ class AuthController extends BaseController
         if ($this->ajaxResponse->isAjaxRequested($this->request) && $this->request->getGet('in_popup')) {
             $this->data['in_popup'] = true;
             $this->ajaxResponse->openPopupWithData(
-                $this->renderer->render($this->auth->getViewsPath() . 'login', $this->data, true),
+                $this->renderer->render($this->app->config->authConfig->viewsPath . 'login', $this->data, true),
                 'authPopup',
                 ['maxWidth' => 600, 'close' => true,]
             )->render($this->response);
         } else {
-            $this->render($this->auth->getViewsPath() . 'login');
+            $this->render($this->app->config->authConfig->viewsPath . 'login');
         }
     }
 
@@ -47,18 +47,18 @@ class AuthController extends BaseController
         $this->initWithAuth(false);
         $targetUi = $this->auth->user->exist() ? $this->auth->user : null;
 
-        $data = $this->auth->registerByEmailValidator($this->ajaxResponse, $this->request->getPostAsArray(), [], $targetUi);
+        $data = $this->auth->registerByEmailValidator($this->validator, $this->ajaxResponse, $this->request->getPostAsArray(), [], $targetUi);
         if (!$data) {
             $this->ajaxResponse->render($this->response);
             return;
         }
-        $result = $this->auth->registerByEmail($data['email'], $data['password'], $data['login'], $targetUi);
+        $result = $this->auth->registerByEmail($data->getField('email'), $data->getField('password'), $data->getField('login'), $targetUi);
         if ($result->isSuccess()) {
             //$this->mjsa->successMessage($result->getMessage());
             $this->ajaxResponse->closePopups()->reload()->render($this->response);
         } elseif ($result->isSpecific() && isset($result->getFields()['confirmation'])) {
             $this->ajaxResponse->formReplace($this->renderer->render(
-                $this->auth->getViewsPath() . 'formMessage',
+                $this->app->config->authConfig->viewsPath . 'formMessage',
                 ['message' => $result->getMessage(), 'messageType' => 'success'],
                 true
             ))->render($this->response);
@@ -75,12 +75,12 @@ class AuthController extends BaseController
     public function login_submit(): void
     {
         $this->initWithAuth(false);
-        $data = $this->auth->loginByPasswordValidator($this->ajaxResponse, $this->request->getPostAsArray());
+        $data = $this->auth->loginByPasswordValidator($this->validator, $this->ajaxResponse, $this->request->getPostAsArray());
         if (!$data) {
             $this->ajaxResponse->render($this->response);
             return;
         }
-        $result = $this->auth->loginByPassword($data['logemail'], $data['password']);
+        $result = $this->auth->loginByPassword($data->getField('logemail'), $data->getField('password'));
         if ($result->isSuccess()) {
             $this->ajaxResponse->closePopups();
             $continueUri = $this->request->getPost('continue_url');
@@ -92,7 +92,7 @@ class AuthController extends BaseController
             $this->ajaxResponse->render($this->response);
         } elseif ($result->isSpecific() && isset($result->getFields()['confirmation'])) {
             $this->ajaxResponse->formReplace($this->renderer->render(
-                $this->auth->getViewsPath() . 'formMessage',
+                $this->app->config->authConfig->viewsPath . 'formMessage',
                 ['message' => $result->getMessage(), 'messageType' => 'success'],
                 true
             ))->render($this->response);
@@ -150,7 +150,7 @@ class AuthController extends BaseController
         );
         if ($result->isSuccess()) {
             $this->ajaxResponse->formReplace($this->renderer->render(
-                $this->auth->getViewsPath() . 'formMessage',
+                $this->app->config->authConfig->viewsPath . 'formMessage',
                 ['message' => $this->lang->get('auth_sign:recovery_link_sent'), 'messageType' => 'success'],
                 true
             ))->render($this->response);
@@ -179,7 +179,7 @@ class AuthController extends BaseController
             $this->errorPageByCode(Response::HTTP_CODE_FORBIDDEN, $this->lang->get('auth_sign:incorrect_token'));
             return;
         }
-        $this->render($this->auth->getViewsPath() . 'password_change');
+        $this->render($this->app->config->authConfig->viewsPath . 'passwordChangeTemplate');
     }
 
     public function user_edit_password_submit(): void
@@ -194,16 +194,16 @@ class AuthController extends BaseController
                 'newpassword' => array('required' => true, 'required_text' => $this->lang->get('auth_sign:need_password')),
                 'newpassword_conf' => array('required' => true, 'required_text' => $this->lang->get('auth_sign:need_password_conf')),
             ];
-            $pdata = $this->ajaxResponse->validator($this->request->getPostAsArray(), $validatorConfig);
+            $pdata = $this->validator->validate($this->request->getPostAsArray(), $validatorConfig, $this->ajaxResponse);
             if (!$pdata) {
                 $this->ajaxResponse->render($this->response);
                 return;
             }
-            if ($pdata['newpassword'] !== $pdata['newpassword_conf']) {
+            if ($pdata->getField('newpassword') !== $pdata->getField('newpassword_conf')) {
                 $this->ajaxResponse->incorrect('newpassword_conf')->errorMessage($this->lang->get('auth_sign:incorrect_password_conf'))->render($this->response);
                 return;
             }
-            $result  = $this->auth->setNewPasswordByToken((int)$pdata['user_id'], $pdata['token'], $pdata['newpassword']);
+            $result  = $this->auth->setNewPasswordByToken((int)$pdata->getField('user_id'), $pdata->getField('token'), $pdata->getField('newpassword'));
             if (!$result->isSuccess()) {
                 $this->ajaxResponse->errorMessage($result->getMessage())->render($this->response);
                 return;
@@ -219,16 +219,16 @@ class AuthController extends BaseController
                 'newpassword' => array('required' => true, 'required_text' => $this->lang->get('auth_sign:need_password')),
                 'newpassword_conf' => array('required' => true, 'required_text' => $this->lang->get('auth_sign:need_password_conf')),
             ];
-            $pdata = $this->ajaxResponse->validator($this->request->getPostAsArray(), $validatorConfig);
+            $pdata = $this->validator->validate($this->request->getPostAsArray(), $validatorConfig, $this->ajaxResponse);
             if (!$pdata) {
                 $this->ajaxResponse->render($this->response);
                 return;
             }
-            if ($pdata['newpassword'] !== $pdata['newpassword_conf']) {
+            if ($pdata->getField('newpassword') !== $pdata->getField('newpassword_conf')) {
                 $this->ajaxResponse->incorrect('newpassword_conf')->errorMessage($this->lang->get('auth_sign:incorrect_password_conf'))->render($this->response);
                 return;
             }
-            $result = $this->auth->setNewPasswordByOldPassword($this->auth->user->getId(), $pdata['password'], $pdata['newpassword']);
+            $result = $this->auth->setNewPasswordByOldPassword($this->auth->user->getId(), $pdata->getField('password'), $pdata->getField('newpassword'));
             if (!$result->isSuccess()) {
                 $this->ajaxResponse->errorMessage($result->getMessage())->render($this->response);
                 return;
@@ -236,6 +236,44 @@ class AuthController extends BaseController
             $this->ajaxResponse->successMessage('auth_sign:user_info_changed')->reload()->closePopups()->render($this->response);
         }
     }
+
+    public function user_edit_logemail_submit(): void
+    {
+        if (!$this->initWithAuth(true)) return;
+        $data = $this->validator->validate($this->request->getPostAsArray(), [
+            'email' => ['required' => true, 'required_text' => $this->lang->get('auth_sign:need_email')],
+            'login' => ['required' => false],
+            'password' => ['required' => true, 'required_text' => $this->lang->get('auth_sign:need_password')],
+        ], $this->ajaxResponse);
+        if (!$data) { $this->ajaxResponse->render($this->response); return; }
+        $result = $this->auth->registerByEmail(
+            $data->getField('email'),
+            $data->getField('password'),
+            $data->getField('login'),
+            $this->auth->user
+        );
+        if ($result->isSuccess()) {
+            $this->ajaxResponse->closePopups()->successMessage('auth_sign:user_info_changed')->reload()->render($this->response);
+        } elseif ($result->isSpecific() && isset($result->getFields()['confirmation'])) {
+            $this->ajaxResponse->formReplace($this->renderer->render(
+                $this->app->config->authConfig->viewsPath . 'formMessage',
+                ['message' => $result->getMessage(), 'messageType' => 'success'],
+                true
+            ))->render($this->response);
+        } else {
+            if ($result->isIncorrectField()) {
+                foreach ($result->getFields() as $field) {
+                    $this->ajaxResponse->incorrect($field);
+                }
+            }
+            $this->ajaxResponse->errorMessage($result->getMessage())->render($this->response);
+        }
+    }
+
+
+
+
+
 
     public function sync_timezone()
     {
@@ -249,7 +287,7 @@ class AuthController extends BaseController
         }
         $timeStr = $this->date->fromTime()->forUser($this->auth->user)->toFormat('H:i:s',false,true);
         $this->ajaxResponse->successMessage(
-            $this->lang->get('auth_actions:timezone_synced', ['{#time}' => $timeStr])
+            $this->lang->get('user:settings.timezone_synced', ['{#time}' => $timeStr])
         )->render($this->response);
 
         echo '<script>'
@@ -263,31 +301,14 @@ class AuthController extends BaseController
 
 
 
+
+
     public function set_language($language = ''){
         setcookie('language', $language, time() + 3600*30, '/');
         $this->mm->mjsaPrintEvent(array(
             /* 'success'=> 'Язык изменен', */ 'reload' => true, 'closePopups' => true,
         ));
     }
-
-    public function user_edit_submit(): void
-    {
-        $this->mm->request_type = 'mjsa_ajax';
-        if (!$this->initWithAuth(true)) return;
-        if ($this->mm->g($_POST['birthday_day']) && $this->mm->g($_POST['birthday_month']) && $this->mm->g($_POST['birthday_year'])) {
-            $_POST['birthday'] = $_POST['birthday_year'].'-'.$_POST['birthday_month'].'-'.$_POST['birthday_day'];
-        }
-        $success = $this->musers->setUserInfo($this->data['ui'], $_POST);
-        if (!$success) {
-            $this->mm->mjsaPrintError($this->musers->getErrorMessage());
-            return;
-        }
-        $this->mm->mjsaPrintEvent(array(
-            'success' => lang('musers:user_info_changed'), 'reload' => true, 'closePopups' => true,
-        ));
-    }
-
-
 
     public function unactive_me(): void
     {
@@ -467,31 +488,6 @@ class AuthController extends BaseController
 
 
 
-    public function register__(){
-        $this->initWithAuth(false);
-        $registered = $this->mauth->registerUserByEmail(
-            $this->mm->g($_POST['email']),
-            $this->mm->g($_POST['password']),
-            $this->mm->g($_POST['login']),
-            $this->mm->g($_POST['name'])
-        );
-
-        if ($registered === false){
-            return $this->mm->mjsaPrintError($this->mauth->getErrorMessage());
-        }
-        if ($registered === 'LOGINED'){
-            $this->mm->mjsaPrintEvent(array(
-                'success' => lang('mauth.reg.success_logined'), 'reload' => true, 'closePopups' => true,
-            ));
-        }
-        if ($registered === 'SENDED'){
-            $this->mm->mjsaPrintEvent(array(
-                'redirect' => '/auth/email_conf_sended', 'closePopups' => true,
-            ));
-        }
-        //[false][LOGINED][SENDED][REGISTERED/or/$ui]
-    }
-
     public function user_status($status = ''){
         if (!$this->initWithAuth(true)) return false;
         if ($this->data['ui']['level'] < $this->mauth->admin_level){
@@ -602,7 +598,7 @@ class AuthController extends BaseController
         $this->data['h2'] = lang('mauth.banned.title');
         $this->data['p'] = array();
         $this->data['p'][] = '<div class="warning_line">'.
-            lang('mauth.banned.p1',array('{#a_tag_open}'=>'<a href="'.$this->links->messages('user',array('id'=>$this->mm->app_properties['admin_user_id'])).'" class="bodyajax">','{#a_tag_close}'=>'</a>'))
+            lang('mauth.banned.p1',array('{#a_tag_open}'=>'<a href="'.$this->links->messagesWithUserById($this->mm->app_properties['admin_user_id']).'" class="bodyajax">','{#a_tag_close}'=>'</a>'))
             .'</div>';
 
         $this->data['content_tpl'] = 'mop/text_page.tpl.php';

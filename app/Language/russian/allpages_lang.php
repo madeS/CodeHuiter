@@ -32,9 +32,9 @@ $lang['dialogues:header_last_dialogues'] = 'Последние диалоги';
 $lang['dialogues:you_have_not_dialogues'] = 'У вас нет диалогов';
 
 
-$lang['users:users'] = 'Пользователи';
-$lang['users:medias'] = 'Медиа';
-$lang['users:albums'] = 'Альбомы';
+$lang['user:users'] = 'Пользователи';
+$lang['user:medias'] = 'Медиа';
+$lang['user:albums'] = 'Альбомы';
 
 $lang['profile:online'] = 'В сети'; // Online
 $lang['profile:last_visit'] = 'Последний визит';
@@ -93,7 +93,7 @@ $lang['profile:main_info:submit'] = 'Сохранить';
 
 $lang['search:placeholder'] = 'Поиск';
 $lang['search:not_found'] = 'Ничего не найдено.';
-$lang['users:last_active_users'] = 'Последние активные пользователи';
+$lang['user:last_active_users'] = 'Последние активные пользователи';
 
 
 $lang['page404:title'] = '404: Страница не найдена';//'404: Page not found';
@@ -110,9 +110,7 @@ $lang['profile:upload_photos:unsupport'] = 'Ваш браузер устарел
 $lang['profile:upload_photos:file_process'] = 'Обработка файлов...';
 $lang['profile:upload_photos:uploaded'] = 'Загружено';
 $lang['profile:upload_photos:ds'] = 'Всети';
-$lang['profile:upload_photos:ds'] = 'Всети';
 $lang['profile:onlines'] = 'Всети';
-
 
 
 $lang['musers:picture_changed'] = 'Фотография изменена!';

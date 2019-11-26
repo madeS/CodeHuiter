@@ -11,6 +11,7 @@ use CodeHuiter\Exception\CodeHuiterException;
 use CodeHuiter\Exception\ErrorException;
 use CodeHuiter\Pattern\Module\Auth\AuthService;
 use CodeHuiter\Pattern\Module\Auth\Model\UserInterface;
+use CodeHuiter\Pattern\SearchList\SearchListResult;
 use CodeHuiter\Pattern\Service\Compressor;
 
 /**
@@ -28,8 +29,14 @@ use CodeHuiter\Pattern\Service\Compressor;
  * @property-read \CodeHuiter\Pattern\Module\Auth\AuthService $auth
  * @see PatternConfig::SERVICE_KEY_AUTH There are Forward Usages
  *
+ * @property-read \CodeHuiter\Pattern\Module\Auth\UserService $userService
+ * @see PatternConfig::SERVICE_KEY_USER There are Forward Usages
+ *
  * @property-read \CodeHuiter\Pattern\Service\AjaxResponse $ajaxResponse
  * @see PatternConfig::SERVICE_KEY_MJSA_RESPONSE There are Forward Usages
+ *
+ * @property-read \CodeHuiter\Pattern\Service\Validator $validator
+ * @see PatternConfig::SERVICE_KEY_VALIDATOR There are Forward Usages
  */
 class BaseController extends Controller
 {
@@ -85,13 +92,12 @@ class BaseController extends Controller
         }
 
         $this->loader->benchmarkPoint('RenderStart');
-        $this->data['patternTemplate'] = SYSTEM_PATH . 'Pattern/View/';
         $this->data['template'] = VIEW_PATH . $this->app->config->projectConfig->template;
         $this->data['headAfterTpl'] = $this->app->config->projectConfig->headAfterTpl;
         $this->data['bodyAfterTpl'] = $this->app->config->projectConfig->bodyAfterTpl;
         $this->data['contentTpl'] = $contentTpl;
 
-        $this->renderer->render($this->data['patternTemplate'] . '/main', $this->data, $return);
+        $this->renderer->render($this->app->config->projectConfig->baseTemplatePath . '/baseMainTemplate', $this->data, $return);
     }
 
     protected function initWithAuth(
@@ -109,7 +115,7 @@ class BaseController extends Controller
                 if ($this->ajaxResponse->isAjaxRequested($this->request)) {
                     $this->data['in_popup'] = true;
                     $this->ajaxResponse->openPopupWithData(
-                        $this->renderer->render($this->auth->getViewsPath() . 'login', $this->data, true),
+                        $this->renderer->render($this->app->config->authConfig->viewsPath. 'login', $this->data, true),
                         'authPopup',
                         ['maxWidth' => 600, 'close' => true,]
                     )->render($this->response);
@@ -155,11 +161,21 @@ class BaseController extends Controller
             'bodyAjax' => $this->ajaxResponse->isBodyAjax($this->request),
             'language' => $this->app->config->settingsConfig->language,
             'siteUrl' => $this->app->config->settingsConfig->siteUrl,
+            'filters' => [],
+            'pages' => [],
         ];
         foreach($this->app->config->projectConfig->dataDefault as $defaultField) {
             $this->data[$defaultField] = $this->app->config->projectConfig->$defaultField;
         }
 
         $this->lang->setLanguage($this->data['language']);
+    }
+
+    protected function acceptSearchListResult(SearchListResult $result, string $itemsKey = 'items'): void
+    {
+        $this->data['filters'] = $result->getFilters();
+        $this->data['pages'] = $result->getPages();
+        $this->data['pages']['total'] = $result->getItemsCount();
+        $this->data[$itemsKey] = $result->getItems();
     }
 }

@@ -1,7 +1,9 @@
-<?php if (false) require_once __DIR__ . '/../IDE_Helper.tpl.php';
+<?php if (false) require_once SYSTEM_PATH . '/Pattern/View/IDE_Helper.tpl.php';
+/** @define "$baseTemplatePath" "./" */
+$baseTemplatePath = $those->app->config->projectConfig->baseTemplatePath;
 ?>
 
-<?php if($those->app->config->projectConfig->pageStyle == 'backed'):?>
+<?php if($those->app->config->projectConfig->pageStyle === 'backed'):?>
 	<div class="centerwrap<?=(isset($wrap_classes))?' '.$wrap_classes:''?>">
 	<?/* centerwrap in footer */?>
 <?php endif;?>
@@ -62,9 +64,9 @@
 
 		<div class="profile">
 			<?php if($userInfo->exist()):?>
-				<?php $renderer->render($patternTemplate . 'page_parts/header_profile_block')?>
+				<?php $renderer->render($baseTemplatePath . 'pageParts/headerProfileBlockTemplate')?>
 			<?php else:?>
-				<?php $renderer->render($patternTemplate . 'page_parts/header_login_block')?>
+				<?php $renderer->render($baseTemplatePath . 'pageParts/headerLoginBlockTemplate')?>
 			<?php endif;?>
 		</div>
 		<div class="clearline"></div>

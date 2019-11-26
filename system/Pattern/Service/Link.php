@@ -56,29 +56,29 @@ class Link
         return $this->url('user_view',$user->getId());
     }
 
-    public function userSettings($type = '')
+    public function userSettings()
     {
         return $this->url('user_settings');
     }
 
-    /**
-     * @param string $type
-     * @param bool $userOrRoom
-     * @return null|string|string[]
-     * @throws InvalidFlowException
-     */
-    public function messages($type = '', $userOrRoom = false)
+    public function messages(): string
     {
-        if ($type && $userOrRoom){
-            if ($type === 'user'){
-                return $this->url('messages_user',$userOrRoom['id']);
-            } elseif ($type === 'room') {
-                return $this->url('messages_room',$userOrRoom['id']);
-            }
-        } else {
-            return $this->url('messages');
-        }
-        throw new InvalidFlowException('Unknown type for message url');
+        return $this->url('messages');
+    }
+
+    public function messagesWithUserById(int $id): string
+    {
+        return $this->url('messages_user', $id);
+    }
+
+    public function messagesWithUser(UserInterface $user): string
+    {
+        return $this->url('messages_user', $user->getId());
+    }
+
+    public function messagesWithRoom(string $type = '', $userOrRoom = null): string
+    {
+        return $this->url('messages_room',$userOrRoom['id']);
     }
 
     /**
@@ -176,6 +176,35 @@ class Link
         } else {
             return $this->url('blog_page',$blog['id']);
         }
+    }
+
+    public function oauth($type = ''): string
+    {
+        switch ($type) {
+            case 'vk': return '/auth/vk';
+            case 'fb': return '/auth/fb';
+            case 'ig': return '/auth/ig';
+            case 'tw': return '/auth/tw';
+            case 'gl': return '/auth/gl';
+        }
+        throw new InvalidFlowException('Unknown type in link->oauth');
+    }
+
+    public function oauthUnlink($type = ''): string
+    {
+        switch ($type) {
+            case 'vk': return '/auth/vk_unlink';
+            case 'fb': return '/auth/fb_unlink';
+            case 'ig': return '/auth/ig_unlink';
+            case 'tw': return '/auth/tw_unlink';
+            case 'gl': return '/auth/gl_unlink';
+        }
+        throw new InvalidFlowException('Unknown type in link->oauth');
+    }
+
+    public function deactivateAccount(): string
+    {
+        return '/auth/unactive_me';
     }
 
     protected function url()

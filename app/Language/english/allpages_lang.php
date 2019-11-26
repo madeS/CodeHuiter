@@ -53,9 +53,9 @@ $lang['dialogues:header_last_dialogues'] = 'Last dialogues';
 $lang['dialogues:you_have_not_dialogues'] = 'You have not any dialogues';
 
 
-$lang['users:users'] = 'Users';
-$lang['users:medias'] = 'Media';
-$lang['users:albums'] = 'Albums';
+$lang['user:users'] = 'Users';
+$lang['user:medias'] = 'Media';
+$lang['user:albums'] = 'Albums';
 
 $lang['profile:online'] = 'Online'; // Online
 $lang['profile:last_visit'] = 'Last visit';
@@ -114,7 +114,7 @@ $lang['profile:main_info:submit'] = 'Save';
 
 $lang['search:placeholder'] = 'Search';
 $lang['search:not_found'] = 'No results were found.';
-$lang['users:last_active_users'] = 'Last active users';
+$lang['user:last_active_users'] = 'Last active users';
 
 
 $lang['page404:title'] = '404: Page not found';

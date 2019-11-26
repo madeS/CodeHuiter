@@ -72,7 +72,7 @@ class Language implements \CodeHuiter\Service\Language
             file_put_contents($volumeFile, "<?php\n\n");
         }
         $addedKeys = ($keys) ? ' ' . implode(' ', $keys) : '';
-        file_put_contents($volumeFile, "\$lang['{$alias}'] = '{$alias}{$addedKeys}';\n", FILE_APPEND);
+        file_put_contents($volumeFile, "\$lang['{$alias}'] = '{$alias}{$addedKeys}';\n", FILE_APPEND | LOCK_EX);
     }
 
     protected function getVolumeFile($volume)

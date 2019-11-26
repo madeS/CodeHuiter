@@ -14,6 +14,8 @@ use CodeHuiter\Pattern\Module\Auth\Model\UserInterface;
 use CodeHuiter\Pattern\Module\Auth\Model\UserRepositoryInterface;
 use CodeHuiter\Pattern\Result\ClientResult;
 use CodeHuiter\Pattern\Service\AjaxResponse;
+use CodeHuiter\Pattern\Service\ValidatedData;
+use CodeHuiter\Pattern\Service\Validator;
 use CodeHuiter\Service\DateService;
 use CodeHuiter\Service\Mailer;
 use CodeHuiter\Service\Language;
@@ -23,8 +25,6 @@ use CodeHuiter\Service\Language;
  */
 class AuthService
 {
-    const MODULE_PATH = 'Pattern/Module/Auth/';
-
     private const PASS_FUNC_METHOD_NORMAL = 'normal';
 
     /** @var Application */
@@ -124,13 +124,6 @@ class AuthService
     public function getErrorMessage()
     {
         return $this->lastErrorMessage;
-    }
-
-    public function getViewsPath()
-    {
-        return ($this->config->viewsPath)
-            ? $this->config->viewsPath
-            : SYSTEM_PATH . self::MODULE_PATH . 'View/';
     }
 
     /**
@@ -380,13 +373,14 @@ class AuthService
     }
 
     /**
-     * @param AjaxResponse $mjsa
+     * @param Validator $validator
+     * @param AjaxResponse $ajaxResponse
      * @param array $input
      * @return array|null
      */
-    public function loginByPasswordValidator(AjaxResponse $mjsa, array $input): ?array
+    public function loginByPasswordValidator(Validator $validator, AjaxResponse $ajaxResponse, array $input): ?ValidatedData
     {
-        return $mjsa->validator($input, array_merge([
+        return $validator->validate($input, array_merge([
             'logemail' => [
                 'filters' => ['trim' => true, 'html_chars' => true],
                 'required' => true, 'required_text' => $this->lang->get('auth_sign:login_or_email_empty'),
@@ -396,7 +390,7 @@ class AuthService
                 'filters' => ['trim' => true],
                 'required' => true, 'required_text' => $this->lang->get('auth_sign:password_empty'),
             ]
-        ]));
+        ]), $ajaxResponse);
     }
 
 
@@ -538,15 +532,16 @@ class AuthService
     }
 
     /**
-     * @param AjaxResponse $mjsa
+     * @param Validator $validator
+     * @param AjaxResponse $ajaxResponse
      * @param array $input
      * @param array $additionalValidator
      * @param UserInterface|null $connectUi
-     * @return array|bool validatedData or false if not valid
+     * @return ValidatedData|bool validatedData or false if not valid
      */
-    public function registerByEmailValidator(AjaxResponse $mjsa, $input, $additionalValidator = [], $connectUi = null): ?array
+    public function registerByEmailValidator(Validator $validator, AjaxResponse $ajaxResponse, $input, $additionalValidator = [], $connectUi = null): ?ValidatedData
     {
-        return $mjsa->validator($input, array_merge([
+        return $validator->validate($input, array_merge([
             'email' => [
                 'filters' => ['trim' => true, 'html_chars' => true],
                 'required' => ($connectUi ? false : true), 'required_text' => $this->lang->get('auth_sign:email_empty'),
@@ -562,7 +557,7 @@ class AuthService
                 'filters' => ['trim' => true],
                 'required' => true, 'required_text' => $this->lang->get('auth_sign:password_empty'),
             ]
-        ], $additionalValidator));
+        ], $additionalValidator), $ajaxResponse);
     }
 
     /**
@@ -632,11 +627,12 @@ class AuthService
                 return ClientResult::createIncorrectField($this->lang->get('auth_sign:password_wrong'), $passwordKey);
             }
 
+            $oldEmail = $targetUi->getEmail();
             $targetUi->setEmail($email);
             $targetUi->setLogin($login);
             $targetUi->setPassHash($passHash);
 
-            if ($email !== $targetUi->getEmail()) {
+            if ($email !== $oldEmail) {
                 $targetUi->setEmailConfirmed(false);
                 $isNeedToConfirmEmail = true;
             }
@@ -849,31 +845,6 @@ class AuthService
 
 class Mauth {
 
-
-    function __construct() {
-        parent::__construct();
-        $this->load->model(array('mm'));
-        if ($this->mm->g($this->mm->app_properties['cookie_domain'])){
-            $this->cookie_domain = $this->mm->app_properties['cookie_domain'];
-        }
-        if ($this->mm->g($this->mm->app_properties['cookie_days'])){
-            $this->cookie_days = $this->mm->app_properties['cookie_days'];
-        }
-        if ($this->mm->g($this->mm->app_properties['online_time'])){
-            $this->online_time = $this->mm->app_properties['online_time'];
-        }
-        if (isset($this->mm->app_properties['logout_if_ip_change'])){
-            $this->logout_if_ip_change = $this->mm->app_properties['logout_if_ip_change'];
-        }
-        if (isset($this->mm->app_properties['multiconnect_available'])){
-            $this->multiconnect_available = $this->mm->app_properties['multiconnect_available'];
-        }
-        if (isset($this->mm->app_properties['allow_register'])){
-            $this->allow_register = $this->mm->app_properties['allow_register'];
-        }
-        $this->time = time();
-    }
-
     private $time = 0;
 
     private $cookie_domain = null; // домен для которого устанавливаются куки (сделано для поддоменов)
@@ -926,20 +897,6 @@ class Mauth {
         'password' => 'password'
     );
 
-    //v3.6
-    private function getConfirmEmailPattern(){
-        $subject = '['.$this->mm->app_properties['site_name'].'] '
-            .lang('mauth.ePattern.checkemail.subject');
-        $str = lang('mauth.ePattern.checkemail.p11')
-            //.' ('.$this->mm->app_properties['site_url'].'/users/info/{#user_id}) '
-            .' ( {#login} ) '
-            .lang('mauth.ePattern.checkemail.p12')
-            ."\n";
-        $str .= lang('mauth.ePattern.checkemail.p2')."\n";
-        $str .= ''.$this->mm->app_properties['site_url'].'/auth/confirm_email?user_id={#user_id}&token={#token}  '."\n";
-        $str .= lang('mauth.ePattern.checkemail.p4')."\n";
-        return array('subject' => $subject, 'text' => $str);
-    }
 
     //v3.6
     private function getPasswordRecoveryPattern(){

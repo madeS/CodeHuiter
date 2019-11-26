@@ -1,8 +1,8 @@
-<?php if (false) require_once __DIR__ . '/../IDE_Helper.tpl.php';
+<?php if (false) require_once SYSTEM_PATH . '/Pattern/View/IDE_Helper.tpl.php';
 ?>
 
 <div class="footer<?=(isset($wrap_classes))?' '.$wrap_classes:''?>">
-	<?php if($those->app->config->projectConfig->pageStyle == 'backed'):?>
+	<?php if($those->app->config->projectConfig->pageStyle === 'backed'):?>
 	<div class="page_container">
 		<div class="center_container">
 			<div class="information">
@@ -68,6 +68,6 @@
 	<?php endif;?>
 </div>
 
-<?php if($those->app->config->projectConfig->pageStyle == 'backed'):?>
+<?php if($those->app->config->projectConfig->pageStyle === 'backed'):?>
 	</div>  <?/* centerwrap in header */?>
 <?php endif;?>

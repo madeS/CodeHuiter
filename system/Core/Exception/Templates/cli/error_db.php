@@ -1,7 +1,7 @@
 <?php
 
 
-echo "\nDatabase error: ",
+echo "\n[!APP-FAILED!] Database error: ",
 	$heading,
 	"\n\n",
 	$message,

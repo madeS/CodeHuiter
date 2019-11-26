@@ -5,8 +5,10 @@ namespace CodeHuiter\Config;
 use CodeHuiter\Core\Application;
 use CodeHuiter\Core\Request;
 use CodeHuiter\Core\Response;
+use CodeHuiter\Pattern\Module\Auth\UserService;
 use CodeHuiter\Pattern\Service\ByDefault;
 use CodeHuiter\Pattern\Service\AjaxResponse;
+use CodeHuiter\Pattern\Service\Validator;
 use CodeHuiter\Service\ByDefault\PhpRenderer;
 use CodeHuiter\Service\DateService;
 use CodeHuiter\Pattern\Module\Auth\AuthService;
@@ -33,9 +35,11 @@ class PatternConfig extends Config
 
     public const SERVICE_KEY_COMPRESSOR = 'compressor';
     public const SERVICE_KEY_MJSA_RESPONSE = 'ajaxResponse';
+    public const SERVICE_KEY_VALIDATOR = 'validator';
     public const SERVICE_KEY_LINKS = 'links';
     public const SERVICE_KEY_MEDIA = 'media';
     public const SERVICE_KEY_AUTH = 'auth';
+    public const SERVICE_KEY_USER = 'userService';
 
     public function __construct()
     {
@@ -54,8 +58,7 @@ class PatternConfig extends Config
                     $app->get(PhpRenderer::class)
                 );
             },
-            self::OPT_KEY_VALIDATE => Compressor::class,
-            self::OPT_KEY_SINGLE => true
+            self::OPT_KEY_SCOPE => self::OPT_KEY_SCOPE_REQUEST,
         ];
         $this->injectedServices[self::SERVICE_KEY_COMPRESSOR] = Compressor::class;
         $this->compressorConfig = new CompressorConfig();
@@ -104,37 +107,35 @@ class PatternConfig extends Config
                 }
                 return new ByDefault\JsonAjaxResponse($app->get(Language::class));
             },
-            self::OPT_KEY_VALIDATE => AjaxResponse::class,
             self::OPT_KEY_SCOPE => self::OPT_KEY_SCOPE_REQUEST,
-            self::OPT_KEY_SINGLE => true
         ];
         $this->injectedServices[self::SERVICE_KEY_MJSA_RESPONSE] = AjaxResponse::class;
 
         /**
          * Links Service
          */
-        $this->services[Link::class] = [
-            self::OPT_KEY_CALLBACK => static function (Application $app) {
+        $this->services[Link::class] = [self::OPT_KEY_CALLBACK => static function (Application $app) {
                 return new Link($app, $app->config->linksConfig);
-            },
-            self::OPT_KEY_VALIDATE => Link::class,
-            self::OPT_KEY_SINGLE => true
-        ];
+        }];
         $this->injectedServices[self::SERVICE_KEY_LINKS] = Link::class;
         $this->linksConfig = new LinksConfig();
 
         /**
          * Media Service
          */
-        $this->services[Media::class] = [
-            self::OPT_KEY_CALLBACK => static function (Application $app) {
-                return new Media($app->config->mediaConfig);
-            },
-            self::OPT_KEY_VALIDATE => Media::class,
-            self::OPT_KEY_SINGLE => true
-        ];
+        $this->services[Media::class] = [self::OPT_KEY_CALLBACK => static function (Application $app) {
+            return new Media($app->config->mediaConfig);
+        }];
         $this->injectedServices[self::SERVICE_KEY_MEDIA] = Media::class;
         $this->mediaConfig = new MediaConfig();
+
+        /**
+         * Validator Service
+         */
+        $this->services[Validator::class] = [self::OPT_KEY_CALLBACK => static function (Application $app) {
+            return new ByDefault\Validator($app->get(Language::class));
+        }];
+        $this->injectedServices[self::SERVICE_KEY_VALIDATOR] = Validator::class;
 
         /**
          * Auth Service
@@ -151,21 +152,28 @@ class PatternConfig extends Config
                     $app->get(UserRepositoryInterface::class)
                 );
             },
-            self::OPT_KEY_VALIDATE => AuthService::class,
-            self::OPT_KEY_SINGLE => true,
             self::OPT_KEY_SCOPE => self::OPT_KEY_SCOPE_REQUEST,
         ];
         $this->injectedServices[self::SERVICE_KEY_AUTH] = AuthService::class;
         $this->authConfig = new AuthConfig();
         $this->authConfig->cookieDomain = '.' . $this->settingsConfig->domain;
 
+        /**
+         * UserService
+         */
+        $this->services[UserService::class] = [self::OPT_KEY_CLASS_APP => UserService::class, self::OPT_KEY_SCOPE => self::OPT_KEY_SCOPE_REQUEST,];
+        $this->injectedServices[self::SERVICE_KEY_USER] = UserService::class;
 
-        $this->services[UserRepositoryInterface::class] = [self::OPT_KEY_CLASS_APP => UserModelRepository::class, self::OPT_KEY_VALIDATE => UserRepositoryInterface::class, self::OPT_KEY_SINGLE => true];
+        /**
+         * UserRepository
+         */
+        $this->services[UserRepositoryInterface::class] = [self::OPT_KEY_CLASS_APP => UserModelRepository::class, self::OPT_KEY_SCOPE => self::OPT_KEY_SCOPE_REQUEST,];
     }
 }
 
 class ProjectConfig
 {
+    public $baseTemplatePath = SYSTEM_PATH . 'Pattern/View/Base/'; // Copy to App Views for custom views
     public $template = 'myTemplate/';
     public $headAfterTpl = 'head_after';
     public $bodyAfterTpl = 'body_after';
@@ -188,6 +196,10 @@ class ProjectConfig
     public $developingUrl = 'http://bogarevich.com/production';
     public $developingTitle = 'Andrei Bogarevich';
     public $developingName = 'Andrei Bogarevich';
+
+    public $supportUserId = 1;
+
+    public $usersViewSocialOriginLinks = false;
 }
 
 class CompressorConfig
@@ -266,7 +278,7 @@ class AuthConfig
     public $cookieDomain = '.app.local';    //'.bogarevich.com', // домен для cookie
     public $allowRegister = true;           // разрешается ли регистрация на сайтеDhtvz hfpразрешается ли регистрация на сайте
     public $nonactiveUpdateTime = 60;       // время раз в которое обновляется время последнего посещения
-    public $viewsPath = '';                 //':', - for cusom auth views
+    public $viewsPath = SYSTEM_PATH . 'Pattern/Module/Auth/View/'; // Copy to App Views for custom views
     public $groups = [];
 
     public $emailQueued = true;

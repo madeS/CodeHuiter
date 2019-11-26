@@ -2,7 +2,12 @@
 
 namespace CodeHuiter\Service;
 
+use CodeHuiter\Exception\Runtime\DateTimeConvertException;
 use CodeHuiter\Pattern\Module\Auth\Model\UserInterface;
+use DateInterval;
+use DateTimeImmutable;
+use DateTimeZone;
+use Exception;
 
 interface DateService
 {
@@ -74,4 +79,18 @@ interface DateService
      * @return int
      */
     public function addDays(int $timeStamp, int $days): int;
+
+    public function diffDateTime(string $stringMin, ?string $stringMax = null): DateInterval;
+
+    public function getCurrentDateTime(): DateTimeImmutable;
+
+    public function addSeconds(DateTimeImmutable $time, int $seconds): DateTimeImmutable;
+
+    public function subSeconds(DateTimeImmutable $time, int $seconds): DateTimeImmutable;
+
+    public function timeStringToDateTime(string $string): DateTimeImmutable;
+
+    public function dateTimeToTimeString(DateTimeImmutable $datetime): string;
+
+    public function getCurrentTimeAsString(): string;
 }

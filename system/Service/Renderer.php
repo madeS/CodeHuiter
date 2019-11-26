@@ -10,5 +10,5 @@ interface Renderer
      * @param bool $return
      * @return string
      */
-    public function render(string $viewFile, array $data = [], $return = false): string;
+    public function render(string $viewFile, array $data = [], bool $return = false): string;
 }
