@@ -2,6 +2,7 @@
 
 namespace CodeHuiter\Config;
 
+use CodeHuiter\Service\EventDispatcher;
 use CodeHuiter\Service\MimeTypeConverter;
 use CodeHuiter\Core\Application;
 use CodeHuiter\Core\CodeLoader;
@@ -222,6 +223,13 @@ abstract class Config
         ];
         $this->injectedServices[self::SERVICE_KEY_ROUTER] = Router::class;
         $this->routerConfig = new RouterConfig();
+
+        /**
+         * EventDispatcher Service
+         */
+        $this->services[EventDispatcher::class] = [
+            self::OPT_KEY_CLASS_APP => ByDefault\EventDispatcher\EventDispatcher::class,
+        ];
 
         /**
          * Default Database Service

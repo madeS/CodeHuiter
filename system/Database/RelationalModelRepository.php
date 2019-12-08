@@ -3,7 +3,9 @@
 namespace CodeHuiter\Database;
 
 use CodeHuiter\Core\Application;
+use CodeHuiter\Service\ByDefault\EventDispatcher\RelationalModelDeletingEvent;
 use CodeHuiter\Service\DateService;
+use CodeHuiter\Service\EventDispatcher;
 use CodeHuiter\Service\Logger;
 
 class RelationalModelRepository
@@ -147,6 +149,8 @@ class RelationalModelRepository
             ));
             return false;
         }
+        // TODO Add AutoStart Transaction
+        $this->getEventDispatcher()->fire(new RelationalModelDeletingEvent($model));
         return (bool)$this->getDB()->delete($this->table, $where);
     }
 
@@ -189,5 +193,10 @@ class RelationalModelRepository
             $this->logger = $this->application->get(Logger::class);
         }
         return $this->logger;
+    }
+
+    private function getEventDispatcher(): EventDispatcher
+    {
+        return $this->application->get(EventDispatcher::class);
     }
 }

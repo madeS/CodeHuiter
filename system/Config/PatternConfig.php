@@ -269,6 +269,10 @@ class MediaConfig
 
 class AuthConfig
 {
+    public const EVENT_USER_GROUP_CHANGED = 'user.groupChanged';
+    public const EVENT_USER_JOIN_ACCOUNT = 'user.joinAccount';
+    public const EVENT_USER_DELETING = 'user.deleting';
+
     public $salt = '';
     public $passFuncMethod = 'normal';
     public $logoutIfIpChange = false;       // не принимает sig  с другого ip, выкидывает с профиля, если ip сменился
@@ -288,6 +292,15 @@ class AuthConfig
     public $urlActive = '/auth/email_conf_sended';
     public $urlLogout = '/auth/logout';
     public $authEmailConfSended = '/auth/email_conf_sended';
+
+    public $originSources = [
+        'vk',
+        'fb',
+        'gl',
+        'tw',
+        'ig',
+        'od',
+    ];
 
     public $facebookAppId = '600000000000121';
     public $facebookSecret = '9aaabbbcccdddeeeeefff00011122233';

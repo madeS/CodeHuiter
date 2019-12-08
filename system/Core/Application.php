@@ -4,8 +4,6 @@ namespace CodeHuiter\Core;
 
 use App\Config\DefaultConfig;
 use CodeHuiter\Config\Config;
-use CodeHuiter\Core\Event\ApplicationEvent;
-use CodeHuiter\Core\ByDefault\ApplicationEventSubscription;
 use CodeHuiter\Core\Exception\ExceptionProcessor;
 use CodeHuiter\Exception\Runtime\CoreException;
 use Exception;
@@ -42,11 +40,6 @@ class Application
      * @var array
      */
     protected $container = [];
-
-    /**
-     * @var array
-     */
-    protected $subscriptions = [];
 
     protected $serviceCreateStack = [];
 
@@ -152,37 +145,6 @@ class Application
         }
     }
 
-    /**
-     * @param ApplicationEvent $event
-     */
-    public function fireEvent(ApplicationEvent $event): void
-    {
-        $eventClass = get_class($event);
-        if (!isset($this->subscriptions[$eventClass])) {
-            return;
-        }
-        /** @var ApplicationEventSubscription $subscription */
-        foreach ($this->subscriptions[$eventClass] as $subscription) {
-            $subscriber = $subscription->getSubscriber($this, $eventClass);
-            $subscriber->catchEvent($event);
-        }
-    }
-
-    /**
-     * @param $handler
-     * @param string $eventClass
-     * @param int $priority
-     */
-    public function subscribe($handler, string $eventClass, int $priority = 1) : void
-    {
-        if (!isset($this->subscriptions[$eventClass])) {
-            $this->subscriptions[$eventClass] = [];
-        }
-        $this->subscriptions[$eventClass][] = new ApplicationEventSubscription($handler, $priority);
-        usort($this->subscriptions[$eventClass], static function (ApplicationEventSubscription $a, ApplicationEventSubscription $b) {
-            return !($a->priority <=> $b->priority);
-        });
-    }
 
     /**
      * Run the application

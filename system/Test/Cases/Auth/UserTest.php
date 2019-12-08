@@ -126,4 +126,20 @@ class UserTest extends BaseFakeRequestApplicationTestCase
         self::assertEquals('UserChangeLoginAndEmail1', $login, '/user/settings has invalid input[name=login] login');
         self::assertEquals('UserChangeLoginAndEmail2@example.com', $email, '/user/settings has invalid input[name=login] login');
     }
+
+    public function testChangePassword(): void
+    {
+        $lang = self::getLang();
+        $cookieData = AuthTest::loginWithNewUser($this, 'UserChangePassword@example.com', 'UserChangePassword', 'password1');
+
+        // Change login
+        $response = self::runWithPost($this, '/auth/user_edit_password_submit', [
+            'password' => 'password1',
+            'newpassword' => 'password2',
+            'newpassword_conf' => 'password2',
+        ], $cookieData);
+        self::assertResponseWithoutError($response);
+
+        AuthTest::userLogin($this, 'UserChangePassword', 'password2');
+    }
 }

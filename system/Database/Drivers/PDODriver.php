@@ -13,8 +13,8 @@ class PDODriver extends AbstractDatabase
     /** @var PDO $connection */
     protected $connection;
 
-    /** @var bool */
-    protected $inTransaction = false;
+    /** @var int */
+    protected $transactionLevel = 0;
 
     /**
      * @var RelationalDatabaseConfig
@@ -388,7 +388,7 @@ class PDODriver extends AbstractDatabase
         $result = null;
         if ($insertedResult === true) {
             // Execute
-            if (!$this->inTransaction) {
+            if ($this->transactionLevel === 0) {
                 $this->connection->beginTransaction();
             }
             try {
@@ -407,11 +407,12 @@ class PDODriver extends AbstractDatabase
             }
             // Format
             $result = $this->connection->lastInsertId();
-            if (!$this->inTransaction) {
+            if ($this->transactionLevel === 0) {
                 $this->connection->commit();
             }
-            if (!$this->inTransaction && $this->connection->inTransaction()) {
+            if ($this->transactionLevel === 0 && $this->connection->inTransaction()) {
                 $this->connection->rollBack();
+                throw new CodeHuiterRuntimeException('Direction start of transaction is not supported');
             }
         } else {
             // Execute
@@ -572,20 +573,28 @@ class PDODriver extends AbstractDatabase
 
     public function transactionStart(): void
     {
-        $this->connection->beginTransaction();
-        $this->inTransaction = true;
+        if ($this->transactionLevel === 0) {
+            $this->connection->beginTransaction();
+            $this->transactionLevel++;
+        }
     }
 
     public function transactionCommit(): void
     {
-        $this->connection->commit();
-        $this->inTransaction = false;
+        if ($this->transactionLevel > 0) {
+            $this->transactionLevel--;
+            if ($this->transactionLevel === 0) {
+                $this->connection->commit();
+            }
+        }
     }
 
     public function transactionRollBack(): void
     {
-        $this->connection->rollBack();
-        $this->inTransaction = false;
+        if ($this->transactionLevel > 0) {
+            $this->connection->rollBack();
+            $this->transactionLevel = 0;
+        }
     }
 
     private function pdoException(Throwable $exception, string $query, array $params): PDOException

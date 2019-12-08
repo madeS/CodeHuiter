@@ -211,7 +211,7 @@ class AuthController extends BaseController
             $this->ajaxResponse->successMessage('auth_sign:user_info_changed')->location($this->links->userSettings())->closePopups()->render($this->response);
         } else {
             // By Password
-            if ($this->auth->user->exist()) {
+            if (!$this->auth->user->exist()) {
                 $this->ajaxResponse->errorMessage($this->lang->get('auth_sign:recovery_need_to_be_sign'))->render($this->response);
             }
             $validatorConfig = [

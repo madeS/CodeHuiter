@@ -4,7 +4,7 @@ namespace CodeHuiter\Core;
 
 use CodeHuiter\Config\Config;
 use CodeHuiter\Database\RelationalDatabase;
-use CodeHuiter\Exception\Runtime\RuntimeAppContainerException;
+use CodeHuiter\Exception\CodeHuiterRuntimeException;
 use CodeHuiter\Service;
 use CodeHuiter\Service\Renderer;
 
@@ -72,7 +72,6 @@ class Controller
     /**
      * @param $name
      * @return mixed
-     * @throws RuntimeAppContainerException
      */
     public function __get($name)
     {
@@ -80,7 +79,7 @@ class Controller
             $this->$name = $this->app->get($this->app->config->injectedServices[$name]);
             return $this->$name;
         }
-        throw new RuntimeAppContainerException("injected field $name not found");
+        throw new CodeHuiterRuntimeException("injected field $name not found");
     }
 
     /**

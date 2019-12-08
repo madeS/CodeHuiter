@@ -30,3 +30,5 @@ $lang['auth_sign:need_password'] = 'auth_sign:need_password';
 $lang['auth_sign:need_password_conf'] = 'auth_sign:need_password_conf';
 $lang['auth_sign:user_info_changed'] = 'auth_sign:user_info_changed';
 $lang['auth_sign:need_email'] = 'auth_sign:need_email';
+$lang['auth_sign:recovery_need_to_be_sign'] = 'auth_sign:recovery_need_to_be_sign';
+$lang['auth_sign:incorrect_password_conf'] = 'auth_sign:incorrect_password_conf';

@@ -4,12 +4,17 @@ namespace CodeHuiter\Pattern\Module\Auth\Model;
 
 use CodeHuiter\Core\Application;
 use CodeHuiter\Database\RelationalModelRepository;
-use CodeHuiter\Exception\Runtime\RuntimeAppContainerException;
 use CodeHuiter\Exception\Runtime\RuntimeWrongClassException;
 use CodeHuiter\Pattern\Module\Auth\Event\UserDeletingEvent;
+use CodeHuiter\Service\EventDispatcher;
 
 class UserModelRepository implements UserRepositoryInterface
 {
+    /**
+     * @var Application
+     */
+    private $application;
+
     /**
      * @var RelationalModelRepository
      */
@@ -20,6 +25,7 @@ class UserModelRepository implements UserRepositoryInterface
      */
     public function __construct(Application $application)
     {
+        $this->application = $application;
         $this->repository = new RelationalModelRepository($application, new UserModel());
     }
 
@@ -65,7 +71,6 @@ class UserModelRepository implements UserRepositoryInterface
 
     /**
      * {@inheritdoc}
-     * @throws RuntimeAppContainerException
      */
     public function save(UserInterface $user): UserInterface
     {
@@ -80,17 +85,18 @@ class UserModelRepository implements UserRepositoryInterface
         throw RuntimeWrongClassException::wrongObjectGot(UserModel::class, $user);
     }
 
-    /**
-     * @param UserInterface $user
-     * @throws RuntimeAppContainerException
-     */
     public function delete(UserInterface $user): void
     {
         if ($user instanceof UserModel) {
-            Application::getInstance()->fireEvent(new UserDeletingEvent($user));
+            $this->getEventDispatcher()->fire(new UserDeletingEvent($user));
             $this->repository->delete($user);
             return;
         }
         throw RuntimeWrongClassException::wrongObjectGot(UserModel::class, $user);
+    }
+
+    private function getEventDispatcher(): EventDispatcher
+    {
+        return $this->application->get(EventDispatcher::class);
     }
 }

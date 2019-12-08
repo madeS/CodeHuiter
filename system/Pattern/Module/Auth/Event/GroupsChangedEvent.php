@@ -2,11 +2,12 @@
 
 namespace CodeHuiter\Pattern\Module\Auth\Event;
 
-use CodeHuiter\Core\Event\ApplicationEvent;
+use CodeHuiter\Config\AuthConfig;
 use CodeHuiter\Modifier\ArrayModifier;
 use CodeHuiter\Pattern\Module\Auth\Model\UserInterface;
+use CodeHuiter\Service\EventDispatcher\Event;
 
-class GroupsChangedEvent implements ApplicationEvent
+class GroupsChangedEvent implements Event
 {
     /** @var UserInterface */
     public $userInfo;
@@ -27,5 +28,10 @@ class GroupsChangedEvent implements ApplicationEvent
         $diff = ArrayModifier::diff($previousGroups, $userInfo->getGroups());
         $this->addedGroups = $diff['added'];
         $this->removedGroups = $diff['removed'];
+    }
+
+    public function getEventName(): string
+    {
+        return AuthConfig::EVENT_USER_GROUP_CHANGED;
     }
 }

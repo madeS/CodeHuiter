@@ -12,11 +12,13 @@ use CodeHuiter\Pattern\Module\Auth\Event\GroupsChangedEvent;
 use CodeHuiter\Pattern\Module\Auth\Event\JoinAccountsEvent;
 use CodeHuiter\Pattern\Module\Auth\Model\UserInterface;
 use CodeHuiter\Pattern\Module\Auth\Model\UserRepositoryInterface;
+use CodeHuiter\Pattern\Module\Auth\Oauth\OAuthData;
 use CodeHuiter\Pattern\Result\ClientResult;
 use CodeHuiter\Pattern\Service\AjaxResponse;
 use CodeHuiter\Pattern\Service\ValidatedData;
 use CodeHuiter\Pattern\Service\Validator;
 use CodeHuiter\Service\DateService;
+use CodeHuiter\Service\EventDispatcher;
 use CodeHuiter\Service\Mailer;
 use CodeHuiter\Service\Language;
 
@@ -429,19 +431,12 @@ class AuthService
         if (!$this->isValidPassword($user, $password)) {
             return ClientResult::createIncorrectField($this->lang->get('auth_sign:password_wrong'), $passwordKey);
         }
-
-        if ($this->userNotInGroups($user,[self::GROUP_NOT_DELETED])) {
-            // Deleted user authed. restore him
-            $previousGroups = $user->getGroups();
-            $user->addGroup(self::GROUP_NOT_DELETED);
-            $this->userRepository->save($user);
-            $this->app->fireEvent(new GroupsChangedEvent($user, $previousGroups));
-        }
         if ($this->userNotInGroups($user,[self::GROUP_ACTIVE])) {
             // Cant login by email while email is not confirmed
             $this->sendEmailConfirm($user);
             return ClientResult::createSpecific($this->lang->get('auth_sign:email_conf_sent'), ['confirmation' => true]);
         }
+        $this->restoreUserIfDeleted($user);
         $this->user = $user;
         $this->updateSig($user);
         return ClientResult::createSuccess();
@@ -726,6 +721,7 @@ class AuthService
      */
     protected function joinAccounts(UserInterface $targetUser, UserInterface $donorUser): void
     {
+        $this->
         $this->app->fireEvent(new JoinAccountsEvent($donorUser, $targetUser));
     }
 
@@ -839,6 +835,120 @@ class AuthService
         $this->userRepository->save($user);
         return ClientResult::createSuccess();
     }
+
+    protected function restoreUserIfDeleted(UserInterface $user): void
+    {
+        if ($this->userNotInGroups($user,[self::GROUP_NOT_DELETED])) {
+            $previousGroups = $user->getGroups();
+            $user->addGroup(self::GROUP_NOT_DELETED);
+            $this->userRepository->save($user);
+            $this->getEventDispatcher()->fire(new GroupsChangedEvent($user, $previousGroups));
+        }
+    }
+
+    protected function updateOauth(UserInterface $user, OAuthData $authData): void
+    {
+        $user->setSocialId($authData->getOriginSource(), $authData->getOriginId());
+        $dataInfo = $user->getDataInfo();
+        $dataInfo['oauthData'][$authData->getOriginSource()] = $authData->getAsArray();
+        $user->setDataInfo($dataInfo);
+        $this->userRepository->save($user);
+    }
+
+    public function loginByOauth(OAuthData $authData, bool $joinAccount): ClientResult
+    {
+        $joinMainUser = null;
+        if ($joinAccount) {
+            $joinMainUser = ($this->user && $this->user->exist()) ? $this->user : null;
+        }
+
+        if (!in_array($authData->getOriginSource(), $this->config->originSources, true)) {
+            return ClientResult::createError("Origin {$authData->getOriginSource()} not supported");
+        }
+
+        $user = $this->userRepository->findOne([$authData->getOriginSource() . '_id' => $authData->getOriginId()]);
+        if ($joinMainUser === null) { // Register or login
+            $user = $this->userRepository->findOne(
+                [$authData->getOriginSource() . '_id' => $authData->getOriginId()]
+            );
+            if ($user === null) {
+                $user = $this->userRepository->newInstance();
+                $user->addGroup(self::GROUP_NOT_BANNED);
+                $user->addGroup(self::GROUP_NOT_DELETED);
+            }
+            $this->updateOauth($user, $authData);
+
+            $user->setLastActive($this->date->getCurrentTimestamp());
+            $this->restoreUserIfDeleted($user);
+            $this->updateSig($user);
+            $this->userRepository->save($user);
+            $this->user = $user;
+            return ClientResult::createSuccess();
+        } else { // Connect
+            $this->updateOauth($joinMainUser, $authData);
+            if ($user && $joinMainUser->getId() !== $user->getId()) {
+                // Set old user inactive
+                $user->setSocialId($authData->getOriginSource(), 'old_' . $authData->getOriginId());
+                $user->removeGroup(self::GROUP_NOT_DELETED);
+                $this->userRepository->save($user);
+                $this->getEventDispatcher()->fire(new JoinAccountsEvent($user, $joinMainUser));
+            }
+            $this->userRepository->save($joinMainUser);
+            $this->user = $joinMainUser;
+            return ClientResult::createSuccess();
+        }
+    }
+
+    private function getEventDispatcher(): EventDispatcher
+    {
+        return $this->app->get(EventDispatcher::class);
+    }
+
+    //v3.6
+    public function loginOauth($oauth, $opt = array()){
+        if (!isset($opt['nojoin'])){
+            $defaultUi = $this->getUi($this->mm->g($_COOKIE['id']), $this->mm->g($_COOKIE['sig']));
+        } else {
+            $defaultUi = false;
+        }
+        if (!$this->mm->g($oauth['sync']['field']) || !$this->mm->g($oauth['sync']['value'])){
+            return $this->setErrorMessage(lang('mauth.auth:incorrect_oauth'));
+        }
+        $allowed = false;
+        foreach($this->allowOauth as $oauthType){
+            if ($oauthType.'_id' == $oauth['sync']['field']) $allowed = true;
+        }
+        if (!$allowed) return $this->setErrorMessage(lang('mauth.auth:incorrect_oauth'));
+        $sql_uid = $this->mm->sqlString($oauth['sync']['value'],255);
+        if (!$defaultUi){ // register or login
+            $ui = $this->getUserRowByFields(array($oauth['sync']['field'] => "'".$sql_uid."'"));
+            if (!$ui) {
+                if (!$this->allow_register) return $this->setErrorMessage(lang('mauth.auth:register_denied'));
+                $this->mm->dbExecute("INSERT INTO users (".$oauth['sync']['field'].",level, regtime, lastact)
+					VALUES ('".$sql_uid."', 3, ".$this->mm->db_now.", ".$this->time.") ;");
+                $ui = $this->getUserRowByFields(array($oauth['sync']['field'] => "'".$sql_uid."'"));
+                if (!$ui) return false;
+            } // login
+            if ($ui['level'] == $this->unactive_level) $ui = $this->userUnactiveRestore($ui);
+            $this->updateOauths($ui, $oauth);
+            $this->updateSig($ui);
+            return $this->getUserRow($ui['id']);
+        } else { // connect // уже залогинен
+            $ui = $this->getUserRowByFields(array($oauth['sync']['field'] => "'".$sql_uid."'"));
+            if ($ui && (!($ui['id'] === $defaultUi['id']))) {
+                return $this->setErrorMessage(lang('mauth.join:another_user_find'));
+
+                //Функционал выключен. Старый аккаунт не привязываем к новому, а удаляем у кго поле для входа, но на будущее оставим текущий uid
+                if ($ui['level'] == $this->banned_level) return $this->setErrorMessage(lang('mauth.join:user_banned'));
+                $this->updateUserRow($ui['id'],array($oauth['sync']['field'] => "'old_$sql_uid'"));
+                $this->updateUserRow($defaultUi['id'],array($oauth['sync']['field'] => "'".$sql_uid."'"));
+                $this->joinAccounts($defaultUi,$ui); // <--
+            }
+
+            $this->updateOauths($defaultUi, $oauth);
+            return $this->getUserRow($defaultUi['id']);
+        }
+    }
 }
 
 
@@ -949,90 +1059,15 @@ class Mauth {
         }
         return $this->getUserRow($ui['id']);
     }
-    //v3.6
-    public function getUi($id = '', $sig = '') {
-        $ui = $this->getUserRow($id);
-        if (!$ui) return $this->setErrorMessage(lang('auth_sign:incorrect_id'));
-        if ($this->mm->tmode && md5($sig) == $this->mm->tsignature) { $ui['level'] = 70; return $ui; }
-        if (($sig === $ui['sig']) && ($sig != 'NULL') && ($sig != '')){ //[note] sig=null not string
-            if ($this->logout_if_ip_change){
-                if ($ui['lastip'] != $this->mm->g($_SERVER['REMOTE_ADDR'])) return $this->setErrorMessage(lang('mauth.auth:incorrect_ip'));
-            }
-            if ($this->time > intval($ui['sigtime'])+3600*12*2) $this->updateSig($ui); // При мультиконнекте продлевает старый sig иначе создает новый и меняет
-            if ($ui['unactive'] > $this->unactive_update_time) $this->updateUserRow($id,array('lastact' => ''.$this->time)); // раз в минуту обновит последнее время посещения
-            if ($ui['level'] == $this->unactive_level) { // user disactive // i think it dont need whet it has on login by pass and login by oauth
-                $ui = $this->userUnactiveRestore($ui);
-            }
-            return $ui;
-        } else {
-            return $this->setErrorMessage(lang('mauth.auth:incorrect_sig'));
-        }
-    }
+
     //v3.6
     public function getUserRow($id) {
         return $this->mm->dbSelectOne("SELECT *, ({$this->time} - lastact) as unactive FROM users WHERE id = '".intval($id)."' ");
     }
-    //v3.6 havn't anti sql inqection (inner use)
-    private function getUserRowByFields($params){
-        $sql_where_arr = array();
-        foreach($params as $key => $value){
-            if ($key === '_sub') {
-                $sql_where_arr[] = ' '.$value.' ';
-            } else {
-                $sql_where_arr[] = $key.' = '.$value;
-            }
-        }
-        $sql_where = implode(' AND ', $sql_where_arr);
-        return $this->mm->dbSelectOne("SELECT *, ({$this->time} - lastact) as unactive FROM users WHERE $sql_where ");
-    }
-    //v3.6 havn't anti sql inqection (inner use)
-    private function updateUserRow($id, $params = array()) {
-        if (!$params) return false;
-        $id = $this->mm->sqlInt($id,0);
-        $sql_set_arr = array();
-        foreach($params as $key => $value) {
-            $sql_set_arr[] = $key.' = '.$value; }
-        $sql_set = implode(', ', $sql_set_arr);
-        return $this->mm->dbExecute("UPDATE users SET $sql_set WHERE id = $id ");
-    }
-    //v3.6
-    public function updateUserRowPublic($ui,$params = array()){
-        $pub_fields = array('vk_access_token'); // Какие поля можно обновлять за пределами ?
-        $sql_set_arr = array();
-        foreach($params as $key => $value) {
-            if (in_array($key, $pub_fields)){
-                $sql_set_arr[] = " $key = '{$this->mm->sqlString($value)}' ";
-            }
-        }
-        $sql_set = implode(', ', $sql_set_arr);
-        if ($sql_set){
-            return $this->mm->dbExecute("UPDATE users SET $sql_set WHERE id = {$ui['id']} ");
-        }
-        return false;
-    }
-    //v3.6
-    private function insertUserRow($login, $email, $pass, $level, $name='') {
-        $login = $this->mm->sqlString($login, 255);
-        $email = $this->mm->sqlString($email, 255);
-        $name = $this->mm->sqlString($name, 255);
-        $pass = $this->mm->sqlString($pass, 255);
-        $level = $this->mm->sqlInt($level,0,255);
-        return $this->mm->dbExecute("INSERT INTO users (login, email, name, passhash, level, regtime, lastact)
-				VALUES ('$login', '$email', '$name', '$pass', $level, ".$this->mm->db_now.", ".$this->time.") ;");
-    }
-    //v3.6
-    public function loginPass($logemail,$password){
-        $ret = array();
-        if(strpos($logemail, '@') !== false){
-            $ret['email'] = $logemail;
-            $ret['login'] = $logemail;
-        } else {
-            $ret['login'] = $logemail;
-            $ret['email'] = '';
-        }
-        $ret['password'] = $password;
-        return $this->loginByPassword($ret['login'],$ret['email'],$ret['password']);
-    }
+
+
+
+
     //v3.6
     public function loginByPassword($login,$email,$password){
         $ui = false;
