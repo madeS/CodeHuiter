@@ -268,9 +268,24 @@ class UserModel extends RelationalModel implements UserInterface
         return $this->picture_id;
     }
 
+    public function getPictureOrig(): string
+    {
+        return $this->picture_orig;
+    }
+
+    public function setPictureOrig(string $pictureOrig): void
+    {
+        $this->picture_orig = $pictureOrig;
+    }
+
     public function getPicture(): string
     {
         return $this->picture;
+    }
+
+    public function setPicture(string $picture): void
+    {
+        $this->picture = $picture;
     }
 
     public function getPicturePreview(): string

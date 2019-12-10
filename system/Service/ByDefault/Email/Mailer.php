@@ -44,7 +44,7 @@ class Mailer extends AbstractEmail
      * @throws TagException
      * @return EmailSender
      */
-    protected function getEmailSender(): string
+    protected function getEmailSender(): EmailSender
     {
         if ($this->emailSender === null) {
             $this->emailSender = new EmailSender($this->config->senderConfig);
@@ -150,13 +150,13 @@ class Mailer extends AbstractEmail
     protected function sendFromQueue($count = 1, $id = null): bool
     {
         /** @var MailerModel[] $messages */
-        $messages = $this->mailerRepository->find([
+        $messages = $this->mailerRepository->find(
             $id ? ['id' => $id] : [],
             [
                 'order' => ['updated_at' => 'asc'],
                 'limit' => ['count' => $count],
             ]
-        ]);
+        );
         $success = false;
         foreach($messages as $message){
             $success = $this->sendFromSite(

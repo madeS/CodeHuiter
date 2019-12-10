@@ -2,7 +2,7 @@
 
 namespace CodeHuiter\Pattern\Result;
 
-class ClientResult
+class ModuleResult
 {
     private const SUCCESS = 1;
     private const INCORRECT_FIELD = 2;
@@ -39,50 +39,50 @@ class ClientResult
 
     /**
      * @param string $message
-     * @return ClientResult
+     * @return ModuleResult
      */
-    public static function createSuccess(string $message = ''): ClientResult
+    public static function createSuccess(string $message = ''): ModuleResult
     {
-        return new ClientResult(self::SUCCESS, $message, []);
+        return new ModuleResult(self::SUCCESS, $message, []);
     }
 
     /**
      * @param string $message
      * @param string $field
-     * @return ClientResult
+     * @return ModuleResult
      */
-    public static function createIncorrectField(string $message, string $field): ClientResult
+    public static function createIncorrectField(string $message, string $field): ModuleResult
     {
-        return new ClientResult(self::INCORRECT_FIELD, $message, [$field]);
+        return new ModuleResult(self::INCORRECT_FIELD, $message, [$field]);
     }
 
     /**
      * @param string $message
      * @param string[] $fields
-     * @return ClientResult
+     * @return ModuleResult
      */
-    public static function createIncorrectFields(string $message, array $fields): ClientResult
+    public static function createIncorrectFields(string $message, array $fields): ModuleResult
     {
-        return new ClientResult(self::INCORRECT_FIELD, $message, $fields);
+        return new ModuleResult(self::INCORRECT_FIELD, $message, $fields);
     }
 
     /**
      * @param string $message
-     * @return ClientResult
+     * @return ModuleResult
      */
-    public static function createError(string $message): ClientResult
+    public static function createError(string $message): ModuleResult
     {
-        return new ClientResult(self::ERROR, $message, []);
+        return new ModuleResult(self::ERROR, $message, []);
     }
 
     /**
      * @param string $message
      * @param array $fields
-     * @return ClientResult
+     * @return ModuleResult
      */
-    public static function createSpecific(string $message, array $fields = []): ClientResult
+    public static function createSpecific(string $message, array $fields = []): ModuleResult
     {
-        return new ClientResult(self::SPECIFIC, $message, $fields);
+        return new ModuleResult(self::SPECIFIC, $message, $fields);
     }
 
     /**

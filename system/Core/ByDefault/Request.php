@@ -158,6 +158,10 @@ class Request implements \CodeHuiter\Core\Request
         return $this->getGlobalAsArray(INPUT_POST);
     }
 
+    public function getGetAsArray(): array
+    {
+        return $this->getGlobalAsArray(INPUT_GET);
+    }
 
     public function getGet(string $key, string $default = ''): string
     {

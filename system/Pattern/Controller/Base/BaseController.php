@@ -53,7 +53,7 @@ class BaseController extends Controller
         $this->init();
     }
 
-    protected function errorPageByCode($code = 404, $message = '')
+    protected function errorPageByCode($code, $message = '')
     {
         try {
             $this->log->withTag('exceptions')->warning('Page '. $code .' showed with uri ['.$this->request->getUri().']', []);

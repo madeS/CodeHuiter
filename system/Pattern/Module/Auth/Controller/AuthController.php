@@ -5,6 +5,8 @@ namespace CodeHuiter\Pattern\Module\Auth\Controller;
 use CodeHuiter\Core\Response;
 use CodeHuiter\Pattern\Controller\Base\BaseController;
 use CodeHuiter\Pattern\Module\Auth\AuthService;
+use CodeHuiter\Pattern\Module\Auth\Oauth\OAuthFactory;
+use CodeHuiter\Pattern\Module\Auth\Oauth\OAuthManager;
 
 class AuthController extends BaseController
 {
@@ -17,12 +19,12 @@ class AuthController extends BaseController
         if ($this->auth->user->exist()) {
             $redirectUrl = '/';
             $userRedirectUrl = $this->request->getGet('url');
-            if ($userRedirectUrl && strpos($userRedirectUrl, 'http') !== 0) {
+            if ($userRedirectUrl && strpos($userRedirectUrl, '/') === 0) {
                 $redirectUrl = $userRedirectUrl;
             }
 
             if ($this->ajaxResponse->isAjaxRequested($this->request)) {
-                // TODO mjsa location
+                $this->ajaxResponse->location($redirectUrl);
             } else {
                 $this->response->location($redirectUrl, true);
             }
@@ -271,6 +273,83 @@ class AuthController extends BaseController
     }
 
 
+    private function getOAuthManagerFactory(): OAuthFactory
+    {
+        return new OAuthFactory(
+            $this->network,
+            $this->log,
+            $this->app->config->settingsConfig,
+            $this->app->config->authConfig
+        );
+    }
+
+    public function oauth_login(string $type = ''): void
+    {
+        $this->initWithAuth(false);
+        $manager = $this->getOAuthManagerFactory()->createOAuthManager($type);
+        if (!$manager) {
+            $this->errorPageByCode(Response::HTTP_CODE_NOT_FOUND);
+            return;
+        }
+        $additionalPerms = $this->request->getGet('perms');
+        if ($additionalPerms) {
+            $perms = explode('.', $additionalPerms);
+            $manager->addPermission($perms);
+        }
+        $this->response->location($manager->getSourceAccessLink(), true);
+    }
+
+    public function oauth_success(string $type = ''): void
+    {
+        $this->initWithAuth(false);
+        $manager = $this->getOAuthManagerFactory()->createOAuthManager($type);
+        if (!$manager) {
+            $this->errorPageByCode(Response::HTTP_CODE_NOT_FOUND);
+            return;
+        }
+        $oauthData = $manager->login($this->request->getGetAsArray());
+        if ($oauthData === null) {
+            $this->oauthCloser($manager->getLastErrorMessage());
+        }
+        if ($this->auth->user->exist()) {
+            $result = $this->auth->loginByOauth($oauthData, true);
+            if ($result->isError()) {
+                $this->oauthCloser($result->getMessage());
+            }
+        }
+        $this->oauthCloser(null);
+    }
+    public function oauth_cancel(){
+        $this->initWithAuth(false);
+        $this->oauthCloser(null);
+    }
+    private function oauthCloser(?string $failMessage)
+    {
+        if ($failMessage !== null) {
+            $this->data['h1'] = '';
+            $this->data['h2'] = 'Не удалось привязать социальный аккаунт';
+            $this->data['p'] = [];
+            $this->data['p'][] = $failMessage;
+            $this->render($this->app->config->projectConfig->baseTemplatePath . '/contents/textPageTemplate');
+        } else {
+            $this->render($this->app->config->projectConfig->baseTemplatePath . '/contents/autoCloserTemplate');
+        }
+    }
+
+    public function unactive_me(): void
+    {
+        if (!$this->initWithAuth(true)) return;
+        $this->auth->deactivateUser($this->auth->user, true);
+        $this->ajaxResponse->location($this->links->user($this->auth->user))->closePopups()->render($this->response);
+    }
+
+
+
+
+
+
+
+
 
 
 
@@ -310,44 +389,10 @@ class AuthController extends BaseController
         ));
     }
 
-    public function unactive_me(): void
-    {
-        $this->mm->request_type = 'mjsa_ajax';
-        $this->initWithAuth(false);
-        if ($this->mauth->userUnactiveSet($this->data['ui']) === false){
-            echo $this->mm->mjsaError($this->mauth->getErrorMessage()); return;
-        }
-        $this->mm->mjsaPrintEvent(array(
-            'redirect' => $this->links->user($this->data['ui']), 'closePopups' => true,
-        ));
-    }
 
 
 
-    public function facebook(){
-        $this->initWithAuth(false);
-        $this->load->model('facebook_mauth');
-        $this->facebook_mauth->setParams($this->mm->app_properties);
-        $url = $this->facebook_mauth->accessRedirect();
-        $this->mm->location($url);
-    }
-    public function facebook_login(){
-        $this->initWithAuth(false);
-        $this->load->model('facebook_mauth');
-        $this->facebook_mauth->setParams($this->mm->app_properties);
-        $oauth = $this->facebook_mauth->login($_GET);
-        if ($oauth) {
-            //$this->mm->debugParam($oauth);
-            $this->data['oauth_result'] = $this->mauth->loginOauth($oauth);
-            $this->closer();
-        } else {
-            $this->facebook_mauth->getErrorMessage();
-        }
-    }
-    public function facebook_cancel(){
-        $this->initWithAuth(false);
-        $this->closer();
-    }
+
     public function twitter(){
         $this->initWithAuth(false);
         $this->load->model('twitter_mauth');

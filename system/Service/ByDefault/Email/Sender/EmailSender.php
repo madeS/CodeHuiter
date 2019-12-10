@@ -1306,7 +1306,7 @@ class EmailSender
             $from = '';
         }
         // is popen() enabled?
-        if (!function_usable('popen')
+        if (!$this->functionUsable('popen')
             || false === ($fp = @popen($this->config['mailPath'].' -oi '.$from.' -t', 'w'))
         ) {
             // server probably has popen disabled, so nothing we can do to get a verbose error.
@@ -1321,6 +1321,25 @@ class EmailSender
             return false;
         }
         return true;
+    }
+
+    private function functionUsable($functionName)
+    {
+        static $_suhosin_func_blacklist;
+
+        if (function_exists($functionName))
+        {
+            if ( ! isset($_suhosin_func_blacklist))
+            {
+                $_suhosin_func_blacklist = extension_loaded('suhosin')
+                    ? explode(',', trim(ini_get('suhosin.executor.func.blacklist')))
+                    : array();
+            }
+
+            return ! in_array($functionName, $_suhosin_func_blacklist, TRUE);
+        }
+
+        return FALSE;
     }
 
     /**

@@ -83,7 +83,7 @@ class Response implements \CodeHuiter\Core\Response
         $this->setHeaders([$mimeTypeConverter->getTypeHeader($extensionOrFilename, $charset)]);
     }
 
-    public function setCookie(string $name, string $value, int $expireTime, string $path, string $domain): void
+    public function setCookie(string $name, ?string $value, int $expireTime, string $path, string $domain): void
     {
         $this->finalCookies[] = [$name, $value, $expireTime, $path, $domain];
     }

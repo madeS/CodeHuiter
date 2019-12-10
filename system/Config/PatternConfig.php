@@ -286,6 +286,7 @@ class AuthConfig
     public $groups = [];
 
     public $emailQueued = true;
+    public $emailForce = true;
 
     public $urlAuth = '/auth';
     public $urlBan = '/auth/banned';
@@ -312,10 +313,16 @@ class AuthConfig
     public $instagramSecret = '9aaabbbcccdddeeeeefff00011122233';
     public $vkAppId = '1222333';
     public $vkSecret = '1AA1A1AAAA11aAaaAaAA';
+    public $vkIframeAppId = null;
+    public $vkIframeSecret = null;
     public $twitterConsumerKey = 'F9fffFzz8zz7z6zz5zzXX';
     public $twitterConsumerSecret = '9aaabbbcccdddeeeeefff00011122233444555666RR';
     public $twitterAccessToken = '111111111-fFww1wWWWw00wWWWW0qQ0aa00aAAaA0AAAAAaAAa';
     public $twitterAccessTokenSecret = '9aaabbbcccdddeeeeefff00011122233444555666R';
     public $dropboxEmail = 'myemail@gmail.com';
     public $dropboxPassword = 'pppppppppp1111';
+
+    public $pictureDefault = 'profile_nopicture'; // default/profile_nopicture.png + default/profile_nopicture_preview.png
+    public $pictureBanned = 'profile_banned'; // default/profile_banned.png + default/profile_banned_preview.png
+    public $pictureUnActive = 'profile_unactive'; // default/profile_unactive.png + default/profile_unactive_preview.png
 }

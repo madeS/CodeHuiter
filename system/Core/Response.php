@@ -95,7 +95,7 @@ interface Response
      * @param string $path
      * @param string $domain
      */
-    public function setCookie(string $name, string $value, int $expireTime, string $path, string $domain): void;
+    public function setCookie(string $name, ?string $value, int $expireTime, string $path, string $domain): void;
 
     /**
      * Build And Send response to client

@@ -13,7 +13,7 @@ use CodeHuiter\Pattern\Module\Auth\Event\JoinAccountsEvent;
 use CodeHuiter\Pattern\Module\Auth\Model\UserInterface;
 use CodeHuiter\Pattern\Module\Auth\Model\UserRepositoryInterface;
 use CodeHuiter\Pattern\Module\Auth\Oauth\OAuthData;
-use CodeHuiter\Pattern\Result\ClientResult;
+use CodeHuiter\Pattern\Result\ModuleResult;
 use CodeHuiter\Pattern\Service\AjaxResponse;
 use CodeHuiter\Pattern\Service\ValidatedData;
 use CodeHuiter\Pattern\Service\Validator;
@@ -401,9 +401,9 @@ class AuthService
      * @param string $password
      * @param string $logemailKey
      * @param string $passwordKey
-     * @return ClientResult
+     * @return ModuleResult
      */
-    public function loginByPassword($logemail, $password, $logemailKey = 'logemail', $passwordKey = 'password'): ClientResult
+    public function loginByPassword($logemail, $password, $logemailKey = 'logemail', $passwordKey = 'password'): ModuleResult
     {
         $user = $this->userRepository->findOne(['login' => $logemail]);
         if (!$user) {
@@ -421,32 +421,32 @@ class AuthService
                     }
                 }
                 if ($hasNonConfirmed) {
-                    return ClientResult::createSpecific($this->lang->get('auth_sign:email_conf_sent'), ['confirmation' => true]);
+                    return ModuleResult::createSpecific($this->lang->get('auth_sign:email_conf_sent'), ['confirmation' => true]);
                 }
-                return ClientResult::createIncorrectField($this->lang->get('auth_sign:password_wrong'), $passwordKey);
+                return ModuleResult::createIncorrectField($this->lang->get('auth_sign:password_wrong'), $passwordKey);
             }
-            return ClientResult::createIncorrectField($this->lang->get('auth_sign:user_not_found'), $logemailKey);
+            return ModuleResult::createIncorrectField($this->lang->get('auth_sign:user_not_found'), $logemailKey);
         }
         // Has user
         if (!$this->isValidPassword($user, $password)) {
-            return ClientResult::createIncorrectField($this->lang->get('auth_sign:password_wrong'), $passwordKey);
+            return ModuleResult::createIncorrectField($this->lang->get('auth_sign:password_wrong'), $passwordKey);
         }
         if ($this->userNotInGroups($user,[self::GROUP_ACTIVE])) {
             // Cant login by email while email is not confirmed
             $this->sendEmailConfirm($user);
-            return ClientResult::createSpecific($this->lang->get('auth_sign:email_conf_sent'), ['confirmation' => true]);
+            return ModuleResult::createSpecific($this->lang->get('auth_sign:email_conf_sent'), ['confirmation' => true]);
         }
         $this->restoreUserIfDeleted($user);
         $this->user = $user;
         $this->updateSig($user);
-        return ClientResult::createSuccess();
+        return ModuleResult::createSuccess();
     }
 
     /**
      * @param UserInterface $user
-     * @return ClientResult
+     * @return ModuleResult
      */
-    protected function sendEmailConfirm(UserInterface $user): ClientResult
+    protected function sendEmailConfirm(UserInterface $user): ModuleResult
     {
         $userDataInfo = $user->getDataInfo();
         $key = $this->getDataInfoTokenKey(self::TOKEN_TYPE_CONFIRM_EMAIL);
@@ -465,10 +465,10 @@ class AuthService
             '{#login}' => $user->getLogin(),
             '{#token}' => $userDataInfo[$key],
         ]);
-        if (!$this->getMailer()->sendFromSite($subject, $content, [$user->getEmail()], [], $this->config->emailQueued)) {
-            return ClientResult::createError($this->lang->get('auth_sign:error_email_not_sent'));
+        if (!$this->getMailer()->sendFromSite($subject, $content, [$user->getEmail()], [], $this->config->emailQueued, $this->config->emailForce)) {
+            return ModuleResult::createError($this->lang->get('auth_sign:error_email_not_sent'));
         }
-        return ClientResult::createSuccess();
+        return ModuleResult::createSuccess();
     }
 
     // @todo when user change email, save old email to datainfo
@@ -477,12 +477,12 @@ class AuthService
      * Controller
      * @param string $logemail
      * @param string $logemailKey
-     * @return ClientResult
+     * @return ModuleResult
      */
-    public function sendPasswordRecoveryByLogemail(string $logemail, $logemailKey = 'logemail'): ClientResult
+    public function sendPasswordRecoveryByLogemail(string $logemail, $logemailKey = 'logemail'): ModuleResult
     {
         if ($logemail === '') {
-            return ClientResult::createIncorrectField($this->lang->get('auth_sign:password_recovery_email_need'), $logemailKey);
+            return ModuleResult::createIncorrectField($this->lang->get('auth_sign:password_recovery_email_need'), $logemailKey);
         }
 
         $user = $this->userRepository->findOne([
@@ -491,16 +491,16 @@ class AuthService
         ]);
 
         if (!$user) {
-            return ClientResult::createIncorrectField($this->lang->get('auth_sign:password_recovery_email_not_found'), $logemailKey);
+            return ModuleResult::createIncorrectField($this->lang->get('auth_sign:password_recovery_email_not_found'), $logemailKey);
         }
         return $this->sendPasswordRecovery($user);
     }
 
     /**
      * @param UserInterface $user
-     * @return ClientResult
+     * @return ModuleResult
      */
-    protected function sendPasswordRecovery(UserInterface $user): ClientResult
+    protected function sendPasswordRecovery(UserInterface $user): ModuleResult
     {
         $userDataInfo = $user->getDataInfo();
         $key = $this->getDataInfoTokenKey(self::TOKEN_TYPE_RECOVERY);
@@ -520,10 +520,10 @@ class AuthService
             '{#login}' => $user->getLogin(),
             '{#token}' => $userDataInfo[$key],
         ]);
-        if (!$this->getMailer()->sendFromSite($subject, $content, [$user->getEmail()], [], $this->config->emailQueued)) {
-            return ClientResult::createError($this->lang->get('auth_sign:error_email_not_sent'));
+        if (!$this->getMailer()->sendFromSite($subject, $content, [$user->getEmail()], [], $this->config->emailQueued, $this->config->emailForce)) {
+            return ModuleResult::createError($this->lang->get('auth_sign:error_email_not_sent'));
         }
-        return ClientResult::createSuccess();
+        return ModuleResult::createSuccess();
     }
 
     /**
@@ -563,7 +563,7 @@ class AuthService
      * @param string $emailKey
      * @param string $passwordKey
      * @param string $loginKey
-     * @return ClientResult
+     * @return ModuleResult
      */
     public function registerByEmail(
         string $email,
@@ -573,7 +573,7 @@ class AuthService
         string $emailKey = 'email',
         string $passwordKey = 'password',
         string $loginKey = 'login'
-    ): ClientResult
+    ): ModuleResult
     {
         $foundSameEmailUser = false;
         if ($email) {
@@ -595,21 +595,21 @@ class AuthService
 
         if ($foundSameEmailUser) {
             if (!$this->isValidPassword($foundSameEmailUser, $password)) {
-                return ClientResult::createIncorrectField($this->lang->get('auth_sign:email_taken'), $emailKey);
+                return ModuleResult::createIncorrectField($this->lang->get('auth_sign:email_taken'), $emailKey);
             }
             if ($targetUi) {
                 $this->joinAccounts($targetUi, $foundSameEmailUser);
-                return ClientResult::createSuccess();
+                return ModuleResult::createSuccess();
             }
             return $this->loginByPassword($email, $password, 'email');
         }
         if ($foundSameLoginUser) {
             if (!$this->isValidPassword($foundSameLoginUser, $password)) {
-                return ClientResult::createIncorrectField($this->lang->get('auth_sign:login_taken'), $loginKey);
+                return ModuleResult::createIncorrectField($this->lang->get('auth_sign:login_taken'), $loginKey);
             }
             if ($targetUi) {
                 $this->joinAccounts($targetUi, $foundSameEmailUser);
-                return ClientResult::createSuccess();
+                return ModuleResult::createSuccess();
             }
             return $this->loginByPassword($login, $password, 'login');
         }
@@ -619,7 +619,7 @@ class AuthService
         if ($targetUi) {
             // Add Email or Login
             if (!$this->isValidPassword($targetUi, $password)) {
-                return ClientResult::createIncorrectField($this->lang->get('auth_sign:password_wrong'), $passwordKey);
+                return ModuleResult::createIncorrectField($this->lang->get('auth_sign:password_wrong'), $passwordKey);
             }
 
             $oldEmail = $targetUi->getEmail();
@@ -634,7 +634,7 @@ class AuthService
             $this->userRepository->save($targetUi);
         } else {
             if (!$this->config->allowRegister) {
-                return ClientResult::createError($this->lang->get('auth_sign:register_denied'));
+                return ModuleResult::createError($this->lang->get('auth_sign:register_denied'));
             }
 
             $user = $this->userRepository->newInstance();
@@ -643,6 +643,7 @@ class AuthService
             $user->setPassHash($passHash);
             $user->setLastActive($this->date->getCurrentTimestamp());
             $user->addGroup(self::GROUP_NOT_BANNED);
+            $this->setPicture($user, $this->config->pictureDefault);
             $this->userRepository->save($user);
 
             $isNeedToConfirmEmail = true;
@@ -650,16 +651,16 @@ class AuthService
 
         $correctUser = $this->userRepository->findOne([ 'email' => $email, 'login' => $login, 'passhash' => $passHash ]);
         if (!$correctUser) {
-            return ClientResult::createError(
+            return ModuleResult::createError(
                 'Cant find user after his update with: ' . print_r([ 'email' => $email, 'login' => $login, 'passhash' => $passHash ], true)
             );
         }
         if ($isNeedToConfirmEmail) {
             $this->sendEmailConfirm($correctUser);
-            return ClientResult::createSpecific($this->lang->get('auth_sign:email_conf_sent'), ['confirmation' => true]);
+            return ModuleResult::createSpecific($this->lang->get('auth_sign:email_conf_sent'), ['confirmation' => true]);
         }
         $this->user = $correctUser;
-        return ClientResult::createSuccess();
+        return ModuleResult::createSuccess();
     }
 
     /**
@@ -690,20 +691,20 @@ class AuthService
      * @param string $token
      * @param string $tokenType
      * @param bool $resetToken
-     * @return ClientResult
+     * @return ModuleResult
      */
-    public function confirmToken(UserInterface $user, string $tokenType, string $token, bool $resetToken): ClientResult
+    public function confirmToken(UserInterface $user, string $tokenType, string $token, bool $resetToken): ModuleResult
     {
         $tokenKey = $this->getDataInfoTokenKey($tokenType);
         if (!in_array(self::GROUP_NOT_BANNED, $user->getGroups(), true)) {
-            return ClientResult::createError($this->lang->get('auth_sign:user_banned'));
+            return ModuleResult::createError($this->lang->get('auth_sign:user_banned'));
         }
 
         $userDataInfo = $user->getDataInfo();
         $userToken = ($userDataInfo[$tokenKey] ?? '');
 
         if (!$userToken || $userToken !== $token) {
-            return ClientResult::createError($this->lang->get('auth_sign:token_is_incorrect'));
+            return ModuleResult::createError($this->lang->get('auth_sign:token_is_incorrect'));
         }
 
         if ($resetToken) {
@@ -712,7 +713,7 @@ class AuthService
         }
         $this->userRepository->save($user);
 
-        return ClientResult::createSuccess();
+        return ModuleResult::createSuccess();
     }
 
     /**
@@ -748,15 +749,15 @@ class AuthService
      * Controller
      * @param string $userId
      * @param string $token
-     * @return ClientResult
+     * @return ModuleResult
      */
-    public function activateEmail(string $userId, string $token): ClientResult
+    public function activateEmail(string $userId, string $token): ModuleResult
     {
         $user = $this->getUserById($userId);
-        if (!$user) return ClientResult::createError($this->lang->get('auth_sign:incorrect_id'));
+        if (!$user) return ModuleResult::createError($this->lang->get('auth_sign:incorrect_id'));
         $tokenResult = $this->confirmToken($user,self::TOKEN_TYPE_CONFIRM_EMAIL, $token, true);
         if (!$tokenResult->isSuccess()) {
-            return ClientResult::createError($tokenResult->getMessage());
+            return ModuleResult::createError($tokenResult->getMessage());
         }
 
         $usersWithSameEmail = $this->userRepository->find([
@@ -764,7 +765,7 @@ class AuthService
             'email_conf' => (int)true,
         ]);
         if ($usersWithSameEmail) {
-            return ClientResult::createError($this->lang->get('auth_sign:already_email_confirmed'));
+            return ModuleResult::createError($this->lang->get('auth_sign:already_email_confirmed'));
         }
         $user->addGroup(self::GROUP_ACTIVE);
         $user->setEmailConfirmed(true);
@@ -780,7 +781,7 @@ class AuthService
             }
         }
         $this->updateSig($user);
-        return ClientResult::createSuccess();
+        return ModuleResult::createSuccess();
     }
 
     /**
@@ -788,14 +789,14 @@ class AuthService
      * @param int $userId
      * @param string $oldPassword
      * @param string $newPassword
-     * @return ClientResult
+     * @return ModuleResult
      */
-    public function setNewPasswordByOldPassword(int $userId, string $oldPassword, string $newPassword): ClientResult
+    public function setNewPasswordByOldPassword(int $userId, string $oldPassword, string $newPassword): ModuleResult
     {
         $user = $this->getUserById($userId);
-        if (!$user) return ClientResult::createError($this->lang->get('auth_sign:incorrect_id'));
+        if (!$user) return ModuleResult::createError($this->lang->get('auth_sign:incorrect_id'));
         if ($oldPassword === '' || !$this->isValidPassword($user, $oldPassword)) {
-            return ClientResult::createIncorrectField($this->lang->get('auth_sign:password_wrong'), 'oldPassword');
+            return ModuleResult::createIncorrectField($this->lang->get('auth_sign:password_wrong'), 'oldPassword');
         }
         return $this->setPassword($user, $newPassword);
     }
@@ -805,12 +806,12 @@ class AuthService
      * @param int $userId
      * @param string $token
      * @param string $newPassword
-     * @return ClientResult
+     * @return ModuleResult
      */
-    public function setNewPasswordByToken(int $userId, string $token, string $newPassword): ClientResult
+    public function setNewPasswordByToken(int $userId, string $token, string $newPassword): ModuleResult
     {
         $user = $this->getUserById($userId);
-        if (!$user) return ClientResult::createError($this->lang->get('auth_sign:incorrect_id'));
+        if (!$user) return ModuleResult::createError($this->lang->get('auth_sign:incorrect_id'));
         $tokenResult = $this->confirmToken($user,self::TOKEN_TYPE_RECOVERY, $token, true);
         if (!$tokenResult->isSuccess()) {
             return $tokenResult;
@@ -822,18 +823,18 @@ class AuthService
      * Use it in admin page only
      * @param UserInterface $user
      * @param string $password
-     * @return ClientResult
+     * @return ModuleResult
      */
-    public function setPassword(UserInterface $user, string $password): ClientResult
+    public function setPassword(UserInterface $user, string $password): ModuleResult
     {
         if (!$password) {
-            return ClientResult::createIncorrectField($this->lang->get('auth_sign:empty_password'), 'password');
+            return ModuleResult::createIncorrectField($this->lang->get('auth_sign:empty_password'), 'password');
         }
         $passHash = $this->passFunc($user->getLogin(), $user->getEmail(), $password, $this->config->passFuncMethod);
         $user->setPassHash($passHash);
         $this->updateSig($user);
         $this->userRepository->save($user);
-        return ClientResult::createSuccess();
+        return ModuleResult::createSuccess();
     }
 
     protected function restoreUserIfDeleted(UserInterface $user): void
@@ -841,6 +842,8 @@ class AuthService
         if ($this->userNotInGroups($user,[self::GROUP_NOT_DELETED])) {
             $previousGroups = $user->getGroups();
             $user->addGroup(self::GROUP_NOT_DELETED);
+            $this->setPicture($user, $this->config->pictureDefault);
+            $this->getEventDispatcher()->fire(new EventUse);
             $this->userRepository->save($user);
             $this->getEventDispatcher()->fire(new GroupsChangedEvent($user, $previousGroups));
         }
@@ -850,12 +853,15 @@ class AuthService
     {
         $user->setSocialId($authData->getOriginSource(), $authData->getOriginId());
         $dataInfo = $user->getDataInfo();
+        if ($authData->getAccessToken() === null && $dataInfo['oauthData'][$authData->getOriginSource()]['accessToken']) {
+            $authData->setAccessToken($dataInfo['oauthData'][$authData->getOriginSource()]['accessToken']);
+        }
         $dataInfo['oauthData'][$authData->getOriginSource()] = $authData->getAsArray();
         $user->setDataInfo($dataInfo);
         $this->userRepository->save($user);
     }
 
-    public function loginByOauth(OAuthData $authData, bool $joinAccount): ClientResult
+    public function loginByOauth(OAuthData $authData, bool $joinAccount): ModuleResult
     {
         $joinMainUser = null;
         if ($joinAccount) {
@@ -863,7 +869,7 @@ class AuthService
         }
 
         if (!in_array($authData->getOriginSource(), $this->config->originSources, true)) {
-            return ClientResult::createError("Origin {$authData->getOriginSource()} not supported");
+            return ModuleResult::createError("Origin {$authData->getOriginSource()} not supported");
         }
 
         $user = $this->userRepository->findOne([$authData->getOriginSource() . '_id' => $authData->getOriginId()]);
@@ -875,6 +881,7 @@ class AuthService
                 $user = $this->userRepository->newInstance();
                 $user->addGroup(self::GROUP_NOT_BANNED);
                 $user->addGroup(self::GROUP_NOT_DELETED);
+                $this->setPicture($user, $this->config->pictureDefault);
             }
             $this->updateOauth($user, $authData);
 
@@ -883,20 +890,42 @@ class AuthService
             $this->updateSig($user);
             $this->userRepository->save($user);
             $this->user = $user;
-            return ClientResult::createSuccess();
-        } else { // Connect
-            $this->updateOauth($joinMainUser, $authData);
-            if ($user && $joinMainUser->getId() !== $user->getId()) {
-                // Set old user inactive
-                $user->setSocialId($authData->getOriginSource(), 'old_' . $authData->getOriginId());
-                $user->removeGroup(self::GROUP_NOT_DELETED);
-                $this->userRepository->save($user);
-                $this->getEventDispatcher()->fire(new JoinAccountsEvent($user, $joinMainUser));
-            }
-            $this->userRepository->save($joinMainUser);
-            $this->user = $joinMainUser;
-            return ClientResult::createSuccess();
+            return ModuleResult::createSuccess();
         }
+        // Connect
+        $this->updateOauth($joinMainUser, $authData);
+        if ($user && $joinMainUser->getId() !== $user->getId()) {
+            // Set old user inactive
+            $user->setSocialId($authData->getOriginSource(), 'old_' . $authData->getOriginId());
+            $user->removeGroup(self::GROUP_NOT_DELETED);
+            $this->setPicture($user, $this->config->pictureUnActive);
+            $this->userRepository->save($user);
+            $this->getEventDispatcher()->fire(new JoinAccountsEvent($user, $joinMainUser));
+        }
+        $this->userRepository->save($joinMainUser);
+        $this->user = $joinMainUser;
+        return ModuleResult::createSuccess();
+    }
+
+    public function deactivateUser(UserInterface $user, bool $withLogout): void
+    {
+        if ($user->isInGroup(self::GROUP_NOT_DELETED)) {
+            return;
+        }
+        $user->removeGroup(self::GROUP_NOT_DELETED);
+        $this->resetSig($user, $withLogout);
+        $this->setPicture($user, $this->config->pictureUnActive);
+        $this->userRepository->save($user);
+    }
+
+    public function banUser(UserInterface $user): void
+    {
+        if ($user->isInGroup(self::GROUP_NOT_BANNED)) {
+            return;
+        }
+        $user->removeGroup(self::GROUP_NOT_BANNED);
+        $this->setPicture($user, $this->config->pictureBanned);
+        $this->userRepository->save($user);
     }
 
     private function getEventDispatcher(): EventDispatcher
@@ -904,50 +933,11 @@ class AuthService
         return $this->app->get(EventDispatcher::class);
     }
 
-    //v3.6
-    public function loginOauth($oauth, $opt = array()){
-        if (!isset($opt['nojoin'])){
-            $defaultUi = $this->getUi($this->mm->g($_COOKIE['id']), $this->mm->g($_COOKIE['sig']));
-        } else {
-            $defaultUi = false;
-        }
-        if (!$this->mm->g($oauth['sync']['field']) || !$this->mm->g($oauth['sync']['value'])){
-            return $this->setErrorMessage(lang('mauth.auth:incorrect_oauth'));
-        }
-        $allowed = false;
-        foreach($this->allowOauth as $oauthType){
-            if ($oauthType.'_id' == $oauth['sync']['field']) $allowed = true;
-        }
-        if (!$allowed) return $this->setErrorMessage(lang('mauth.auth:incorrect_oauth'));
-        $sql_uid = $this->mm->sqlString($oauth['sync']['value'],255);
-        if (!$defaultUi){ // register or login
-            $ui = $this->getUserRowByFields(array($oauth['sync']['field'] => "'".$sql_uid."'"));
-            if (!$ui) {
-                if (!$this->allow_register) return $this->setErrorMessage(lang('mauth.auth:register_denied'));
-                $this->mm->dbExecute("INSERT INTO users (".$oauth['sync']['field'].",level, regtime, lastact)
-					VALUES ('".$sql_uid."', 3, ".$this->mm->db_now.", ".$this->time.") ;");
-                $ui = $this->getUserRowByFields(array($oauth['sync']['field'] => "'".$sql_uid."'"));
-                if (!$ui) return false;
-            } // login
-            if ($ui['level'] == $this->unactive_level) $ui = $this->userUnactiveRestore($ui);
-            $this->updateOauths($ui, $oauth);
-            $this->updateSig($ui);
-            return $this->getUserRow($ui['id']);
-        } else { // connect // уже залогинен
-            $ui = $this->getUserRowByFields(array($oauth['sync']['field'] => "'".$sql_uid."'"));
-            if ($ui && (!($ui['id'] === $defaultUi['id']))) {
-                return $this->setErrorMessage(lang('mauth.join:another_user_find'));
-
-                //Функционал выключен. Старый аккаунт не привязываем к новому, а удаляем у кго поле для входа, но на будущее оставим текущий uid
-                if ($ui['level'] == $this->banned_level) return $this->setErrorMessage(lang('mauth.join:user_banned'));
-                $this->updateUserRow($ui['id'],array($oauth['sync']['field'] => "'old_$sql_uid'"));
-                $this->updateUserRow($defaultUi['id'],array($oauth['sync']['field'] => "'".$sql_uid."'"));
-                $this->joinAccounts($defaultUi,$ui); // <--
-            }
-
-            $this->updateOauths($defaultUi, $oauth);
-            return $this->getUserRow($defaultUi['id']);
-        }
+    private function setPicture(UserInterface $user, string $templateName): void
+    {
+        $user->setPictureOrig('default/' . $templateName . '.png');
+        $user->setPicture('default/' . $templateName . '.png');
+        $user->setPicturePreview('default/' . $templateName . '_preview.png');
     }
 }
 

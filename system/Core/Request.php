@@ -31,6 +31,8 @@ interface Request
 
     public function getPostAsArray(): array;
 
+    public function getGetAsArray(): array;
+
     public function getGet(string $key, string $default = ''): string;
 
     public function getPost(string $key, string $default = ''): string;

@@ -74,7 +74,13 @@ interface UserInterface
 
     public function getPictureId(): ?int;
 
+    public function getPictureOrig(): string;
+
+    public function setPictureOrig(string $pictureOrig): void;
+
     public function getPicture(): string;
+
+    public function setPicture(string $picture): void;
 
     public function getPicturePreview(): string;
 
