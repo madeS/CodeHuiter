@@ -6,11 +6,8 @@ use CodeHuiter\Pattern\Controller\Base\BaseController;
 
 class Main_Controller extends BaseController
 {
-    /**
-     * @return bool|void
-     */
-    public function index()
+    public function index(): void
     {
-        echo "Developing index";
+        echo 'Use database/language Method';
     }
 }

@@ -29,8 +29,6 @@ class Test_Controller extends BaseController
 
         echo $model;
 
-        $this->debug->outToHtml($this->app->config->services);
-
         $this->console->log('Its work yesss');
 
         /** @var SomeServiceInterface $someService */

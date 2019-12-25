@@ -343,18 +343,7 @@ class AuthController extends BaseController
         $this->ajaxResponse->location($this->links->user($this->auth->user))->closePopups()->render($this->response);
     }
 
-
-
-
-
-
-
-
-
-
-
-
-    public function sync_timezone()
+    public function sync_timezone(): void
     {
         $this->initWithAuth(false);
         if (!$this->auth->user->exist()) {
@@ -367,7 +356,7 @@ class AuthController extends BaseController
         $timeStr = $this->date->fromTime()->forUser($this->auth->user)->toFormat('H:i:s',false,true);
         $this->ajaxResponse->successMessage(
             $this->lang->get('user:settings.timezone_synced', ['{#time}' => $timeStr])
-        )->render($this->response);
+        )->append('@script')->render($this->response);
 
         echo '<script>'
             . '$("#body_cont").attr("data-timezoneoffset","'.$timzoneOffset.'");'

@@ -283,16 +283,16 @@ class Router
                     $this->setNamespace('', '\\App\\Module\\' . $moduleName . '\\Controller');
                     array_shift($segments);
                     continue;
-                } elseif (strpos($segmentTest, 'SYS_MODULE_PATH_') === 0) {
+                }
+                if (strpos($segmentTest, 'SYS_MODULE_PATH_') === 0) {
                     $modulePath = str_replace('_','/',substr($segmentTest, strlen('SYS_MODULE_PATH_')));
                     $this->setDirectory( $modulePath . '/Controller', SYSTEM_PATH);
                     $this->setNamespace($modulePath . '\\Controller', '\\CodeHuiter\\');
                     array_shift($segments);
                     continue;
-                } else {
-                    $this->setDirectory( 'Controller', APP_PATH);
-                    $this->setNamespace('', '\\App\\Controller');
                 }
+                $this->setDirectory( 'Controller', APP_PATH);
+                $this->setNamespace('', '\\App\\Controller');
             }
             $nameTest = $this->directory . $segmentTest;
 

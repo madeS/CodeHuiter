@@ -439,26 +439,4 @@ class UserModel extends RelationalModel implements UserInterface
             $this->setGroups($groups);
         }
     }
-
-    /**
-     * TODO Subscribe to GroupsChangedEvent
-     */
-    protected function groupsChanged($diff)
-    {
-        if (
-            in_array(AuthService::GROUP_NOT_BANNED, $diff['added'])
-            || in_array(AuthService::GROUP_NOT_DELETED, $diff['added'])
-        ) {
-            // @todo restore default photo
-        }
-
-        if (in_array(AuthService::GROUP_NOT_BANNED, $diff['removed'])) {
-            // @todo set banned photo
-        }
-
-        if (in_array(AuthService::GROUP_NOT_DELETED, $diff['removed'])) {
-            // @todo set deleted photo
-        }
-
-    }
 }

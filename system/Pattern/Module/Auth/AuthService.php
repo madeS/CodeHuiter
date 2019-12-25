@@ -4,7 +4,6 @@ namespace CodeHuiter\Pattern\Module\Auth;
 
 use CodeHuiter\Config\AuthConfig;
 use CodeHuiter\Core\Application;
-use CodeHuiter\Core\CodeLoader;
 use CodeHuiter\Core\Request;
 use CodeHuiter\Core\Response;
 use CodeHuiter\Pattern\Exception\Runtime\AuthRuntimeException;
@@ -843,7 +842,6 @@ class AuthService
             $previousGroups = $user->getGroups();
             $user->addGroup(self::GROUP_NOT_DELETED);
             $this->setPicture($user, $this->config->pictureDefault);
-            $this->getEventDispatcher()->fire(new EventUse);
             $this->userRepository->save($user);
             $this->getEventDispatcher()->fire(new GroupsChangedEvent($user, $previousGroups));
         }
@@ -942,7 +940,7 @@ class AuthService
 }
 
 
-
+/*
 class Mauth {
 
     private $time = 0;
@@ -1459,4 +1457,5 @@ class Mauth {
         return true;
     }
 }
+*/
 

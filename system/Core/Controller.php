@@ -20,9 +20,6 @@ use CodeHuiter\Service\Renderer;
  * @property-read Service\Console $console
  * @see Config::SERVICE_KEY_CONSOLE There are Forward Usages
  *
- * @property-read Service\Debug $debug
- * @see Config::SERVICE_KEY_DEBUG There are Forward Usages
- *
  * @property-read Service\DateService $date
  * @see Config::SERVICE_KEY_DATE There are Forward Usages
  *

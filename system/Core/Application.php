@@ -80,7 +80,7 @@ class Application
 
         $scope = $this->config->services[$name][Config::OPT_KEY_SCOPE] ?? Config::OPT_KEY_SCOPE_PERMANENT;
         if ($scope === Config::OPT_KEY_SCOPE_REQUEST) {
-            $scope .= $this->request->getId();
+            $scope .= $this->request ?$this->request->getId() : 0;
         }
         if (isset($this->serviceCreateStack[$scope][$name])) {
             throw CoreException::onRecursiveServiceCreation($name, $scope, $this->serviceCreateStack);

@@ -6,6 +6,7 @@ use CodeHuiter\Core\Application;
 use CodeHuiter\Core\Request;
 use CodeHuiter\Core\Response;
 use CodeHuiter\Pattern\Module\Auth\UserService;
+use CodeHuiter\Pattern\Module\Developing\DevelopingService;
 use CodeHuiter\Pattern\Service\ByDefault;
 use CodeHuiter\Pattern\Service\AjaxResponse;
 use CodeHuiter\Pattern\Service\Validator;
@@ -158,6 +159,8 @@ class PatternConfig extends Config
         $this->authConfig = new AuthConfig();
         $this->authConfig->cookieDomain = '.' . $this->settingsConfig->domain;
 
+        $this->services[DevelopingService::class] = [self::OPT_KEY_CLASS => DevelopingService::class, self::OPT_KEY_SCOPE => self::OPT_KEY_SCOPE_REQUEST,];
+
         /**
          * UserService
          */
@@ -200,6 +203,8 @@ class ProjectConfig
     public $supportUserId = 1;
 
     public $usersViewSocialOriginLinks = false;
+
+    public $disableDbImport = true;
 }
 
 class CompressorConfig

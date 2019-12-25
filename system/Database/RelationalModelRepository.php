@@ -118,7 +118,7 @@ class RelationalModelRepository
     {
         $whereSet = $model->getPrimarySet();
         $timeString = $this->getDateService()->sqlTime();
-        if ($whereSet) {
+        if ($whereSet && $model->exist()) {
             $model->updateBySet(['updated_at' => $timeString], true);
             $set = $model->getTouchedSet();
             if (!$set) {

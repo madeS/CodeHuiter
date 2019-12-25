@@ -149,18 +149,6 @@ abstract class RelationalModel
         }
     }
 
-    public function getPrivateField(string $key): ?string
-    {
-        return $this->$key ?? null;
-    }
-
-    public function setPrivateField(string $key, string $value): void
-    {
-        if (isset($this->$key)) {
-            $this->$key = $value;
-        }
-    }
-
     /**
      * @param string $autoIncrement
      */

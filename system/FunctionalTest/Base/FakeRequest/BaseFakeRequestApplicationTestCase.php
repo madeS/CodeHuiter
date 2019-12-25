@@ -1,6 +1,6 @@
 <?php
 
-namespace CodeHuiter\Test\Base\FakeRequest;
+namespace CodeHuiter\FunctionalTest\Base\FakeRequest;
 
 use CodeHuiter\Core\Application;
 use CodeHuiter\Core\Response;

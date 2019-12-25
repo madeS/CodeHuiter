@@ -1,12 +1,12 @@
 <?php
 
-namespace CodeHuiter\Test\Cases\Auth;
+namespace CodeHuiter\FunctionalTest\Cases\Auth;
 
 use CodeHuiter\Core\Application;
 use CodeHuiter\Database\RelationalModelRepository;
 use CodeHuiter\Service\ByDefault\Email\Model\MailerModel;
 use CodeHuiter\Service\Language;
-use CodeHuiter\Test\Base\FakeRequest\BaseFakeRequestApplicationTestCase;
+use CodeHuiter\FunctionalTest\Base\FakeRequest\BaseFakeRequestApplicationTestCase;
 
 class AuthTest extends BaseFakeRequestApplicationTestCase
 {

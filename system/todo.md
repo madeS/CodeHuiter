@@ -2,8 +2,6 @@
 
 #### High:
 
-[ ] AuthModule Check Email sending
-
 [ ] AuthModule Login via VK
 
 [ ] AuthModule Login via FB
@@ -31,8 +29,6 @@
 [ ] Media Videos
 
 #### Normal:
-
-[V] Rewrite autoload of framework
 
 mjsaValidator - is_unique in database
 

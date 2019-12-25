@@ -1,8 +1,8 @@
 <?php
 
-namespace CodeHuiter\Test\Cases\Auth;
+namespace CodeHuiter\FunctionalTest\Cases\Auth;
 
-use CodeHuiter\Test\Base\FakeRequest\BaseFakeRequestApplicationTestCase;
+use CodeHuiter\FunctionalTest\Base\FakeRequest\BaseFakeRequestApplicationTestCase;
 
 class UserTest extends BaseFakeRequestApplicationTestCase
 {

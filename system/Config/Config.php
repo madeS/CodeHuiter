@@ -16,7 +16,6 @@ use CodeHuiter\Database\RelationalDatabase;
 use CodeHuiter\Database\Drivers\PDODriver;
 use CodeHuiter\Service\ByDefault;
 use CodeHuiter\Service\DateService;
-use CodeHuiter\Service\Debug;
 use CodeHuiter\Service\Mailer;
 use CodeHuiter\Service\HtmlParser;
 use CodeHuiter\Service\Language;
@@ -112,12 +111,6 @@ abstract class Config
             return new ByDefault\Console($app->get(Logger::class));
         }];
         $this->injectedServices[self::SERVICE_KEY_CONSOLE] = Console::class;
-
-        /**
-         * Debug Service
-         */
-        $this->services[Debug::class] = [self::OPT_KEY_CLASS => ByDefault\Debug::class];
-        $this->injectedServices[self::SERVICE_KEY_DEBUG] = Debug::class;
 
         /**
          * Date Service
@@ -348,8 +341,8 @@ class RouterConfig
     public $translateUriDashes = false;
     public $domainRoutes = [
         'all' => [
-            'developing' => 'SYS_MODULE_PATH_Pattern_Modules_Developing',
-            'developing/(:all)' => 'SYS_MODULE_PATH_Pattern_Modules_Developing/$1',
+            'developing' => 'SYS_MODULE_PATH_Pattern_Module_Developing',
+            'developing/(:all)' => 'SYS_MODULE_PATH_Pattern_Module_Developing/$1',
         ],
         'sub.example.com' => [
             //'testmodule/(:all)' => 'APP_MODULE_TestModule/$1',
