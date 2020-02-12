@@ -2,9 +2,9 @@
 
 namespace App\Config;
 
-use CodeHuiter\Config\PatternConfig;
+use CodeHuiter\Config\FacilitiesConfig;
 
-class DefaultConfig extends PatternConfig
+class DefaultConfig extends FacilitiesConfig
 {
     public function __construct()
     {

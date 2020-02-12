@@ -4,7 +4,7 @@
 
 <?php
 
-class CustomSiteColors extends \CodeHuiter\Pattern\Helper\SiteColors
+class CustomSiteColors extends \CodeHuiter\Facilities\Helper\SiteColors
 {
     public $font = 'Arial, Helvetica, sans-serif, Georgia';
     public $fontSize = '14px';

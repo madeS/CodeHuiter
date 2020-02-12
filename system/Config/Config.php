@@ -353,8 +353,8 @@ class RouterConfig
     public $translateUriDashes = false;
     public $domainRoutes = [
         'all' => [
-            'developing' => 'SYS_MODULE_PATH_Pattern_Module_Developing',
-            'developing/(:all)' => 'SYS_MODULE_PATH_Pattern_Module_Developing/$1',
+            'developing' => 'SYS_MODULE_PATH_Facilities_Module_Developing',
+            'developing/(:all)' => 'SYS_MODULE_PATH_Facilities_Module_Developing/$1',
         ],
         'sub.example.com' => [
             //'testmodule/(:all)' => 'APP_MODULE_TestModule/$1',

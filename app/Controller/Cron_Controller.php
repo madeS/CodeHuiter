@@ -2,7 +2,7 @@
 
 namespace App\Controller;
 
-use CodeHuiter\Pattern\Controller\Base\BaseController;
+use CodeHuiter\Facilities\Controller\Base\BaseController;
 
 class Cron_Controller extends BaseController
 {

@@ -5,7 +5,7 @@ namespace CodeHuiter\Service\ByDefault;
 use CodeHuiter\Config\DateConfig;
 use CodeHuiter\Core\Application;
 use CodeHuiter\Exception\Runtime\DateTimeConvertException;
-use CodeHuiter\Pattern\Module\Auth\Model\User;
+use CodeHuiter\Facilities\Module\Auth\Model\User;
 use DateInterval;
 use DateTime;
 use DateTimeImmutable;

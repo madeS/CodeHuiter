@@ -6,7 +6,7 @@ use CodeHuiter\Config\ConfigTest;
 use CodeHuiter\Core\Application;
 use CodeHuiter\Core\ByDefault\Request;
 use CodeHuiter\Core\Response;
-use CodeHuiter\Pattern\Module\Developing\DevelopingService;
+use CodeHuiter\Facilities\Module\Developing\DevelopingService;
 
 class ApplicationTestExecutor
 {

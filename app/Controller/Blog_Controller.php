@@ -10,6 +10,6 @@ class Blog_Controller extends DefaultController
     {
         $this->initWithAuth(false);
         //$this->render(':pages/blog');
-        $this->render(SYSTEM_PATH . 'Pattern/View/' . 'pages/blog');
+        $this->render(SYSTEM_PATH . 'Facilities/View/' . 'pages/blog');
     }
 }

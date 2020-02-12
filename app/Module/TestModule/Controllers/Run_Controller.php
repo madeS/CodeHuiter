@@ -2,7 +2,7 @@
 
 namespace App\Module\TestModule\Controller;
 
-class Run_Controller extends \CodeHuiter\Pattern\Controller\Base\BaseController
+class Run_Controller extends \CodeHuiter\Facilities\Controller\Base\BaseController
 {
     public function index()
     {

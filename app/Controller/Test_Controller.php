@@ -3,9 +3,9 @@
 namespace App\Controller;
 
 use CodeHuiter\Database\RelationalModelRepository;
-use CodeHuiter\Pattern\Controller\Base\BaseController;
-use CodeHuiter\Pattern\Module\Shop\Model\ShopCategoryProductModel;
-use CodeHuiter\Pattern\Module\Shop\Model\SomeServiceInterface;
+use CodeHuiter\Facilities\Controller\Base\BaseController;
+use CodeHuiter\Facilities\Module\Shop\Model\ShopCategoryProductModel;
+use CodeHuiter\Facilities\Module\Shop\Model\SomeServiceInterface;
 
 class Test_Controller extends BaseController
 {

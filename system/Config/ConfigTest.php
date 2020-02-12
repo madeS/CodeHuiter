@@ -2,7 +2,7 @@
 
 namespace CodeHuiter\Config;
 
-class ConfigTest extends PatternConfig
+class ConfigTest extends FacilitiesConfig
 {
     public function __construct()
     {
@@ -13,5 +13,7 @@ class ConfigTest extends PatternConfig
         $this->defaultDatabaseConfig->dsn = 'mysql:host=localhost;dbname=app_test_db';
         $this->defaultDatabaseConfig->username = 'appuser';
         $this->defaultDatabaseConfig->password = 'apppassword';
+
+        $this->authConfig->emailForce = false;
     }
 }

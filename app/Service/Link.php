@@ -2,9 +2,9 @@
 
 namespace App\Service;
 
-use CodeHuiter\Pattern\Service\Link as PatternLink;
+use CodeHuiter\Facilities\Service\Link as FacilitiesLink;
 
-class Link extends PatternLink
+class Link extends FacilitiesLink
 {
 
 }

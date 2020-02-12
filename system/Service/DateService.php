@@ -2,12 +2,9 @@
 
 namespace CodeHuiter\Service;
 
-use CodeHuiter\Exception\Runtime\DateTimeConvertException;
-use CodeHuiter\Pattern\Module\Auth\Model\User;
+use CodeHuiter\Facilities\Module\Auth\Model\User;
 use DateInterval;
 use DateTimeImmutable;
-use DateTimeZone;
-use Exception;
 
 interface DateService
 {

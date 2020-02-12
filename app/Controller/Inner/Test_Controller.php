@@ -2,7 +2,7 @@
 
 namespace App\Controller\Inner;
 
-use CodeHuiter\Pattern\Controller\Base\BaseController;
+use CodeHuiter\Facilities\Controller\Base\BaseController;
 
 class Test_Controller extends BaseController
 {

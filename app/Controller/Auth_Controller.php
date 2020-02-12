@@ -2,7 +2,7 @@
 
 namespace App\Controller;
 
-use CodeHuiter\Pattern\Module\Auth\Controller\AuthController;
+use CodeHuiter\Facilities\Module\Auth\Controller\AuthController;
 
 /** @noinspection PhpUnused */
 class Auth_Controller extends AuthController {}
