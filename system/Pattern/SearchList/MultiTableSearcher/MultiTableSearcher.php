@@ -72,7 +72,6 @@ class MultiTableSearcher
         bool $requireResultCount = false
     ): SearchListResult {
 
-
         if (isset($options['ids'])){
             $ids = array();
             $ids[] = 0;
@@ -117,12 +116,7 @@ class MultiTableSearcher
             $itemsCount = $dbHandler->selectOneField($countQuery, $this->bindings, 'counter');
         }
 
-        return new SearchListResult(
-            $ret,
-            $filters,
-            $pages,
-            $itemsCount
-        );
+        return new SearchListResult($ret, $filters, $pages, $itemsCount);
     }
 
     protected function searchFinishOne(

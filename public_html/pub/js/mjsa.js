@@ -8,10 +8,6 @@
     Last Mod: 2016-01-29 20:00
 */
 
-/*
- * @todo 9; rename mthis
-  */
-
 var mjsaClass = function ($){
     var self = this;
 
@@ -498,7 +494,10 @@ var mjsaClass = function ($){
                     if (opt.callAfterPriority) opt.callAfterPriority(this);
                     else opt.callAfter && opt.callAfter(this);
                     if (this.status === 200) opt.callSuccess && opt.callSuccess(this,this.response);
-                    else opt.callError && opt.callError(this);
+                    else {
+                        opt.callError && opt.callError(this);
+                        self.ajax.error({status: this.status, statusText: this.statusText});
+                    }
                 }
             };
             http.upload.addEventListener('load',function(e) {
@@ -681,6 +680,8 @@ var mjsaClass = function ($){
                 }
             }
         },opt);
+        mUploadOpt.params = mUploadOpt.params || {};
+        mUploadOpt.params.mjsaAjax = true;
         if (opt && opt.cancel) {
             mUploadOpt.action = 'cancel';
             self.upload.send(mUploadOpt);

@@ -2,17 +2,21 @@
 
 namespace CodeHuiter\Pattern\Module\Auth\Model;
 
-use CodeHuiter\Core\Application;
+use CodeHuiter\Config\ConnectorConfig;
 use CodeHuiter\Database\RelationalModel;
 use CodeHuiter\Exception\InvalidFlowException;
 use CodeHuiter\Modifier\ArrayModifier;
 use CodeHuiter\Modifier\StringModifier;
-use CodeHuiter\Pattern\Module\Auth\AuthService;
-use CodeHuiter\Service\DateService;
-use CodeHuiter\Service\Language;
 
-class UserModel extends RelationalModel implements UserInterface
+class UserModel extends RelationalModel implements User
 {
+    public const FIELD_ID = 'id';
+    public const FIELD_LOGIN = 'login';
+    public const FIELD_EMAIL = 'email';
+    public const FIELD_NAME = 'name';
+    public const FIELD_FIRST_NAME = 'firstname';
+    public const FIELD_LAST_NAME = 'lastname';
+
     protected $_table = 'users';
     protected $_databaseServiceKey = 'db';
     protected $_primaryFields = ['id'];
@@ -75,9 +79,9 @@ class UserModel extends RelationalModel implements UserInterface
         return (int)$this->id > 0;
     }
 
-    public function getId(): int
+    public function getId(): string
     {
-        return (int)$this->id;
+        return (string)$this->id;
     }
 
     public function setId(int $id): void
@@ -263,10 +267,16 @@ class UserModel extends RelationalModel implements UserInterface
         $this->notifications_last = $notifications_last;
     }
 
-    public function getPictureId(): ?int
+    public function getPictureId(): string
     {
         return $this->picture_id;
     }
+
+    public function setPictureId(string $pictureId): void
+    {
+        $this->picture_id = $pictureId;
+    }
+
 
     public function getPictureOrig(): string
     {
@@ -438,5 +448,20 @@ class UserModel extends RelationalModel implements UserInterface
             unset($groups[$foundedKey]);
             $this->setGroups($groups);
         }
+    }
+
+    public function getConnectorType(): string
+    {
+        return ConnectorConfig::TYPE_PROFILE;
+    }
+
+    public function getConnectorTypedId(): string
+    {
+        return $this->getId();
+    }
+
+    public function getConnectorName(): string
+    {
+        return "[{$this->getId()}] {$this->getName()}";
     }
 }

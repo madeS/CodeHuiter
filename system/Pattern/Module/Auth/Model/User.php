@@ -2,14 +2,16 @@
 
 namespace CodeHuiter\Pattern\Module\Auth\Model;
 
-interface UserInterface
+use CodeHuiter\Pattern\Module\Connector\ConnectableObject;
+
+interface User extends ConnectableObject
 {
     public const GENDER_MALE = 1;
     public const GENDER_FEMALE = 2;
 
     public function exist(): bool;
 
-    public function getId(): int;
+    public function getId(): string;
 
     public function setId(int $id): void;
 
@@ -72,7 +74,9 @@ interface UserInterface
 
     public function setNotificationsLast(int $notifications_last): void;
 
-    public function getPictureId(): ?int;
+    public function getPictureId(): string;
+
+    public function setPictureId(string $pictureId): void;
 
     public function getPictureOrig(): string;
 
@@ -127,5 +131,4 @@ interface UserInterface
      * @return int[]
      */
     public function getGroups(): array;
-
 }

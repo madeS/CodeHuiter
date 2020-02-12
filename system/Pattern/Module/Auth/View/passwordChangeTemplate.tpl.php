@@ -1,5 +1,5 @@
 <?php
-/** @var \CodeHuiter\Pattern\Module\Auth\Model\UserInterface $user */
+/** @var \CodeHuiter\Pattern\Module\Auth\Model\User $user */
 ?>
 <div class="regauth_form_container<?php echo (isset($in_popup)?' popup':'')?>">
 

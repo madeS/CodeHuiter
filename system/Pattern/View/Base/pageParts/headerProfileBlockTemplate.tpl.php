@@ -21,7 +21,7 @@
 </div>
 <div class="profile_menu popshow">
 	<div class="bg" onclick="$(this).siblings('.pop_cont').show(); return false;">
-		<img src="<?=$those->media->store('user_medias',$userInfo->getPicturePreview())?>" alt="" />
+		<img src="<?=$those->content->store('user_medias',$userInfo->getPicturePreview())?>" alt="" />
 	</div>
 	<div class="pop_cont">
 		<div class="popshadow" onclick="$(this).parents('.pop_cont').hide(); return false;"></div>

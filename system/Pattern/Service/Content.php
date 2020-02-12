@@ -2,18 +2,35 @@
 
 namespace CodeHuiter\Pattern\Service;
 
-use CodeHuiter\Config\MediaConfig;
+use CodeHuiter\Config\ContentConfig;
+use CodeHuiter\Service\FileStorage;
+use CodeHuiter\Service\Logger;
 
-class Media
+class Content
 {
     /**
-     * @var MediaConfig
+     * @var ContentConfig
      */
     private $config;
 
-    public function __construct(MediaConfig $mediaConfig)
-    {
+    /**
+     * @var FileStorage
+     */
+    private $fileStorage;
+
+    /**
+     * @var Logger
+     */
+    private $logger;
+
+    public function __construct(
+        ContentConfig $mediaConfig,
+        FileStorage $fileStorage,
+        Logger $logger
+    ) {
         $this->config = $mediaConfig;
+        $this->fileStorage = $fileStorage;
+        $this->logger = $logger;
     }
 
     /**
@@ -23,14 +40,16 @@ class Media
      * @param string $path Остаточный путь до контента
      * @return string
      */
-    protected function serverStore($content, $path){
-        return $this->config->storageMap[$content]['server_root']
+    public function serverStore($content, $path){
+        return rtrim($this->config->storageMap[$content]['server_root'], '/')
             . $this->config->storageMap[$content]['store']
             . $path;
     }
 
     /**
      * Возвращает HTTP путь до контента
+     *
+     * @see ContentConfig::$storageMap
      *
      * @param string $content Тип контента
      * @param string $path Остаточный путь до контента
@@ -53,8 +72,9 @@ class Media
 
     }
 
-    public function delete()
+    public function delete($content, $path)
     {
-
+        $file = $this->serverStore($content, $path);
+        $this->fileStorage->deleteFile($file);
     }
 }

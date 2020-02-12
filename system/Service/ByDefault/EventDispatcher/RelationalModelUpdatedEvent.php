@@ -2,6 +2,7 @@
 
 namespace CodeHuiter\Service\ByDefault\EventDispatcher;
 
+use CodeHuiter\Config\EventsConfig;
 use CodeHuiter\Database\RelationalModel;
 use CodeHuiter\Service\EventDispatcher\Event;
 
@@ -17,10 +18,16 @@ class RelationalModelUpdatedEvent implements Event
      */
     private $model;
 
-    public function __construct(RelationalModel $model)
+    /**
+     * @var array
+     */
+    private $touchedSet;
+
+    public function __construct(RelationalModel $model, array $touchedSet)
     {
-        $this->eventName = $model->getModelDatabaseServiceKey() . '_' . $model->getModelTable() . '.updated';
+        $this->eventName = EventsConfig::modelUpdatedName($model->getClass());
         $this->model = $model;
+        $this->touchedSet = $touchedSet;
     }
 
     public function getEventName(): string
@@ -31,5 +38,10 @@ class RelationalModelUpdatedEvent implements Event
     public function getModel(): RelationalModel
     {
         return $this->model;
+    }
+
+    public function getTouchedSet(): array
+    {
+        return $this->touchedSet;
     }
 }

@@ -1,7 +1,8 @@
 <?php if (false) require_once SYSTEM_PATH . '/Pattern/View/IDE_Helper.tpl.php';
-/** @var \CodeHuiter\Pattern\Module\Auth\Model\UserInterface $user */
+/** @var \CodeHuiter\Pattern\Module\Auth\Model\User $user */
 
-use CodeHuiter\Modifier\StringModifier; ?>
+use CodeHuiter\Modifier\StringModifier;
+use CodeHuiter\Pattern\Module\Connector\ConnectorService; ?>
 
 <div class="iblock user_view">
 	<div class="bheader"><div class="name tfc">
@@ -11,7 +12,7 @@ use CodeHuiter\Modifier\StringModifier; ?>
 		<span class="tf fcolor"></span>
 	</div></div>
 	<div class="big_image">
-		<img class="pr_img" src="<?=$those->media->store('user_medias', $user->getPicturePreview())?>" alt="<?=$those->userService->getPresentName($user)?>" data-id="<?=$user->getPictureId()?>" />
+		<img class="pr_img" src="<?=$those->content->store('user_medias', $user->getPicturePreview())?>" alt="<?=$those->userService->getPresentName($user)?>" data-id="<?=$user->getPictureId()?>" />
 		<div class="imghider">
 
 			<?php if($those->userService->isOnline($user)):?>
@@ -57,12 +58,12 @@ use CodeHuiter\Modifier\StringModifier; ?>
 	<div class="uinfoline">
 		<?php
 			$secondline_array = [];
-			if($user->getGender()){
-				$secondline_array[] = ($user->getGender()=== \CodeHuiter\Pattern\Module\Auth\Model\UserInterface::GENDER_MALE)
+			if ($user->getGender()) {
+				$secondline_array[] = ($user->getGender()=== \CodeHuiter\Pattern\Module\Auth\Model\User::GENDER_MALE)
 					? $those->lang->get('user:male') : $those->lang->get('user:female');
 			}
 			$age = $those->userService->getAge($user);
-			if($age){
+			if ($age) {
 				$secondline_array[] =
 					StringModifier::fillWordEnd($age, $those->lang->get('user:year_1_2_5'), true)
 					.' (' . StringModifier::dateConvert($user->getBirthday(), 'm-ru') . ')';
@@ -80,7 +81,15 @@ use CodeHuiter\Modifier\StringModifier; ?>
 	</div>
 	<div class="action_btns">
 		<?php if($those->userService->equal($userInfo, $user)):?>
-			<span class="btn likea blue action" data-action="appPopup" data-popupuri="/japi_users/popup_photos_upload?object_type_id=profile_0&as_default=1" data-popupname="thepopup_nopadd"><span class="ficon-camera"></span> Изменить фото</span>
+			<span class="btn likea blue action"
+				data-action="easyAjax"
+				data-uri="/media/popup_photos_upload"
+				data-params="<?php echo StringModifier::textForHtml(StringModifier::jsonEncode([
+						'object_identity' => ConnectorService::getIdentity($user),
+						'as_default' => 1,
+				]))?>"
+			><span class="ficon-camera"></span> Изменить фото</span>
+
 			<a href="<?=$those->links->userSettings()?>" class="bodyajax btn blue"><span class="ficon-cog"></span> Мои настройки</a>
 		<?php endif;?>
 		<?php if($those->userService->isActive($user) || $those->userService->isModerator($userInfo)):?>

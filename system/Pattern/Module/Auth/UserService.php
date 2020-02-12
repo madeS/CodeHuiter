@@ -6,8 +6,8 @@ use CodeHuiter\Core\Application;
 use CodeHuiter\Exception\InvalidFlowException;
 use CodeHuiter\Modifier\IntModifier;
 use CodeHuiter\Modifier\StringModifier;
-use CodeHuiter\Pattern\Module\Auth\Model\UserInterface;
-use CodeHuiter\Pattern\Module\Auth\Model\UserRepositoryInterface;
+use CodeHuiter\Pattern\Module\Auth\Model\User;
+use CodeHuiter\Pattern\Module\Auth\Model\UserRepository;
 use CodeHuiter\Pattern\Service\ValidatedData;
 use CodeHuiter\Service\DateService;
 use CodeHuiter\Service\Language;
@@ -40,7 +40,7 @@ class UserService
         ];
     }
 
-    public function getPresentName(UserInterface $user): string
+    public function getPresentName(User $user): string
     {
         if (!$user->isInGroup(AuthService::GROUP_NOT_DELETED)) {
             return $this->getLanguage()->get('user:inactive');
@@ -61,19 +61,19 @@ class UserService
         return '"User #'.$user->getId();
     }
 
-    public function isOnline(UserInterface $user): bool
+    public function isOnline(User $user): bool
     {
         $dateService = $this->getDateService();
         $inactiveTime = $dateService->getCurrentTimestamp() - $user->getLastActive();
         return $inactiveTime < $this->getOnlineTime();
     }
 
-    public function equal(UserInterface $user1, UserInterface $user2): bool
+    public function equal(User $user1, User $user2): bool
     {
         return $user1->getId() === $user2->getId();
     }
 
-    public function isModerator(UserInterface $user): bool
+    public function isModerator(User $user): bool
     {
         if (!$user->getId()) {
             return false;
@@ -81,7 +81,7 @@ class UserService
         return $user->isInGroup(AuthService::GROUP_MODERATOR);
     }
 
-    public function isBanned(UserInterface $user): bool
+    public function isBanned(User $user): bool
     {
         if (!$user->getId()) {
             return false;
@@ -89,7 +89,7 @@ class UserService
         return !$user->isInGroup(AuthService::GROUP_NOT_BANNED);
     }
 
-    public function isActive(UserInterface $user): bool
+    public function isActive(User $user): bool
     {
         if (!$user->getId()) {
             return false;
@@ -99,12 +99,12 @@ class UserService
             && $user->isInGroup(AuthService::GROUP_ACTIVE);
     }
 
-    public function getAge(UserInterface $user): int
+    public function getAge(User $user): int
     {
         return $this->getDateService()->diffDateTime($user->getBirthday())->y;
     }
 
-    public function setUserInfo(UserInterface $user, ValidatedData $data): UserInterface
+    public function setUserInfo(User $user, ValidatedData $data): User
     {
         if (!$user->getId()) {
             throw new InvalidFlowException('Cant edit not exist user');
@@ -119,7 +119,7 @@ class UserService
             $user->setLastName($data->getField('lastname'));
         }
         if ($data->hasField('gender')
-            && in_array($data->getField('gender'), [0 ,UserInterface::GENDER_MALE, UserInterface::GENDER_FEMALE], false)
+            && in_array($data->getField('gender'), [0 ,User::GENDER_MALE, User::GENDER_FEMALE], false)
         ) {
             $user->setGender((int)$data->getField('gender'));
         }
@@ -166,7 +166,7 @@ class UserService
         return $user;
     }
 
-    public function isAllowShowSocial(UserInterface $user): bool
+    public function isAllowShowSocial(User $user): bool
     {
         return $user->getDataInfo()['show_social_accounts'];
     }
@@ -186,9 +186,9 @@ class UserService
         return $this->application->config->authConfig->onlineTime;
     }
 
-    private function getUserRepository(): UserRepositoryInterface
+    private function getUserRepository(): UserRepository
     {
-        return $this->application->get(UserRepositoryInterface::class);
+        return $this->application->get(UserRepository::class);
     }
 }
 

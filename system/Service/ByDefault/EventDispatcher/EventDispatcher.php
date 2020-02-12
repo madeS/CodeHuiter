@@ -22,6 +22,10 @@ class EventDispatcher implements \CodeHuiter\Service\EventDispatcher
     public function __construct(Application $application)
     {
         $this->application = $application;
+        $events = $this->application->config->eventsConfig->events;
+        foreach ($events as $event) {
+            $this->subscribe($event[0], $event[1]);
+        }
     }
 
     public function subscribe(string $eventName, string $subscriberServiceName): void

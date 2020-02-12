@@ -3,8 +3,10 @@
 namespace CodeHuiter\Core\ByDefault;
 
 use CodeHuiter\Config\RequestConfig;
+use CodeHuiter\Core\RequestFile;
 use CodeHuiter\Exception\InvalidRequestException;
 use CodeHuiter\Exception\ServerConfigException;
+use CodeHuiter\Modifier\StringModifier;
 
 class Request implements \CodeHuiter\Core\Request
 {
@@ -179,6 +181,41 @@ class Request implements \CodeHuiter\Core\Request
             return $default;
         }
         return $value;
+    }
+
+    public function getFile(string $key): RequestFile
+    {
+        return $this->parseFileData($_FILES[$key] ?? []);
+    }
+
+    public function getFiles(string $key): array
+    {
+        $result = [];
+        $filesData = $_FILES[$key] ?? [];
+        foreach ($filesData as $fileData) {
+            if (!is_array($fileData)) {
+                continue;
+            }
+            $result[] = $this->parseFileData($fileData);
+        }
+        return $result;
+    }
+
+    private function parseFileData(array $fileData): RequestFile
+    {
+        if (!$fileData) {
+            return new RequestFile('', '', 'File not uploaded');
+        }
+        $errorCode = $fileData['error'] ?? null;
+        $fileName = StringModifier::textForHtml($fileData['name'] ?? 'undefined');
+        $fileTemp = $fileData['tmp_name'] ?? '';
+        if (($fileData['error'] ?? 100) !== 0 ) {
+            return new RequestFile('', $fileName, "request:file_uploaded_with_error_$errorCode");
+        }
+        if (!$fileTemp) {
+            return new RequestFile('', $fileName, 'request:file_uploaded_with_error_file_not_found');
+        }
+        return new RequestFile($fileTemp, $fileName, '');
     }
 
     public function getRequestValue(string $key, string $default = ''): string

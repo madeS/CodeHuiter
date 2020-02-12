@@ -21,7 +21,7 @@ class SearchListResult
      */
     private $pages;
 
-    public function __construct(array $items, array $filters, array $pages, ?int $itemsCount = null)
+    public function __construct(array $items, array $filters, array $pages, int $itemsCount = null)
     {
         $this->items = $items;
         $this->filters = $filters;
@@ -34,7 +34,7 @@ class SearchListResult
         return $this->items;
     }
 
-    public function getItemsCount(): ?int
+    public function getItemsCount(): int
     {
         return $this->itemsCount;
     }

@@ -172,13 +172,15 @@ class MjsaAjaxResponse implements AjaxResponse
             $options['closeBtnClass'] = 'ficon-cancel';
         }
         $this->eventResponse .= $this->mjsaMark
+            . '<noservice_separator/>'
             . '<open_content_popup_separator/>'
             . ($name ? $name : 'defaultPopup')
             . '<open_content_data/>'
             . $content
             . '<open_content_data/>'
             . ($options ? StringModifier::jsonEncode($options) : '{}')
-            . '<open_content_popup_separator/>';
+            . '<open_content_popup_separator/>'
+            . '<noservice_separator/>';
         return $this;
     }
 

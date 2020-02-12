@@ -4,6 +4,7 @@ namespace CodeHuiter\Database;
 
 use CodeHuiter\Core\Application;
 use CodeHuiter\Service\ByDefault\EventDispatcher\RelationalModelDeletingEvent;
+use CodeHuiter\Service\ByDefault\EventDispatcher\RelationalModelUpdatedEvent;
 use CodeHuiter\Service\DateService;
 use CodeHuiter\Service\EventDispatcher;
 use CodeHuiter\Service\Logger;
@@ -132,6 +133,8 @@ class RelationalModelRepository
             $model->setAutoIncrementField($primaryKey);
         }
         $model->initOriginals();
+        $this->getEventDispatcher()->fire(new RelationalModelUpdatedEvent($model, $set));
+
         return $model;
     }
 
@@ -152,6 +155,11 @@ class RelationalModelRepository
         // TODO Add AutoStart Transaction
         $this->getEventDispatcher()->fire(new RelationalModelDeletingEvent($model));
         return (bool)$this->getDB()->delete($this->table, $where);
+    }
+
+    public function update(array $where, array $set): void
+    {
+        $this->getDB()->update($this->table, $where, $set);
     }
 
     /**

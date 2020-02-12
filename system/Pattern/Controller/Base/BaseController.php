@@ -10,7 +10,7 @@ use CodeHuiter\Core\Exception\ExceptionProcessor;
 use CodeHuiter\Exception\CodeHuiterException;
 use CodeHuiter\Exception\ErrorException;
 use CodeHuiter\Pattern\Module\Auth\AuthService;
-use CodeHuiter\Pattern\Module\Auth\Model\UserInterface;
+use CodeHuiter\Pattern\Module\Auth\Model\User;
 use CodeHuiter\Pattern\SearchList\SearchListResult;
 use CodeHuiter\Pattern\Service\Compressor;
 
@@ -23,8 +23,8 @@ use CodeHuiter\Pattern\Service\Compressor;
  * @property-read \App\Service\Link $links
  * @see PatternConfig::SERVICE_KEY_LINKS There are Forward Usages
  *
- * @property-read \CodeHuiter\Pattern\Service\Media $media
- * @see PatternConfig::SERVICE_KEY_MEDIA There are Forward Usages
+ * @property-read \CodeHuiter\Pattern\Service\Content $content
+ * @see PatternConfig::SERVICE_KEY_CONTENT There are Forward Usages
  *
  * @property-read \CodeHuiter\Pattern\Module\Auth\AuthService $auth
  * @see PatternConfig::SERVICE_KEY_AUTH There are Forward Usages
@@ -110,7 +110,7 @@ class BaseController extends Controller
     ) {
         $those = $this;
         $success = $this->auth->initUser($require, $requiredGroups , [
-            AuthService::GROUP_AUTH_SUCCESS => function(/** @noinspection PhpUnusedParameterInspection */UserInterface $user) use ($those) {
+            AuthService::GROUP_AUTH_SUCCESS => function(/** @noinspection PhpUnusedParameterInspection */ User $user) use ($those) {
                 // User Not authed
                 if ($this->ajaxResponse->isAjaxRequested($this->request)) {
                     $this->data['in_popup'] = true;
@@ -124,7 +124,7 @@ class BaseController extends Controller
                     $those->response->location($those->auth->config->urlAuth . $addUrl, true);
                 }
             },
-            AuthService::GROUP_NOT_BANNED => function(/** @noinspection PhpUnusedParameterInspection */UserInterface $user) use ($those) {
+            AuthService::GROUP_NOT_BANNED => function(/** @noinspection PhpUnusedParameterInspection */ User $user) use ($those) {
                 // User banned
                 if ($this->ajaxResponse->isAjaxRequested($this->request)) {
                     $this->ajaxResponse
@@ -136,7 +136,7 @@ class BaseController extends Controller
                     $those->response->location($those->auth->config->urlBan, true);
                 }
             },
-            AuthService::GROUP_ACTIVE => function(/** @noinspection PhpUnusedParameterInspection */UserInterface $user) use ($those) {
+            AuthService::GROUP_ACTIVE => function(/** @noinspection PhpUnusedParameterInspection */ User $user) use ($those) {
                 // User banned
                 if ($this->ajaxResponse->isAjaxRequested($this->request)) {
                     $this->ajaxResponse

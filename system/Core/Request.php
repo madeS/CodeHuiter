@@ -37,6 +37,14 @@ interface Request
 
     public function getPost(string $key, string $default = ''): string;
 
+    public function getFile(string $key): RequestFile;
+
+    /**
+     * @param string $key
+     * @return RequestFile[]
+     */
+    public function getFiles(string $key): array;
+
     public function getRequestValue(string $key, string $default = ''): string;
 
     public function getCookie(string $key, string $default = ''): string;

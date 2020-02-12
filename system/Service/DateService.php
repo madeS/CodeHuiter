@@ -3,7 +3,7 @@
 namespace CodeHuiter\Service;
 
 use CodeHuiter\Exception\Runtime\DateTimeConvertException;
-use CodeHuiter\Pattern\Module\Auth\Model\UserInterface;
+use CodeHuiter\Pattern\Module\Auth\Model\User;
 use DateInterval;
 use DateTimeImmutable;
 use DateTimeZone;
@@ -20,7 +20,7 @@ interface DateService
      * @param int|null $timestamp
      * @return DateService
      */
-    public function fromTime(?int $timestamp = null): DateService;
+    public function fromTime(int $timestamp = null): DateService;
 
     /**
      * Create DateService State for time from string
@@ -42,10 +42,10 @@ interface DateService
     /**
      * Prepare time for format for user using his timezone
      *
-     * @param UserInterface|null $user
+     * @param User|null $user
      * @return DateService
      */
-    public function forUser(UserInterface $user = null): DateService;
+    public function forUser(User $user = null): DateService;
 
     /**
      * Format time to timestamp
@@ -70,7 +70,7 @@ interface DateService
      * @param int|null $time
      * @return string
      */
-    public function sqlTime(?int $time = null): string;
+    public function sqlTime(int $time = null): string;
 
     /**
      * Modify timestamp for days

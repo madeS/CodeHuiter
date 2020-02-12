@@ -5,7 +5,7 @@ namespace CodeHuiter\Service\ByDefault;
 use CodeHuiter\Config\DateConfig;
 use CodeHuiter\Core\Application;
 use CodeHuiter\Exception\Runtime\DateTimeConvertException;
-use CodeHuiter\Pattern\Module\Auth\Model\UserInterface;
+use CodeHuiter\Pattern\Module\Auth\Model\User;
 use DateInterval;
 use DateTime;
 use DateTimeImmutable;
@@ -56,7 +56,7 @@ class DateService implements \CodeHuiter\Service\DateService
      * @param int|null $timestamp
      * @return \CodeHuiter\Service\DateService
      */
-    public function fromTime(?int $timestamp = null): \CodeHuiter\Service\DateService
+    public function fromTime(int $timestamp = null): \CodeHuiter\Service\DateService
     {
         $this->stateTime = $timestamp === null ? $this->now : $timestamp;
         $this->outTimezone = null;
@@ -91,10 +91,10 @@ class DateService implements \CodeHuiter\Service\DateService
     }
 
     /**
-     * @param UserInterface|null $user
+     * @param User|null $user
      * @return \CodeHuiter\Service\DateService
      */
-    public function forUser(UserInterface $user = null): \CodeHuiter\Service\DateService
+    public function forUser(User $user = null): \CodeHuiter\Service\DateService
     {
         if ($user && $user->getTimezone() !== '') {
             $this->outTimezone = (int)$user->getTimezone();
@@ -175,7 +175,7 @@ class DateService implements \CodeHuiter\Service\DateService
      * @param int|null $time
      * @return string
      */
-    public function sqlTime(?int $time = null): string
+    public function sqlTime(int $time = null): string
     {
         return $this->fromTime($time)->forTimezone('UTC')->toFormat('Y-m-d H:i:s');
     }

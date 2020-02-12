@@ -4,12 +4,12 @@ namespace CodeHuiter\Pattern\Module\Auth\Event;
 
 use CodeHuiter\Config\AuthConfig;
 use CodeHuiter\Modifier\ArrayModifier;
-use CodeHuiter\Pattern\Module\Auth\Model\UserInterface;
+use CodeHuiter\Pattern\Module\Auth\Model\User;
 use CodeHuiter\Service\EventDispatcher\Event;
 
 class GroupsChangedEvent implements Event
 {
-    /** @var UserInterface */
+    /** @var User */
     public $userInfo;
 
     /** @var int[] */
@@ -19,10 +19,10 @@ class GroupsChangedEvent implements Event
     public $removedGroups;
 
     /**
-     * @param UserInterface $userInfo
+     * @param User $userInfo
      * @param int[] $previousGroups
      */
-    public function __construct(UserInterface $userInfo, array $previousGroups)
+    public function __construct(User $userInfo, array $previousGroups)
     {
         $this->userInfo = $userInfo;
         $diff = ArrayModifier::diff($previousGroups, $userInfo->getGroups());

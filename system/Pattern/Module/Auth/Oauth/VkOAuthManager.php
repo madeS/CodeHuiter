@@ -4,8 +4,8 @@ namespace CodeHuiter\Pattern\Module\Auth\Oauth;
 
 use CodeHuiter\Core\Application;
 use CodeHuiter\Modifier\StringModifier;
-use CodeHuiter\Pattern\Module\Auth\Model\UserInterface;
-use CodeHuiter\Pattern\Module\Auth\Model\UserRepositoryInterface;
+use CodeHuiter\Pattern\Module\Auth\Model\User;
+use CodeHuiter\Pattern\Module\Auth\Model\UserRepository;
 use CodeHuiter\Service\Logger;
 use CodeHuiter\Service\Network;
 
@@ -110,7 +110,7 @@ class VkOAuthManager implements OAuthManager
         }
     }
 
-    public function iframeUser(int $viewerId = 0, $authKey = ''): ?int
+    public function iframeUser(int $viewerId = 0, $authKey = ''): int
     {
         if ($authKey === md5($this->iframeAppId.'_'.$viewerId.'_'.$this->iframeSecret)) {
             return $viewerId;
@@ -206,7 +206,7 @@ class VkOAuthManager implements OAuthManager
         );
     }
 
-    public function api(UserInterface $user, string $method, array $params): ?array
+    public function api(User $user, string $method, array $params): ?array
     {
         $dataInfo = $user->getDataInfo();
         $accessToken = $dataInfo['oauthData']['vk']['accessToken'] ?? '';
@@ -240,8 +240,8 @@ class VkOAuthManager implements OAuthManager
                 // We need reset the token
                 $dataInfo['oauthData']['vk']['accessToken'] = '';
                 $user->setDataInfo($dataInfo);
-                /** @var UserRepositoryInterface $userRepositoryInterface */
-                $userRepositoryInterface = Application::getInstance()->get(UserRepositoryInterface::class);
+                /** @var UserRepository $userRepositoryInterface */
+                $userRepositoryInterface = Application::getInstance()->get(UserRepository::class);
                 $userRepositoryInterface->save($user);
 
                 $this->lastErrorMessage = 'Token is expired';

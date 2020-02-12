@@ -1,6 +1,6 @@
 <?php
 
-namespace CodeHuiter\Pattern\SearchList\Searcher;
+namespace CodeHuiter\Pattern\Module\Auth\SearchList;
 
 use CodeHuiter\Pattern\Module\Auth\AuthService;
 use CodeHuiter\Pattern\Module\Auth\Model\UserModel;
@@ -8,8 +8,22 @@ use CodeHuiter\Pattern\SearchList\MultiTableSearcher\MultiTableSearcher;
 use CodeHuiter\Pattern\SearchList\SearchListResult;
 use CodeHuiter\Service\DateService;
 
+/**
+ * This is legacy code. Dont use this code class, if it is not legacy
+ */
 class UserSearcher extends MultiTableSearcher
 {
+    public const SQL_SELECT_ADDIT_USER = "
+			, users.id as inn_user_id 
+			, users.name as inn_user_name 
+			, users.level as inn_user_level
+			, users.login as inn_user_login
+			, users.firstname as inn_user_firstname
+			, users.lastname as inn_user_lastname
+			, users.picture_id as inn_user_picture_id
+			, users.picture_preview as inn_user_picture_preview
+		";
+
     public function search(
         array $options = [],
         array $filters = [],
@@ -43,7 +57,7 @@ class UserSearcher extends MultiTableSearcher
                 $this->bindings[":{$this->sqls_table}_like_lastname"] = "%{$filters['query']}%";
                 $this->bindings[":{$this->sqls_table}_alias"] = $filters['query'];
             }
-            if ($filters['show'] ?? ''){
+            if ($filters['show'] ?? '') {
                 if ($filters['show'] === 'random'){
                     $this->sqls_order =  " ORDER BY RAND() ";
                     $requireResultCount = false;

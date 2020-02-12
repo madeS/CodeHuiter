@@ -167,6 +167,11 @@ class StringModifier
         }
         $ret_date = $m_date;
         $date_arr = explode('-', $m_date);
+        if ($to === 'm') {
+            $ret_date = (int)$date_arr[0] . '-'
+                . str_pad((int)$date_arr[1], 2, '0', STR_PAD_LEFT) . '-'
+                . str_pad((int)$date_arr[2], 2, '0', STR_PAD_LEFT);
+        }
         if ($to === 'en') {
             $ret_date = str_pad((int)$date_arr[1], 2, '0', STR_PAD_LEFT).'/'
                 .str_pad((int)$date_arr[2], 2, '0', STR_PAD_LEFT).'/'

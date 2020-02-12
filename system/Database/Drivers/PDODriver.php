@@ -622,40 +622,45 @@ class PDODriver extends AbstractDatabase
 
         if ($whereArray) {
             $sqlWherePartArray = [];
-            foreach ($whereArray as $key => $value) {
-                if (is_array($value)) {
-                    $specialWhere = false;
-                    if (isset($value['>'])) {
-                        $sqlWherePartArray[] = " `{$key}` > :w_{$key} ";
-                        $pdoParams[":w_{$key}"] = $value['>'];
-                        $specialWhere = true;
-                    }
-                    if (isset($value['<'])) {
-                        $sqlWherePartArray[] = " `{$key}` < :w_{$key} ";
-                        $pdoParams[":w_{$key}"] = $value['<'];
-                        $specialWhere = true;
-                    }
-                    if (isset($value['like'])) {
-                        $sqlWherePartArray[] = " `{$key}` LIKE :w_{$key} ";
-                        $pdoParams[":w_{$key}"] = $value['like'];
-                        $specialWhere = true;
-                    }
-                    if (!$specialWhere) {
-                        $tmpSqlArr = [];
-                        foreach ($value as $valueIndex => $valueItem) {
-                            $tmpSqlArr[] = " :w_{$key}_{$valueIndex} ";
-                            $pdoParams[":w_{$key}_{$valueIndex}"] = $valueItem;
+            foreach ($whereArray as $keys => $value) {
+                $sqlWhereKeyPartArray = [];
+                $keysArray = explode(',', $keys);
+                foreach ($keysArray as $strKey) {
+                    if (is_array($value)) {
+                        $specialWhere = false;
+                        if (isset($value['>'])) {
+                            $sqlWhereKeyPartArray[] = " `{$strKey}` > :w_{$strKey} ";
+                            $pdoParams[":w_{$strKey}"] = $value['>'];
+                            $specialWhere = true;
                         }
-                        if ($tmpSqlArr) {
-                            $sqlWherePartArray[] = " `{$key}` IN(" . implode(',', $tmpSqlArr) . ") ";
-                        } else {
-                            $sqlWherePartArray[] = " 0 ";
+                        if (isset($value['<'])) {
+                            $sqlWhereKeyPartArray[] = " `{$strKey}` < :w_{$strKey} ";
+                            $pdoParams[":w_{$strKey}"] = $value['<'];
+                            $specialWhere = true;
                         }
+                        if (isset($value['like'])) {
+                            $sqlWhereKeyPartArray[] = " `{$strKey}` LIKE :w_{$strKey} ";
+                            $pdoParams[":w_{$strKey}"] = $value['like'];
+                            $specialWhere = true;
+                        }
+                        if (!$specialWhere) {
+                            $tmpSqlArr = [];
+                            foreach ($value as $valueIndex => $valueItem) {
+                                $tmpSqlArr[] = " :w_{$strKey}_{$valueIndex} ";
+                                $pdoParams[":w_{$strKey}_{$valueIndex}"] = $valueItem;
+                            }
+                            if ($tmpSqlArr) {
+                                $sqlWhereKeyPartArray[] = " `{$strKey}` IN(" . implode(',', $tmpSqlArr) . ") ";
+                            } else {
+                                $sqlWhereKeyPartArray[] = " 0 ";
+                            }
+                        }
+                    } else {
+                        $sqlWhereKeyPartArray[] = " `{$strKey}` = :w_{$strKey} ";
+                        $pdoParams[":w_{$strKey}"] = $value;
                     }
-                } else {
-                    $sqlWherePartArray[] = " `{$key}` = :w_{$key} ";
-                    $pdoParams[":w_{$key}"] = $value;
                 }
+                $sqlWherePartArray[] = implode(' OR ', $sqlWhereKeyPartArray);
             }
             $result['where'] = implode(' AND ', $sqlWherePartArray);
         } else {
@@ -664,9 +669,9 @@ class PDODriver extends AbstractDatabase
 
         if ($setArray) {
             $sqlSetPartArray = [];
-            foreach ($setArray as $key => $value) {
-                $sqlSetPartArray[] = " `{$key}` = :s_{$key} ";
-                $pdoParams[":s_{$key}"] = $value;
+            foreach ($setArray as $strKey => $value) {
+                $sqlSetPartArray[] = " `{$strKey}` = :s_{$strKey} ";
+                $pdoParams[":s_{$strKey}"] = $value;
             }
             $result['set'] = implode(' , ', $sqlSetPartArray);
         }
@@ -674,10 +679,10 @@ class PDODriver extends AbstractDatabase
         if ($insertArray) {
             $sqlInsertKeysPartArray = [];
             $sqlInsertValuesPartArray = [];
-            foreach ($insertArray as $key => $value) {
-                $sqlInsertKeysPartArray[] = " `{$key}` ";
-                $sqlInsertValuesPartArray[] = " :i_{$key} ";
-                $pdoParams[":i_{$key}"] = $value;
+            foreach ($insertArray as $strKey => $value) {
+                $sqlInsertKeysPartArray[] = " `{$strKey}` ";
+                $sqlInsertValuesPartArray[] = " :i_{$strKey} ";
+                $pdoParams[":i_{$strKey}"] = $value;
             }
             $result['insert_keys'] = implode(' , ', $sqlInsertKeysPartArray);
             $result['insert_values'] = implode(' , ', $sqlInsertValuesPartArray);
@@ -692,7 +697,7 @@ class PDODriver extends AbstractDatabase
     }
 
     /**
-     * @param array $orderArray [['field' => string, 'reverse' => bool],[],...]
+     * @param array $orderArray ['field1' => 'asc', 'field2' => 'desc']
      * @return string
      */
     public static function sqlOrder(array $orderArray): string

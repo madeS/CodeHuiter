@@ -6,7 +6,14 @@ use CodeHuiter\Core\Application;
 use CodeHuiter\Core\Request;
 use CodeHuiter\Core\Response;
 use CodeHuiter\Pattern\Module\Auth\UserService;
+use CodeHuiter\Pattern\Module\Connector\ConnectAccessibility;
+use CodeHuiter\Pattern\Module\Connector\ConnectorService;
 use CodeHuiter\Pattern\Module\Developing\DevelopingService;
+use CodeHuiter\Pattern\Module\Media\Event\MediaSubscriber;
+use CodeHuiter\Pattern\Module\Media\MediaService;
+use CodeHuiter\Pattern\Module\Media\Model\MediaModel;
+use CodeHuiter\Pattern\Module\Media\Model\MediaModelRepository;
+use CodeHuiter\Pattern\Module\Media\Model\MediaRepository;
 use CodeHuiter\Pattern\Service\ByDefault;
 use CodeHuiter\Pattern\Service\AjaxResponse;
 use CodeHuiter\Pattern\Service\Validator;
@@ -14,11 +21,13 @@ use CodeHuiter\Service\ByDefault\PhpRenderer;
 use CodeHuiter\Service\DateService;
 use CodeHuiter\Pattern\Module\Auth\AuthService;
 use CodeHuiter\Pattern\Module\Auth\Model\UserModelRepository;
-use CodeHuiter\Pattern\Module\Auth\Model\UserRepositoryInterface;
+use CodeHuiter\Pattern\Module\Auth\Model\UserRepository;
 use CodeHuiter\Pattern\Service\Compressor;
 use CodeHuiter\Pattern\Service\Link;
-use CodeHuiter\Pattern\Service\Media;
+use CodeHuiter\Pattern\Service\Content;
+use CodeHuiter\Service\FileStorage;
 use CodeHuiter\Service\Language;
+use CodeHuiter\Service\Logger;
 
 class PatternConfig extends Config
 {
@@ -29,16 +38,20 @@ class PatternConfig extends Config
     public $compressorConfig;
     /** @var LinksConfig */
     public $linksConfig;
-    /** @var MediaConfig */
-    public $mediaConfig;
+    /** @var ContentConfig */
+    public $contentConfig;
     /** @var AuthConfig */
     public $authConfig;
+    /** @var ConnectorConfig */
+    public $connectorConfig;
+    /** @var MediaConfig */
+    public $mediaConfig;
 
     public const SERVICE_KEY_COMPRESSOR = 'compressor';
     public const SERVICE_KEY_MJSA_RESPONSE = 'ajaxResponse';
     public const SERVICE_KEY_VALIDATOR = 'validator';
     public const SERVICE_KEY_LINKS = 'links';
-    public const SERVICE_KEY_MEDIA = 'media';
+    public const SERVICE_KEY_CONTENT = 'content';
     public const SERVICE_KEY_AUTH = 'auth';
     public const SERVICE_KEY_USER = 'userService';
 
@@ -124,11 +137,11 @@ class PatternConfig extends Config
         /**
          * Media Service
          */
-        $this->services[Media::class] = [self::OPT_KEY_CALLBACK => static function (Application $app) {
-            return new Media($app->config->mediaConfig);
+        $this->services[Content::class] = [self::OPT_KEY_CALLBACK => static function (Application $app) {
+            return new Content($app->config->contentConfig, $app->get(FileStorage::class), $app->get(Logger::class));
         }];
-        $this->injectedServices[self::SERVICE_KEY_MEDIA] = Media::class;
-        $this->mediaConfig = new MediaConfig();
+        $this->injectedServices[self::SERVICE_KEY_CONTENT] = Content::class;
+        $this->contentConfig = new ContentConfig();
 
         /**
          * Validator Service
@@ -150,7 +163,7 @@ class PatternConfig extends Config
                     $app->get(Language::class),
                     $app->get(Request::class),
                     $app->get(Response::class),
-                    $app->get(UserRepositoryInterface::class)
+                    $app->get(UserRepository::class)
                 );
             },
             self::OPT_KEY_SCOPE => self::OPT_KEY_SCOPE_REQUEST,
@@ -168,9 +181,43 @@ class PatternConfig extends Config
         $this->injectedServices[self::SERVICE_KEY_USER] = UserService::class;
 
         /**
-         * UserRepository
+         * Repositories
          */
-        $this->services[UserRepositoryInterface::class] = [self::OPT_KEY_CLASS_APP => UserModelRepository::class, self::OPT_KEY_SCOPE => self::OPT_KEY_SCOPE_REQUEST,];
+        $this->services[UserRepository::class] = [self::OPT_KEY_CLASS_APP => UserModelRepository::class, self::OPT_KEY_SCOPE => self::OPT_KEY_SCOPE_REQUEST,];
+        $this->services[MediaRepository::class] = [self::OPT_KEY_CLASS_APP => MediaModelRepository::class, self::OPT_KEY_SCOPE => self::OPT_KEY_SCOPE_REQUEST,];
+
+
+        /**
+         * Connector Service
+         */
+        $this->services[ConnectorService::class] = [
+            self::OPT_KEY_CALLBACK => static function (Application $app) {
+                return new ConnectorService($app, $app->config->connectorConfig);
+            },
+        ];
+        $this->services[ConnectAccessibility::class] = [
+            self::OPT_KEY_CALLBACK => static function (Application $app) {
+                return new ConnectAccessibility($app);
+            },
+        ];
+        $this->connectorConfig = new ConnectorConfig();
+
+        /**
+         * Media Service
+         */
+        $this->services[MediaService::class] = [
+            self::OPT_KEY_CALLBACK => static function (Application $app) {
+                return new MediaService($app);
+            },
+        ];
+        $this->mediaConfig = new MediaConfig();
+
+        /**
+         * Subscribes
+         */
+        $this->services[MediaSubscriber::class] = [self::OPT_KEY_CLASS_APP => MediaSubscriber::class, self::OPT_KEY_SCOPE => self::OPT_KEY_SCOPE_REQUEST];
+        $this->eventsConfig->events[] = [AuthConfig::EVENT_USER_JOIN_ACCOUNT, MediaSubscriber::class];
+        $this->eventsConfig->events[] = [EventsConfig::modelUpdatedName(MediaModel::class), MediaSubscriber::class];
     }
 }
 
@@ -251,7 +298,34 @@ class LinksConfig
     ];
 }
 
+class ConnectorConfig
+{
+    public const TYPE_TEMP = 'temp';
+    public const TYPE_PROFILE = 'profile';
+    public const TYPE_MEDIA = 'media';
+
+    public const TYPE_PHOTO = 'photo';
+    public const TYPE_ALBUM = 'album';
+
+    public $connectObjectRepositories = [
+        self::TYPE_PROFILE => UserRepository::class
+    ];
+}
+
 class MediaConfig
+{
+    public $viewsPath = SYSTEM_PATH . 'Pattern/Module/Media/View/'; // Copy to App Views for custom views
+
+    public $watermark = [
+        // Set null if not need watermark
+        'png' => 'moponline-water.png',
+        'png_percent' => 10,
+        'png_x_position' => 'right',
+        'png_y_position' => 'bottom',
+    ];
+}
+
+class ContentConfig
 {
     public $storageMap = [
         'watermarks' => [

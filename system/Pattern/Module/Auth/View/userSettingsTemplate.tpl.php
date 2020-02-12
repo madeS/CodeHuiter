@@ -1,5 +1,5 @@
 <?php if (false) require_once SYSTEM_PATH . '/Pattern/View/IDE_Helper.tpl.php';
-/** @var \CodeHuiter\Pattern\Module\Auth\Model\UserInterface $user */
+/** @var \CodeHuiter\Pattern\Module\Auth\Model\User $user */
 /** @var array $userDataInfoFields */
 use CodeHuiter\Modifier\StringModifier;
 ?>

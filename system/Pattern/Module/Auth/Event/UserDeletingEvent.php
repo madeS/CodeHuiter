@@ -3,15 +3,15 @@
 namespace CodeHuiter\Pattern\Module\Auth\Event;
 
 use CodeHuiter\Config\AuthConfig;
-use CodeHuiter\Pattern\Module\Auth\Model\UserInterface;
+use CodeHuiter\Pattern\Module\Auth\Model\User;
 use CodeHuiter\Service\EventDispatcher\Event;
 
 class UserDeletingEvent implements Event
 {
-    /** @var UserInterface */
+    /** @var User */
     public $userInfo;
 
-    public function __construct(UserInterface $userInfo)
+    public function __construct(User $userInfo)
     {
         $this->userInfo = $userInfo;
     }

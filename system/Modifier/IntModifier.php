@@ -2,9 +2,11 @@
 
 namespace CodeHuiter\Modifier;
 
+use CodeHuiter\Exception\CodeHuiterRuntimeException;
+
 class IntModifier
 {
-    public static function normalizeBetween(int $value, ?int $min = null, ?int $max = null): int
+    public static function normalizeBetween(int $value, int $min = null, int $max = null): int
     {
         if ($min !== null && $value < $min) {
             /** @noinspection CallableParameterUseCaseInTypeContextInspection */
@@ -15,5 +17,14 @@ class IntModifier
             $value = $max;
         }
         return $value;
+    }
+
+    public static function random(int $min, int $max): int
+    {
+        try {
+            return random_int($min, $max);
+        } catch (\Exception $exception) {
+            throw new CodeHuiterRuntimeException('Cant run random_int command');
+        }
     }
 }

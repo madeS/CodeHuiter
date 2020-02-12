@@ -4,8 +4,8 @@ namespace CodeHuiter\Pattern\Module\Auth\Controller;
 
 use CodeHuiter\Core\Response;
 use CodeHuiter\Pattern\Controller\Base\BaseController;
-use CodeHuiter\Pattern\Module\Auth\Model\UserRepositoryInterface;
-use CodeHuiter\Pattern\SearchList\Searcher\UserSearcher;
+use CodeHuiter\Pattern\Module\Auth\Model\UserRepository;
+use CodeHuiter\Pattern\Module\Auth\SearchList\UserSearcher;
 
 class UsersController extends BaseController
 {
@@ -34,8 +34,8 @@ class UsersController extends BaseController
     {
         $this->initWithAuth(false);
 
-        /** @var UserRepositoryInterface $userRepository */
-        $userRepository = $this->app->get(UserRepositoryInterface::class);
+        /** @var UserRepository $userRepository */
+        $userRepository = $this->app->get(UserRepository::class);
         $user = $userRepository->getById($id);
         if (!$user) {
             $this->errorPageByCode(Response::HTTP_CODE_NOT_FOUND);

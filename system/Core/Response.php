@@ -7,6 +7,7 @@ namespace CodeHuiter\Core;
  */
 interface Response
 {
+    public const HTTP_CODE_BAD_REQUEST = 400;
     public const HTTP_CODE_FORBIDDEN = 403;
     public const HTTP_CODE_NOT_FOUND = 404;
     public const HTTP_CODE_MOVED_PERMANENTLY = 301;
@@ -79,7 +80,7 @@ interface Response
      * @param bool $replace
      * @param int|null $code
      */
-    public function setHeaders(array $headerStrings, bool $replace = false, ?int $code = null): void;
+    public function setHeaders(array $headerStrings, bool $replace = false, int $code = null): void;
 
     /**
      * Append body to response

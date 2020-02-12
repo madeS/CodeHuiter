@@ -9,8 +9,9 @@ use CodeHuiter\Core\Response;
 use CodeHuiter\Pattern\Exception\Runtime\AuthRuntimeException;
 use CodeHuiter\Pattern\Module\Auth\Event\GroupsChangedEvent;
 use CodeHuiter\Pattern\Module\Auth\Event\JoinAccountsEvent;
-use CodeHuiter\Pattern\Module\Auth\Model\UserInterface;
-use CodeHuiter\Pattern\Module\Auth\Model\UserRepositoryInterface;
+use CodeHuiter\Pattern\Module\Auth\Model\User;
+use CodeHuiter\Pattern\Module\Auth\Model\UserModel;
+use CodeHuiter\Pattern\Module\Auth\Model\UserRepository;
 use CodeHuiter\Pattern\Module\Auth\Oauth\OAuthData;
 use CodeHuiter\Pattern\Result\ModuleResult;
 use CodeHuiter\Pattern\Service\AjaxResponse;
@@ -31,7 +32,7 @@ class AuthService
     /** @var Application */
     protected $app;
 
-    /** @var UserRepositoryInterface */
+    /** @var UserRepository */
     protected $userRepository;
 
     /** @var DateService */
@@ -46,7 +47,8 @@ class AuthService
     /** @var Response  */
     protected $response = null;
 
-    /** @var UserInterface */
+    // TODO: Replace external call to getUser, set private
+    /** @var User */
     public $user = null;
 
     /** @var AuthConfig  */
@@ -84,7 +86,7 @@ class AuthService
      * @param Language $language
      * @param Request $request
      * @param Response $response
-     * @param UserRepositoryInterface $userRepository
+     * @param UserRepository $userRepository
      */
     public function __construct(
         Application $application,
@@ -93,7 +95,7 @@ class AuthService
         Language $language,
         Request $request,
         Response $response,
-        UserRepositoryInterface $userRepository
+        UserRepository $userRepository
     ) {
         $this->app = $application;
         $this->config = $config;
@@ -182,13 +184,20 @@ class AuthService
         return true;
     }
 
+    public function getCurrentUser(): User
+    {
+        if ($this->user === null) {
+            $this->initUser(false);
+        }
+        return $this->user;
+    }
 
     /**
-     * @param UserInterface $user
+     * @param User $user
      * @param int[] $requiredGroups
      * @return int[]
      */
-    protected function userNotInGroups(UserInterface $user, array $requiredGroups): array
+    protected function userNotInGroups(User $user, array $requiredGroups): array
     {
         $result = [];
         foreach ($requiredGroups as $requiredGroup) {
@@ -225,7 +234,7 @@ class AuthService
     /**
      * @param int $id
      * @param string $sig
-     * @return bool|UserInterface
+     * @return bool|User
      */
     protected function getUserInfo(int $id, string $sig)
     {
@@ -236,6 +245,9 @@ class AuthService
 
         if (isset($this->commonHash) && md5($sig) === $this->commonHash) {
             $userInfo->setGroups(array_merge($userInfo->getGroups(), $this->groups));
+            if ($userInfo instanceof UserModel) {
+                $userInfo->initOriginals();
+            }
             return $userInfo;
         }
         if (!$sig || $sig === 'NULL' || $sig !== $userInfo->getSignature()) {
@@ -258,25 +270,25 @@ class AuthService
 
     /**
      * @param int $id
-     * @return UserInterface|null
+     * @return User|null
      */
-    public function getUserById(int $id): ?UserInterface
+    public function getUserById(int $id): ?User
     {
         return $this->userRepository->getById($id);
     }
 
     /**
-     * @return UserInterface
+     * @return User
      */
-    public function getDefaultUser(): UserInterface
+    public function getDefaultUser(): User
     {
         return $this->userRepository->newInstance();
     }
 
     /**
-     * @param UserInterface $userInfo
+     * @param User $userInfo
      */
-    protected function updateSig(UserInterface $userInfo): void
+    protected function updateSig(User $userInfo): void
     {
         $oldSig = '';
         if ($this->config->multiconnectAvailable) {
@@ -305,10 +317,10 @@ class AuthService
     }
 
     /**
-     * @param UserInterface $userInfo
+     * @param User $userInfo
      * @param bool $withLogout
      */
-    public function resetSig(UserInterface $userInfo, $withLogout = true): void
+    public function resetSig(User $userInfo, $withLogout = true): void
     {
         $userInfo->setSignature('');
         $this->userRepository->save($userInfo);
@@ -355,11 +367,11 @@ class AuthService
     }
 
     /**
-     * @param UserInterface $user
+     * @param User $user
      * @param string $password
      * @return bool
      */
-    protected function isValidPassword(UserInterface $user, $password): bool
+    protected function isValidPassword(User $user, $password): bool
     {
         if ($password === '') {
             return false;
@@ -442,10 +454,10 @@ class AuthService
     }
 
     /**
-     * @param UserInterface $user
+     * @param User $user
      * @return ModuleResult
      */
-    protected function sendEmailConfirm(UserInterface $user): ModuleResult
+    protected function sendEmailConfirm(User $user): ModuleResult
     {
         $userDataInfo = $user->getDataInfo();
         $key = $this->getDataInfoTokenKey(self::TOKEN_TYPE_CONFIRM_EMAIL);
@@ -496,10 +508,10 @@ class AuthService
     }
 
     /**
-     * @param UserInterface $user
+     * @param User $user
      * @return ModuleResult
      */
-    protected function sendPasswordRecovery(UserInterface $user): ModuleResult
+    protected function sendPasswordRecovery(User $user): ModuleResult
     {
         $userDataInfo = $user->getDataInfo();
         $key = $this->getDataInfoTokenKey(self::TOKEN_TYPE_RECOVERY);
@@ -530,7 +542,7 @@ class AuthService
      * @param AjaxResponse $ajaxResponse
      * @param array $input
      * @param array $additionalValidator
-     * @param UserInterface|null $connectUi
+     * @param User|null $connectUi
      * @return ValidatedData|bool validatedData or false if not valid
      */
     public function registerByEmailValidator(Validator $validator, AjaxResponse $ajaxResponse, $input, $additionalValidator = [], $connectUi = null): ?ValidatedData
@@ -558,7 +570,7 @@ class AuthService
      * @param string $email
      * @param string $password
      * @param string $login
-     * @param UserInterface|null $targetUi
+     * @param User|null $targetUi
      * @param string $emailKey
      * @param string $passwordKey
      * @param string $loginKey
@@ -568,7 +580,7 @@ class AuthService
         string $email,
         string $password,
         string $login,
-        ?UserInterface$targetUi,
+        ?User$targetUi,
         string $emailKey = 'email',
         string $passwordKey = 'password',
         string $loginKey = 'login'
@@ -672,12 +684,12 @@ class AuthService
     }
 
     /**
-     * @param UserInterface $user
+     * @param User $user
      * @param string $token
      * @param string $tokenType
      * @return bool
      */
-    public function isValidToken(UserInterface $user, string $token, string $tokenType): bool
+    public function isValidToken(User $user, string $token, string $tokenType): bool
     {
         $key = $this->getDataInfoTokenKey($tokenType);
         $userDataInfo = $user->getDataInfo();
@@ -686,13 +698,13 @@ class AuthService
     }
 
     /**
-     * @param UserInterface $user
+     * @param User $user
      * @param string $token
      * @param string $tokenType
      * @param bool $resetToken
      * @return ModuleResult
      */
-    public function confirmToken(UserInterface $user, string $tokenType, string $token, bool $resetToken): ModuleResult
+    public function confirmToken(User $user, string $tokenType, string $token, bool $resetToken): ModuleResult
     {
         $tokenKey = $this->getDataInfoTokenKey($tokenType);
         if (!in_array(self::GROUP_NOT_BANNED, $user->getGroups(), true)) {
@@ -716,22 +728,22 @@ class AuthService
     }
 
     /**
-     * @param UserInterface $targetUser
-     * @param UserInterface $donorUser
+     * @param User $targetUser
+     * @param User $donorUser
      */
-    protected function joinAccounts(UserInterface $targetUser, UserInterface $donorUser): void
+    protected function joinAccounts(User $targetUser, User $donorUser): void
     {
-        $this->
-        $this->app->fireEvent(new JoinAccountsEvent($donorUser, $targetUser));
+        //$this->
+        //$this->app->fireEvent(new JoinAccountsEvent($donorUser, $targetUser));
     }
 
     /**
      * Controller
-     * @param UserInterface $user
-     * @param mixed $js_timezoneOffset
+     * @param User $user
+     * @param string $js_timezoneOffset
      * @return int|null
      */
-    public function setTimezone(UserInterface $user, $js_timezoneOffset): ?int
+    public function setTimezone(User $user, string $js_timezoneOffset): int
     {
         $timezoneOffset = (int)$js_timezoneOffset;
 
@@ -740,6 +752,8 @@ class AuthService
         }
         $user->setTimezone($timezoneOffset);
         $this->userRepository->save($user);
+
+        // TODO Check this
 
         return $user->getTimezone();
     }
@@ -768,6 +782,7 @@ class AuthService
         }
         $user->addGroup(self::GROUP_ACTIVE);
         $user->setEmailConfirmed(true);
+        $this->restoreUserIfDeleted($user);
         $this->userRepository->save($user);
 
         $withSameEmailUnconfirmedUsers = $this->userRepository->find([
@@ -820,11 +835,11 @@ class AuthService
 
     /**
      * Use it in admin page only
-     * @param UserInterface $user
+     * @param User $user
      * @param string $password
      * @return ModuleResult
      */
-    public function setPassword(UserInterface $user, string $password): ModuleResult
+    public function setPassword(User $user, string $password): ModuleResult
     {
         if (!$password) {
             return ModuleResult::createIncorrectField($this->lang->get('auth_sign:empty_password'), 'password');
@@ -836,7 +851,7 @@ class AuthService
         return ModuleResult::createSuccess();
     }
 
-    protected function restoreUserIfDeleted(UserInterface $user): void
+    protected function restoreUserIfDeleted(User $user): void
     {
         if ($this->userNotInGroups($user,[self::GROUP_NOT_DELETED])) {
             $previousGroups = $user->getGroups();
@@ -847,7 +862,7 @@ class AuthService
         }
     }
 
-    protected function updateOauth(UserInterface $user, OAuthData $authData): void
+    protected function updateOauth(User $user, OAuthData $authData): void
     {
         $user->setSocialId($authData->getOriginSource(), $authData->getOriginId());
         $dataInfo = $user->getDataInfo();
@@ -905,7 +920,7 @@ class AuthService
         return ModuleResult::createSuccess();
     }
 
-    public function deactivateUser(UserInterface $user, bool $withLogout): void
+    public function deactivateUser(User $user, bool $withLogout): void
     {
         if ($user->isInGroup(self::GROUP_NOT_DELETED)) {
             return;
@@ -916,7 +931,7 @@ class AuthService
         $this->userRepository->save($user);
     }
 
-    public function banUser(UserInterface $user): void
+    public function banUser(User $user): void
     {
         if ($user->isInGroup(self::GROUP_NOT_BANNED)) {
             return;
@@ -931,7 +946,7 @@ class AuthService
         return $this->app->get(EventDispatcher::class);
     }
 
-    private function setPicture(UserInterface $user, string $templateName): void
+    private function setPicture(User $user, string $templateName): void
     {
         $user->setPictureOrig('default/' . $templateName . '.png');
         $user->setPicture('default/' . $templateName . '.png');

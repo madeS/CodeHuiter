@@ -111,7 +111,7 @@ abstract class RelationalModel
     {
         $set = [];
         $isOriginalInitialized = $this->_origins;
-        foreach ($this->getModelFields()  as $field) {
+        foreach ($this->getModelFields() as $field) {
             if ($isOriginalInitialized && $this->_origins[$field] !== $this->$field) {
                 $set[$field] = $this->$field;
             }

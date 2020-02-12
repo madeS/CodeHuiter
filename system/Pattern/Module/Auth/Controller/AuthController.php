@@ -356,12 +356,13 @@ class AuthController extends BaseController
         $timeStr = $this->date->fromTime()->forUser($this->auth->user)->toFormat('H:i:s',false,true);
         $this->ajaxResponse->successMessage(
             $this->lang->get('user:settings.timezone_synced', ['{#time}' => $timeStr])
-        )->append('@script')->render($this->response);
-
-        echo '<script>'
+        )->append(
+            '#m_service',
+            '<script>'
             . '$("#body_cont").attr("data-timezoneoffset","'.$timzoneOffset.'");'
             . '$(".nowtime").html("'.$timeStr.'");'
-            . '</script>';
+            . '</script>'
+        )->render($this->response);
     }
 
 

@@ -3,22 +3,22 @@
 namespace CodeHuiter\Pattern\Module\Auth\Event;
 
 use CodeHuiter\Config\AuthConfig;
-use CodeHuiter\Pattern\Module\Auth\Model\UserInterface;
+use CodeHuiter\Pattern\Module\Auth\Model\User;
 use CodeHuiter\Service\EventDispatcher\Event;
 
 class JoinAccountsEvent implements Event
 {
-    /** @var UserInterface */
+    /** @var User */
     public $donorUser;
 
-    /** @var UserInterface */
+    /** @var User */
     public $targetUser;
 
     /**
-     * @param UserInterface $donorUser
-     * @param UserInterface $targetUser
+     * @param User $donorUser
+     * @param User $targetUser
      */
-    public function __construct(UserInterface $donorUser, UserInterface $targetUser)
+    public function __construct(User $donorUser, User $targetUser)
     {
         $this->donorUser = $donorUser;
         $this->targetUser = $targetUser;

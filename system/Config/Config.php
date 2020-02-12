@@ -3,6 +3,7 @@
 namespace CodeHuiter\Config;
 
 use CodeHuiter\Service\EventDispatcher;
+use CodeHuiter\Service\FileStorage;
 use CodeHuiter\Service\MimeTypeConverter;
 use CodeHuiter\Core\Application;
 use CodeHuiter\Core\CodeLoader;
@@ -80,6 +81,9 @@ abstract class Config
     public $responseConfig;
     /** @var RouterConfig */
     public $routerConfig;
+    /** @var EventsConfig */
+    public $eventsConfig;
+
 
     /** @var RelationalDatabaseConfig */
     public $defaultDatabaseConfig;
@@ -88,6 +92,7 @@ abstract class Config
     {
         $this->settingsConfig = new SettingsConfig();
         $this->frameworkConfig = new FrameworkConfig();
+        $this->eventsConfig = new EventsConfig();
 
         /**
          * Class Loader service
@@ -216,6 +221,13 @@ abstract class Config
         ];
         $this->injectedServices[self::SERVICE_KEY_ROUTER] = Router::class;
         $this->routerConfig = new RouterConfig();
+
+        /**
+         * Request Service
+         */
+        $this->services[FileStorage::class] = [self::OPT_KEY_CALLBACK => static function (Application $app) {
+            return new ByDefault\FileStorage($app->get(Logger::class));
+        }];
 
         /**
          * EventDispatcher Service
@@ -395,6 +407,16 @@ class EmailConfig
 class DateConfig
 {
     public $siteTimezone = 'UTC';
+}
+
+class EventsConfig
+{
+    public $events = [];
+
+    public static function modelUpdatedName(string $class)
+    {
+        return $class . '.updated';
+    }
 }
 
 class RelationalDatabaseConfig

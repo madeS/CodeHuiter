@@ -87,4 +87,51 @@ class Test_Controller extends BaseController
         return false;
     }
 
+
+    public function migrate(): void
+    {
+        $medias = $this->db->select("SELECT * FROM user_medias WHERE 1");
+        foreach ($medias as $media) {
+            $this->db->execute(
+                "UPDATE user_medias SET created_at = :time WHERE id = :id",
+                [
+                    ':time' => $this->date->sqlTime($media['created_at_int']),
+                    ':id' => $media['id'],
+                ]
+            );
+            $this->db->execute(
+                "UPDATE user_medias SET updated_at = :time WHERE id = :id",
+                [
+                    ':time' => $this->date->sqlTime($media['updated_at_int']),
+                    ':id' => $media['id'],
+                ]
+            );
+        }
+
+        $medias = $this->db->select("SELECT * FROM user_albums WHERE 1");
+        foreach ($medias as $media) {
+            $this->db->execute(
+                "UPDATE user_albums SET created_at = :time WHERE id = :id",
+                [
+                    ':time' => $this->date->sqlTime($media['created_at_int']),
+                    ':id' => $media['id'],
+                ]
+            );
+            $this->db->execute(
+                "UPDATE user_albums SET updated_at = :time WHERE id = :id",
+                [
+                    ':time' => $this->date->sqlTime($media['updated_at_int']),
+                    ':id' => $media['id'],
+                ]
+            );
+            $this->db->execute(
+                "UPDATE user_albums SET show_at = :time WHERE id = :id",
+                [
+                    ':time' => $this->date->sqlTime($media['date_show']),
+                    ':id' => $media['id'],
+                ]
+            );
+        }
+    }
+
 }

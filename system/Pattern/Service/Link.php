@@ -5,8 +5,8 @@ namespace CodeHuiter\Pattern\Service;
 use CodeHuiter\Config\LinksConfig;
 use CodeHuiter\Core\Application;
 use CodeHuiter\Exception\InvalidFlowException;
-use CodeHuiter\Pattern\Module\Auth\Model\UserInterface;
-use CodeHuiter\Pattern\Module\Auth\Model\UserRepositoryInterface;
+use CodeHuiter\Pattern\Module\Auth\Model\User;
+use CodeHuiter\Pattern\Module\Auth\Model\UserRepository;
 
 class Link
 {
@@ -27,11 +27,11 @@ class Link
     }
 
     /**
-     * @return UserRepositoryInterface
+     * @return UserRepository
      */
-    private function getUserRepository(): UserRepositoryInterface
+    private function getUserRepository(): UserRepository
     {
-        return $this->app->get(UserRepositoryInterface::class);
+        return $this->app->get(UserRepository::class);
     }
 
     /**
@@ -48,7 +48,7 @@ class Link
     }
 
     /**
-     * @param UserInterface $user
+     * @param User $user
      * @return null|string|string[]
      */
     public function user($user)
@@ -71,7 +71,7 @@ class Link
         return $this->url('messages_user', $id);
     }
 
-    public function messagesWithUser(UserInterface $user): string
+    public function messagesWithUser(User $user): string
     {
         return $this->url('messages_user', $user->getId());
     }
@@ -82,7 +82,7 @@ class Link
     }
 
     /**
-     * @param UserInterface|bool $user
+     * @param User|bool $user
      * @return null|string|string[]
      */
     public function userMedias($user = false){
@@ -94,7 +94,7 @@ class Link
     }
 
     /**
-     * @param UserInterface|bool $user
+     * @param User|bool $user
      * @return null|string|string[]
      */
     public function userAlbums($user = false)
@@ -117,7 +117,7 @@ class Link
     }
 
     /**
-     * @param UserInterface|bool $user
+     * @param User|bool $user
      * @return null|string|string[]
      */
     public function userVideos($user = false)

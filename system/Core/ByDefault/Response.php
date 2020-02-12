@@ -57,7 +57,7 @@ class Response implements \CodeHuiter\Core\Response
      * @param bool $replace
      * @param int|null $code
      */
-    public function setHeaders(array $headerStrings, bool $replace = false, ?int $code = null): void
+    public function setHeaders(array $headerStrings, bool $replace = false, int $code = null): void
     {
         foreach ($headerStrings as $key => $headerString) {
             $this->finalHeaders[] = [$headerString, $replace, $code];
