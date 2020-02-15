@@ -193,11 +193,16 @@ class StringModifier
     /**
      * Encode to JSON
      * @param array $param
+     * @param bool $pretty
      * @return string
      */
-    public static function jsonEncode($param)
+    public static function jsonEncode($param, bool $pretty = false): string
     {
-        return json_encode($param, JSON_UNESCAPED_SLASHES ^ JSON_UNESCAPED_UNICODE);
+        $options = JSON_UNESCAPED_SLASHES ^ JSON_UNESCAPED_UNICODE;
+        if ($pretty) {
+            $options ^= JSON_PRETTY_PRINT;
+        }
+        return json_encode($param, $options);
     }
 
     /**

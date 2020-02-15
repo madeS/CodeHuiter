@@ -323,7 +323,7 @@ class RequestConfig
      * Allowed URL Characters
      * @var string
      */
-    public $permittedUriChars = 'a-z 0-9~%.:_\-';
+    public $permittedUriChars = 'a-z 0-9~%.:_\-\,';
 }
 
 class ResponseConfig
@@ -361,7 +361,7 @@ class RouterConfig
         ]
     ];
     public $routes = [
-        'testmodule/(:all)' => 'MODULE_TestModule/$1',
+        'testmodule/(:all)' => 'APP_MODULE_TestModule/$1',
         'page/(:any)' => "page/get/$1",
         'madm' => 'madm/madm',
         'admin' => 'madm/madm',

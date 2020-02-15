@@ -30,7 +30,7 @@
 				   href="<?php $those->links->oauth('tw')?>" target="_blank" data-action="oauthOpen"
 				><span class="ficon-twitter"></span></a>
 			<?php endif;?>
-			<?php if($those->auth->config->googleAppId):?>
+			<?php if($those->auth->config->googleConfig->googleAppId):?>
 				<a class="sik-gl big hint hbottom hlefted action"
 				   data-title="<?php echo $those->lang->get('auth_ui:sign_in_with_gl');?>"
 				   href="<?php $those->links->oauth('gl')?>" target="_blank" data-action="oauthOpen"

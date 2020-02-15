@@ -14,6 +14,7 @@ use CodeHuiter\Facilities\Module\Media\MediaService;
 use CodeHuiter\Facilities\Module\Media\Model\MediaModel;
 use CodeHuiter\Facilities\Module\Media\Model\MediaModelRepository;
 use CodeHuiter\Facilities\Module\Media\Model\MediaRepository;
+use CodeHuiter\Facilities\Module\ThirdPartyApi\ThirdPartyApiProvider;
 use CodeHuiter\Facilities\Service\ByDefault;
 use CodeHuiter\Facilities\Service\AjaxResponse;
 use CodeHuiter\Facilities\Service\Validator;
@@ -212,6 +213,8 @@ class FacilitiesConfig extends Config
         ];
         $this->mediaConfig = new MediaConfig();
 
+        $this->services[ThirdPartyApiProvider::class] = [self::OPT_KEY_CLASS_APP => ThirdPartyApiProvider::class, self::OPT_KEY_SCOPE => self::OPT_KEY_SCOPE_REQUEST];
+
         /**
          * Subscribes
          */
@@ -385,9 +388,6 @@ class AuthConfig
     public $facebookAppId = '600000000000121';
     public $facebookSecret = '9aaabbbcccdddeeeeefff00011122233';
     public $facebookLocale = 'ru_RU';
-    public $googleApiKey = 'AIaaSyBCqqqqGsSS00iiD80mBmXN40_mTmAAAA0';
-    public $googleAppId = '33111222333.apps.googleusercontent.com';
-    public $googleSecret = 'KKcPPPw9--OwwKK0EE66VvVR';
     public $instagramAppId = '9aaabbbcccdddeeeeefff00011122233';
     public $instagramSecret = '9aaabbbcccdddeeeeefff00011122233';
     public $vkAppId = '1222333';
@@ -404,4 +404,19 @@ class AuthConfig
     public $pictureDefault = 'profile_nopicture'; // default/profile_nopicture.png + default/profile_nopicture_preview.png
     public $pictureBanned = 'profile_banned'; // default/profile_banned.png + default/profile_banned_preview.png
     public $pictureUnActive = 'profile_unactive'; // default/profile_unactive.png + default/profile_unactive_preview.png
+
+    /** @var GoogleApiConfig  */
+    public $googleConfig;
+
+    public function __construct()
+    {
+        $this->googleConfig = new GoogleApiConfig();
+    }
+}
+
+class GoogleApiConfig
+{
+    public $googleApiKey = 'AIaaSyBCqqqqGsSS00iiD80mBmXN40_mTmAAAA0';
+    public $googleAppId = '33111222333.apps.googleusercontent.com';
+    public $googleSecret = 'KKcPPPw9--OwwKK0EE66VvVR';
 }

@@ -221,7 +221,7 @@ use CodeHuiter\Modifier\StringModifier;
 		<?php if($those->app->config->authConfig->vkAppId
 			|| $those->app->config->authConfig->facebookAppId
 			|| $those->app->config->authConfig->twitterConsumerKey
-			|| $those->app->config->authConfig->googleAppId
+			|| $those->app->config->authConfig->googleConfig->googleAppId
 		):?>
 		<div class="iblock">
 			<div class="bheader"><?php echo $those->lang->get('user:settings.social_accounts');?></div>
@@ -328,7 +328,7 @@ use CodeHuiter\Modifier\StringModifier;
 						<br/>
 					<?php endif;?>
 
-					<?php if($those->app->config->authConfig->googleAppId):?>
+					<?php if($those->app->config->authConfig->googleConfig->googleAppId):?>
 						<?php if($user->getSocialId('gl')):?>
 							<a class="sik-gl sik-btn"  href="<?='\'https://plus.google.com/u/0/'.$user->getSocialId('gl')?>" target="_blank">
 								<span class="ficon-gplus"></span>

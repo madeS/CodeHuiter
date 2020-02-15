@@ -26,7 +26,7 @@
 	href="/auth/twitter" target="_blank"
 	data-action="oauthOpen"><span class="ficon-twitter"></span></a>
 <?php endif;?>
-<?php if($those->auth->config->googleAppId):?>
+<?php if($those->auth->config->googleConfig->googleAppId):?>
 	<a class="socbtn sik-gl small translucent hint hbottom hlefted action"
 	data-title="<?php echo $those->lang->get('auth_ui:sign_in_with_gl');?>"
 	href="/auth/google" target="_blank"

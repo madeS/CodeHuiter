@@ -62,8 +62,8 @@ class OAuthFactory
                 $this->network,
                 $this->logger,
                 $this->settingsConfig->siteUrl,
-                $this->authConfig->googleAppId,
-                $this->authConfig->googleSecret
+                $this->authConfig->googleConfig->googleAppId,
+                $this->authConfig->googleConfig->googleSecret
             );
         }
         return null;

@@ -24,7 +24,7 @@ class ExceptionProcessor
         $dir = 'cli';
         $show_debug_backtrace = true;
         /** @var Exception[] $exceptions */
-        $exceptions = [];
+        $exceptions = [$exception];
         $show_errors = true;
         try {
             $app = Application::getInstance();
