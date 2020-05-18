@@ -1155,11 +1155,13 @@ var mjsaClass = function ($){
             // Interception up, down,enter, escape keys
             if (e.keyCode && (e.keyCode===38 || e.keyCode===40 || e.keyCode===13 || e.keyCode===27)){
                 if (e.keyCode===38 || e.keyCode===40){ // up key: select previos item
-                    var borderSel = ':last';
-                    if (e.keyCode===40) borderSel = ':first'; //key down
                     var $selected = $(opt.toSelector).find(opt.itemSelector+'.'+opt.selectedClass).removeClass(opt.selectedClass);
                     if (!$selected.length){
-                        $selected = $(opt.toSelector).find(opt.itemSelector+borderSel).addClass(opt.selectedClass);
+                        if (e.keyCode===40) { // Key down
+                            $selected =  $(opt.toSelector).find(opt.itemSelector).first().addClass(opt.selectedClass);
+                        } else { // Key up
+                            $selected =  $(opt.toSelector).find(opt.itemSelector).last().addClass(opt.selectedClass);
+                        }
                         $(this).attr(opt.queryAttr,$(this).val());
                         $(this).val($selected.attr(opt.queryAttr)||$(this).val());
                     } else {

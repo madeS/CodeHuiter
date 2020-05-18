@@ -80,14 +80,14 @@ class Application
 
         $scope = $this->config->services[$name][Config::OPT_KEY_SCOPE] ?? Config::OPT_KEY_SCOPE_PERMANENT;
         if ($scope === Config::OPT_KEY_SCOPE_REQUEST) {
-            $scope .= $this->request ?$this->request->getId() : 0;
+            $scope .= $this->request ? $this->request->getId() : 0;
         }
         if (isset($this->serviceCreateStack[$scope][$name])) {
             throw CoreException::onRecursiveServiceCreation($name, $scope, $this->serviceCreateStack);
         }
         $this->serviceCreateStack[$scope][$name] = true;
 
-        if ($scope === Config::OPT_KEY_SCOPE_NEW || !isset($this->container[$scope][$name])) {
+        if ($scope === Config::OPT_KEY_SCOPE_NO_SHARED || !isset($this->container[$scope][$name])) {
             $obj = null;
             if (isset($this->config->services[$name][Config::OPT_KEY_CALLBACK]) && $this->config->services[$name][Config::OPT_KEY_CALLBACK]) {
                 $callback = $this->config->services[$name][Config::OPT_KEY_CALLBACK];

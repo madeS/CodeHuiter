@@ -34,9 +34,7 @@ class UsersController extends BaseController
     {
         $this->initWithAuth(false);
 
-        /** @var UserRepository $userRepository */
-        $userRepository = $this->app->get(UserRepository::class);
-        $user = $userRepository->getById($id);
+        $user = $this->getUserRepository()->getById($id);
         if (!$user) {
             $this->errorPageByCode(Response::HTTP_CODE_NOT_FOUND);
             return;
@@ -98,5 +96,10 @@ class UsersController extends BaseController
 
         $this->ajaxResponse->successMessage($this->lang->get('user:settings.user_info_changed'))
             ->reload()->closePopups()->render($this->response);
+    }
+
+    private function getUserRepository(): UserRepository
+    {
+        return $this->app->get(UserRepository::class);
     }
 }

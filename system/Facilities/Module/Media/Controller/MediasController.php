@@ -3,13 +3,52 @@
 namespace CodeHuiter\Facilities\Module\Media\Controller;
 
 use CodeHuiter\Config\ConnectorConfig;
+use CodeHuiter\Core\Response;
 use CodeHuiter\Facilities\Controller\Base\BaseController;
+use CodeHuiter\Facilities\Module\Auth\Model\UserRepository;
+use CodeHuiter\Facilities\Module\Auth\SearchList\UserSearcher;
 use CodeHuiter\Facilities\Module\Connector\ConnectableObject;
 use CodeHuiter\Facilities\Module\Connector\ConnectorService;
 use CodeHuiter\Facilities\Module\Media\MediaService;
+use CodeHuiter\Facilities\Module\Media\SearchList\MediaSearcher;
 
-class MediaController extends BaseController
+class MediasController extends BaseController
 {
+    public function media_list(int $userId): void
+    {
+        $this->initWithAuth(false);
+
+        $user = $this->getUserRepository()->getById($userId);
+        if (!$user) {
+            $this->errorPageByCode(Response::HTTP_CODE_NOT_FOUND);
+            return;
+        }
+        $this->data['user'] = $user;
+
+        $this->data['uri'] = $this->links->user($user);
+        $this->data['breadcrumbs'] = [
+            ['url' => $this->links->users(), 'name' => $this->lang->get('user:users')],
+            ['url' => $this->links->user($user), 'name' => $this->userService->getPresentName($user)],
+            ['name' => $this->lang->get('users:medias')],
+        ];
+
+        $mediaSearcher = new MediaSearcher($this->app);
+        $result = $mediaSearcher->search(
+            ['object_type' => ConnectorConfig::TYPE_PROFILE, 'user_id' => $user->getId(), 'order' => 'id DESC'],
+            $mediaSearcher->acceptFilters($this->request, ['show' => '']),
+            $mediaSearcher->acceptPages($this->request, 36),
+            true
+        );
+        $this->acceptSearchListResult($result, 'userMedias');
+
+        $this->render($this->app->config->mediaConfig->viewsPath . 'userMediasTemplate');
+    }
+
+    public function album_list(int $userId): void
+    {
+
+    }
+
     public function popup_photos_upload(): void
     {
         if (!$this->initWithAuth(true)) return;
@@ -79,5 +118,10 @@ class MediaController extends BaseController
     private function getMediaService(): MediaService
     {
         return $this->app->get(MediaService::class);
+    }
+
+    private function getUserRepository(): UserRepository
+    {
+        return $this->app->get(UserRepository::class);
     }
 }

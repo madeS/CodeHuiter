@@ -164,13 +164,13 @@ class MultiTableSearcher
         return $ret;
     }
 
-    protected function resultInside(&$someArray, $prefix, $subarray): void
+    protected function resultInside(&$someObjecty, $prefix, $subarray): void
     {
-        $someArray[$subarray] = [];
-        foreach($someArray as $key => $val){
+        $someObjecty->$subarray = [];
+        foreach($someObjecty as $key => $val){
             if (strpos($key,$prefix) === 0){
-                $someArray[$subarray][substr($key, strlen($prefix))] = $val;
-                unset($someArray[$key]);
+                $someObjecty->$subarray[substr($key, strlen($prefix))] = $val;
+                unset($someObjecty->$key);
             }
         }
     }

@@ -7,7 +7,7 @@
 		
 		<div class="m_form page_searcher_cont">
 			<div class="iblock page_searcher m_form" data-save-params="show">
-				<input class="page_searcher_input in enter_submit" name="query" type="text" placeholder="Поиск пользователя..." value="<?=($filters['query'] ?? '')?>">
+				<input class="page_searcher_input in enter_submit" name="query" type="text" placeholder="Поиск пользователя..." value="<?php echo ($filters['query'] ?? '')?>">
 				<span class="page_searcher_submit m_form_submit btn blue action" data-action="querySearchSubmit" 
 					>Найти</span>
 			</div>

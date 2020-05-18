@@ -63,12 +63,10 @@ class YouTubeApi
             $this->setErrorMessage($this->lang->get('google_api:no_video_code_got'));
             return null;
         }
-        $responseJson = $this->network->httpRequest(
-            'https://www.googleapis.com/youtube/v3/videos?id=' . $videoCode
+        $url = 'https://www.googleapis.com/youtube/v3/videos?id=' . $videoCode
             . '&key=' . $this->config->googleApiKey
-            . '&part=snippet,contentDetails,statistics',
-            Network::METHOD_GET
-        );
+            . '&part=snippet,contentDetails,statistics';
+        $responseJson = $this->network->httpRequest($url, Network::METHOD_GET);
         if ($responseJson === 'Invalid id') {
             $this->setErrorMessage($this->lang->get('google_api:invalid_id'));
             return null;
@@ -76,32 +74,49 @@ class YouTubeApi
         $videoInfo = StringModifier::jsonDecode($responseJson);
         if (!$videoInfo || isset($videoInfo['error']) || isset($videoInfo['errors']) || !isset($videoInfo['items'])) {
             $this->setErrorMessage($this->lang->get('google_api:json_error'));
-            $this->logger->withTag('YOUTUBE_API')->warning('Incorrect response json: ' . $responseJson);
+            $this->logger->withTag('YOUTUBE_API')->warning("Incorrect response json: $responseJson; Url: $url");
             return null;
         }
 
         $item = $videoInfo['items'][0] ?? [];
         if (!$item) {
             $this->setErrorMessage($this->lang->get('google_api:json_error'));
-            $this->logger->withTag('YOUTUBE_API')->warning('Incorrect response json: ' . $responseJson);
+            $this->logger->withTag('YOUTUBE_API')->warning("Incorrect response json: $responseJson; Url: $url");
             return null;
         }
 
         return $this->parseData($item);
     }
 
+    public function getVideosData(array $videoCodes): ?array
+    {
+        $result = [];
+        $requestVideoCodes = [];
+        foreach ($videoCodes as $index => $videoCode) {
+            $requestVideoCodes[] = $videoCode;
+            if (count($requestVideoCodes) > 45 || $index === count($videoCodes) - 1) {
+                $requestResult = $this->getVideosDataInner($requestVideoCodes);
+                if ($requestResult !== null) {
+                    foreach ($requestResult as $requestResultItem) {
+                        $result[] = $requestResultItem;
+                    }
+                }
+                $requestVideoCodes = [];
+            }
+        }
+        return $result;
+    }
+
     /**
      * @param string[] $videoCodes
      * @return YoutubeVideoData[]|null
      */
-    public function getVideosData(array $videoCodes): ?array
+    public function getVideosDataInner(array $videoCodes): ?array
     {
-        $responseJson = $this->network->httpRequest(
-            'https://www.googleapis.com/youtube/v3/videos?id=' . implode(',', $videoCodes)
+        $url = 'https://www.googleapis.com/youtube/v3/videos?id=' . implode(',', $videoCodes)
             . '&key=' . $this->config->googleApiKey
-            . '&part=snippet,contentDetails,statistics',
-            Network::METHOD_GET
-        );
+            . '&part=snippet,contentDetails,statistics';
+        $responseJson = $this->network->httpRequest($url, Network::METHOD_GET);
         if ($responseJson === 'Invalid id') {
             $this->setErrorMessage($this->lang->get('google_api:invalid_id'));
             $this->logger->withTag('YOUTUBE_API')->warning('Incorrect response json: ' . $responseJson);
@@ -110,14 +125,14 @@ class YouTubeApi
         $videoInfo = StringModifier::jsonDecode($responseJson);
         if (!$videoInfo || isset($videoInfo['error']) || isset($videoInfo['errors']) || !isset($videoInfo['items'])) {
             $this->setErrorMessage($this->lang->get('google_api:json_error'));
-            $this->logger->withTag('YOUTUBE_API')->warning('Incorrect response json: ' . $responseJson);
+            $this->logger->withTag('YOUTUBE_API')->warning("Incorrect response json: $responseJson; Url: $url");
             return null;
         }
 
         $items = $videoInfo['items'] ?? [];
         if (!is_array($items)) {
             $this->setErrorMessage($this->lang->get('google_api:json_error'));
-            $this->logger->withTag('YOUTUBE_API')->warning('Incorrect response json: ' . $responseJson);
+            $this->logger->withTag('YOUTUBE_API')->warning("Incorrect response json: $responseJson; Url: $url");
             return null;
         }
         $result = [];

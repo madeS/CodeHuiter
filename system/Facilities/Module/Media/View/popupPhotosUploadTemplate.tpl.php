@@ -30,7 +30,7 @@ if (false) require_once SYSTEM_PATH . '/Facilities/View/IDE_Helper.tpl.php';
         mjsa.popups.closeAll();
         mjsa.bodyUpdate();
     }, {
-        url:'/media/photos_upload',
+        url:'/medias/photos_upload',
         params: {object_identity: '<?php echo ConnectorService::getIdentity($object)?>', as_default:<?=($as_default)?'1':'0'?>},
         name:'user_media',
         maxSize: 20000000,

@@ -7,6 +7,8 @@ use CodeHuiter\Facilities\Module\Connector\ConnectableObject;
 interface Media extends ConnectableObject
 {
     public const TYPE_PHOTO = 'photo';
+    public const TYPE_VIDEO = 'video';
+    public const TYPE_ZIP = 'zip';
 
     public function getId(): string;
 

@@ -16,7 +16,6 @@ class UserSearcher extends MultiTableSearcher
     public const SQL_SELECT_ADDIT_USER = "
 			, users.id as inn_user_id 
 			, users.name as inn_user_name 
-			, users.level as inn_user_level
 			, users.login as inn_user_login
 			, users.firstname as inn_user_firstname
 			, users.lastname as inn_user_lastname

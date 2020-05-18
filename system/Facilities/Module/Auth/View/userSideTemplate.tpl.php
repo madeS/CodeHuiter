@@ -83,15 +83,19 @@ use CodeHuiter\Facilities\Module\Connector\ConnectorService; ?>
 		<?php if($those->userService->equal($userInfo, $user)):?>
 			<span class="btn likea blue action"
 				data-action="easyAjax"
-				data-uri="/media/popup_photos_upload"
+				data-uri="/medias/popup_photos_upload"
 				data-params="<?php echo StringModifier::textForHtml(StringModifier::jsonEncode([
 						'object_identity' => ConnectorService::getIdentity($user),
 						'as_default' => 1,
 				]))?>"
-			><span class="ficon-camera"></span> Изменить фото</span>
+			><span class="ficon-camera"></span> <?php echo $those->lang->get('user_side:change_photo')?></span>
 
-			<a href="<?=$those->links->userSettings()?>" class="bodyajax btn blue"><span class="ficon-cog"></span> Мои настройки</a>
+			<a href="<?=$those->links->userSettings()?>" class="bodyajax btn blue"><span class="ficon-cog"></span> <?php echo $those->lang->get('user_side:my_settings')?></a>
 		<?php endif;?>
+
+		<a href="<?php echo $those->links->userMedias($user)?>" class="bodyajax btn blue"><span class="ficon-picture"></span> <?php echo $those->lang->get('user:medias')?></a>
+		<a href="<?php echo $those->links->userAlbums($user)?>" class="bodyajax btn blue"><span class="ficon-folder"></span> <?php echo $those->lang->get('user:albums')?></a>
+
 		<?php if($those->userService->isActive($user) || $those->userService->isModerator($userInfo)):?>
 			<?php if(!$those->userService->equal($userInfo, $user)):?>
 				<a href="<?=$those->links->messagesWithUser($user)?>" class="bodyajax btn blue"><span class="ficon-email"></span> <?=$those->lang->get('user:send_message_short');?></a>
@@ -101,8 +105,6 @@ use CodeHuiter\Facilities\Module\Connector\ConnectorService; ?>
 		
 		<?php if($those->userService->isModerator($userInfo)):?>
 			<?php $json_params = StringModifier::jsonEncode(['user_id'=>$user->getId()]); ?>
-			<a href="<?=$those->links->userMedias($user)?>" class="bodyajax btn blue"><span class="ficon-picture"></span> <?=$those->lang->get('user:medias');?></a>
-			<a href="<?=$those->links->userAlbums($user)?>" class="bodyajax btn blue"><span class="ficon-folder"></span> <?=$those->lang->get('user:albums');?></a>
 			<?php if(!$those->userService->isBanned($user)):?>
 				<span class="btn likea blue action" data-action="easyAjax" data-uri="/auth/user_status/banned" data-params="<?=StringModifier::textForHtml($json_params)?>"><span class="ficon-thumbs-down-alt"></span> Заблокировать</span>
 			<?php else:?>

@@ -146,10 +146,8 @@ class RelationalModelRepository
     {
         $where = $model->getPrimarySet();
         if (!$where) {
-            $this->getLogger()->withTag('RelationalModelRepository')->withTrace()->warning(sprintf(
-                'Trying to delete not exist model [%s]',
-                $model->getClass()
-            ));
+            $this->getLogger()->withTag('RelationalModelRepository')->withTrace()
+                ->warning(sprintf('Trying to delete not exist model [%s]', $model->getClass()));
             return false;
         }
         // TODO Add AutoStart Transaction

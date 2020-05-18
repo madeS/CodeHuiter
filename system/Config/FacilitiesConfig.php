@@ -221,6 +221,13 @@ class FacilitiesConfig extends Config
         $this->services[MediaSubscriber::class] = [self::OPT_KEY_CLASS_APP => MediaSubscriber::class, self::OPT_KEY_SCOPE => self::OPT_KEY_SCOPE_REQUEST];
         $this->eventsConfig->events[] = [AuthConfig::EVENT_USER_JOIN_ACCOUNT, MediaSubscriber::class];
         $this->eventsConfig->events[] = [EventsConfig::modelUpdatedName(MediaModel::class), MediaSubscriber::class];
+
+
+        $this->routerConfig->routes['users/id(:num)'] = 'users/get/$1';
+        $this->routerConfig->routes['users/id(:num)/medias'] = 'medias/media_list/$1';
+        $this->routerConfig->routes['users/id(:num)/albums'] = 'medias/album_list/$1';
+        $this->routerConfig->routes['users/id(:num)/album(:num)'] = 'medias/album_view/$1/$2';
+        $this->routerConfig->routes['users/id(:num)/album(:num)/edit'] = 'users/album_edit/$1/$2';
     }
 }
 

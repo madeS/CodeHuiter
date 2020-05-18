@@ -34,7 +34,7 @@ abstract class Config
     public const OPT_KEY_SCOPE = 'scope';
     public const OPT_KEY_SCOPE_PERMANENT = 'scope_permanent';
     public const OPT_KEY_SCOPE_REQUEST = 'scope_request';
-    public const OPT_KEY_SCOPE_NEW = 'scope_new';
+    public const OPT_KEY_SCOPE_NO_SHARED = 'scope_no_shared';
 
     // TODO Check usages of KEYS
     public const SERVICE_KEY_LOADER = 'loader';
@@ -366,12 +366,7 @@ class RouterConfig
         'madm' => 'madm/madm',
         'admin' => 'madm/madm',
 
-        'users/id(:num)' => 'users/get/$1',
-        'users/id(:num)/medias' => 'users/medias/$1',
 
-        'users/id(:num)/albums' => 'users/user_view_albums/$1',
-        'users/id(:num)/album(:num)' => 'users/user_view_album/$1/$2',
-        'users/id(:num)/album(:num)/edit' => 'users/user_edit_album/$1/$2',
         //'users/settings' => 'users/settings',
         'messages/user(:num)' => 'messages/room_by_user/$1',
         'messages/room(:num)' => 'messages/room/$1',

@@ -15,8 +15,11 @@ class Youtube_Controller extends \CodeHuiter\Facilities\Controller\Base\BaseCont
         echo 'Youtube Is Test index function';
     }
 
-    public function get_videos_data($videoIds = ''): void
+    public function get_videos_data(): void
     {
+        $callback = $this->request->getGet('callback');
+        $videoIds = $this->request->getGet('q');
+
         $videos = explode(',', $videoIds);
         $requestVideos = [];
 
@@ -32,11 +35,15 @@ class Youtube_Controller extends \CodeHuiter\Facilities\Controller\Base\BaseCont
                 continue;
             }
             $cacheTime = $this->date->getCurrentDateTime()->getTimestamp() - $this->date->timeStringToDateTime($cacheModel->updated_at)->getTimestamp();
-            if ($cacheTime > 100) {
+            $cacheData = StringModifier::jsonDecode($cacheModel->data);
+            if (
+                ($cacheData['dislikeCount'] < 1 && $cacheTime > (60 * 60 * 24))
+                || ($cacheData['dislikeCount'] < 100 && $cacheTime > (60 * 60 * 24 * 4))
+                || $cacheTime > (60 * 60 * 24 * 14)) {
                 $requestVideos[] = $video;
                 continue;
             }
-            $result[] = StringModifier::jsonDecode($cacheModel->data);
+            $result[] = $cacheData;
         }
 
         $videosData = $this->getApiProvider()->getYoutubeApi()->getVideosData($requestVideos);
@@ -55,8 +62,8 @@ class Youtube_Controller extends \CodeHuiter\Facilities\Controller\Base\BaseCont
 
             $result[] = $videoData->toArray();
         }
-
-        echo StringModifier::jsonEncode($result, true);
+        $response = StringModifier::jsonEncode(['results' => $result]);
+        echo "$callback($response)";
 
 //        echo '<pre>';
 //        print_r($result);
