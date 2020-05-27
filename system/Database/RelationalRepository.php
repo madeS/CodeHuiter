@@ -2,6 +2,7 @@
 
 namespace CodeHuiter\Database;
 
+use CodeHuiter\Config\Module\RelationalRepositoryConfig;
 use CodeHuiter\Core\Application;
 use CodeHuiter\Service\ByDefault\EventDispatcher\RelationalModelDeletingEvent;
 use CodeHuiter\Service\ByDefault\EventDispatcher\RelationalModelUpdatedEvent;
@@ -9,7 +10,7 @@ use CodeHuiter\Service\DateService;
 use CodeHuiter\Service\EventDispatcher;
 use CodeHuiter\Service\Logger;
 
-class RelationalModelRepository
+class RelationalRepository
 {
     /**
      * @var Application
@@ -17,12 +18,7 @@ class RelationalModelRepository
     private $application;
 
     /**
-     * @var RelationalModel
-     */
-    private $model;
-
-    /**
-     * @var RelationalDatabase
+     * @var RelationalDatabaseHandler
      */
     private $dbHandler;
 
@@ -35,11 +31,6 @@ class RelationalModelRepository
      * @var string
      */
     private $table;
-
-    /**
-     * @var string[]
-     */
-    private $fields;
 
     /**
      * @var string[]
@@ -57,29 +48,35 @@ class RelationalModelRepository
     private $logger;
 
     /**
-     * @param Application $application
-     * @param RelationalModel $model
+     * @var RelationalRepositoryConfig
      */
-    public function __construct(Application $application, RelationalModel $model)
+    private $config;
+
+    public function __construct(Application $application, RelationalRepositoryConfig $config)
     {
         $this->application = $application;
-        $this->model = $model;
+        $this->config = $config;
+    }
+
+    public function getConfig(): RelationalRepositoryConfig
+    {
+        return $this->config;
     }
 
     /**
      * Can be ['firstPrimaryValue', 'secondPrimaryValue']
      * Can be ['field2' => 'secondPrimaryValue', 'field1' => 'firstPrimaryValue']
      * @param string[]|int[]
-     * @return RelationalModel|null
+     * @return Model|null
      */
-    public function getById(array $primaryIdParts): ?RelationalModel
+    public function getById(array $primaryIdParts): ?Model
     {
         $db = $this->getDB();
         $where = [];
         foreach ($this->primaryFields as $key => $primaryField) {
             $where[$primaryField] = $primaryIdParts[$primaryField] ?? $primaryIdParts[$key];
         }
-        /** @var RelationalModel|null $model */
+        /** @var Model|null $model */
         $model = $db->selectWhereOneObject($this->modelClass, $this->table, $where);
         if ($model !== null) {
             $this->initOriginsForModels([$model]);
@@ -90,11 +87,11 @@ class RelationalModelRepository
     /**
      * @param array $where
      * @param array $opt
-     * @return RelationalModel[]
+     * @return Model[]
      */
     public function find(array $where, array $opt = []): array
     {
-        /** @var RelationalModel[] $models */
+        /** @var Model[] $models */
         $models = $this->getDB()->selectWhereObjects($this->modelClass, $this->table, $where, $opt);
         $this->initOriginsForModels($models);
         return $models;
@@ -103,11 +100,11 @@ class RelationalModelRepository
     /**
      * @param array $where
      * @param array $opt
-     * @return RelationalModel|null
+     * @return Model|null
      */
-    public function findOne(array $where, array $opt = []): ?RelationalModel
+    public function findOne(array $where, array $opt = []): ?Model
     {
-        /** @var RelationalModel|null $model */
+        /** @var Model|null $model */
         $model = $this->getDB()->selectWhereOneObject($this->modelClass, $this->table, $where, $opt);
         if ($model) {
             $this->initOriginsForModels([$model]);
@@ -115,39 +112,50 @@ class RelationalModelRepository
         return $model;
     }
 
-    public function save(RelationalModel $model): RelationalModel
+    public function exist(Model $model): bool
     {
-        $whereSet = $model->getPrimarySet();
+        foreach ($this->config->primaryFields as $field) {
+            if (!$model->getModelOriginalField($field)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public function save(Model $model): Model
+    {
+        $whereSet = $this->getPrimarySet($model);
         $timeString = $this->getDateService()->sqlTime();
-        if ($whereSet && $model->exist()) {
-            $model->updateBySet(['updated_at' => $timeString], true);
-            $set = $model->getTouchedSet();
+        if ($whereSet && $this->exist($model)) {
+            $model->updateModelBySet(['updated_at' => $timeString], true);
+            $set = $model->getModelTouchedSet();
             if (!$set) {
                 return $model;
             }
             $this->getDB()->update($this->table, $whereSet, $set);
         } else {
-            $model->updateBySet(['updated_at' => $timeString, 'created_at' => $timeString], true);
-            $set = $model->getSettledSet();
+            $model->updateModelBySet(['updated_at' => $timeString, 'created_at' => $timeString], true);
+            $set = $model->getModelSettledSet();
             $primaryKey = $this->getDB()->insert($this->table, $set);
-            $model->setAutoIncrementField($primaryKey);
+            $model->updateModelBySet([$this->config->autoIncrementField => $primaryKey]);
         }
-        $model->initOriginals();
+        $model->initModelOriginals();
         $this->getEventDispatcher()->fire(new RelationalModelUpdatedEvent($model, $set));
 
         return $model;
     }
 
     /**
-     * @param RelationalModel $model
+     * @param Model $model
      * @return bool
      */
-    public function delete(RelationalModel $model): bool
+    public function delete(Model $model): bool
     {
-        $where = $model->getPrimarySet();
+        $where = $this->getPrimarySet($model);
         if (!$where) {
-            $this->getLogger()->withTag('RelationalModelRepository')->withTrace()
-                ->warning(sprintf('Trying to delete not exist model [%s]', $model->getClass()));
+            $this->getLogger()->withTag('RelationalModelRepository')->withTrace()->warning(
+                sprintf('Trying to delete not exist model [%s] with table [%s]', get_class($model), $this->config->table)
+            );
             return false;
         }
         // TODO Add AutoStart Transaction
@@ -161,26 +169,46 @@ class RelationalModelRepository
     }
 
     /**
-     * @param RelationalModel[] $models
+     * @param Model[] $models
      */
     private function initOriginsForModels(array $models): void
     {
         foreach ($models as $model) {
-            $model->initOriginals();
+            $model->initModelOriginals();
         }
     }
 
     /**
-     * @return RelationalDatabase
+     * Return [primaryField => value] map or null if dont set
+     * @param Model $model
+     * @return array|null
      */
-    private function getDB(): RelationalDatabase
+    private function getPrimarySet(Model $model): ?array
+    {
+        $set = [];
+        $isOriginalInitialized = $model->isModelOriginalInitialized();
+        foreach ($this->config->primaryFields as $field) {
+            if ($isOriginalInitialized && $model->getModelOriginalField($field)) {
+                $set[$field] = $model->getModelOriginalField($field);
+            } elseif ($model->getModelField($field)) {
+                $set[$field] = $model->getModelField($field);
+            } else {
+                return null;
+            }
+        }
+        return $set;
+    }
+
+    /**
+     * @return RelationalDatabaseHandler
+     */
+    private function getDB(): RelationalDatabaseHandler
     {
         if ($this->dbHandler === null) {
-            $this->dbHandler = $this->application->get($this->model->getModelDatabaseServiceKey());
-            $this->modelClass = $this->model->getClass();
-            $this->table = $this->model->getModelTable();
-            $this->fields = $this->model->getModelFields();
-            $this->primaryFields = $this->model->getModelPrimaryFields();
+            $this->dbHandler = $this->application->get($this->config->dbServiceName);
+            $this->modelClass = $this->config->modelClass;
+            $this->table = $this->config->table;
+            $this->primaryFields = $this->config->primaryFields;
         }
         return $this->dbHandler;
     }

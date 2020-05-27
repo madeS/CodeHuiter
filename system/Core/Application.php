@@ -3,7 +3,7 @@
 namespace CodeHuiter\Core;
 
 use App\Config\DefaultConfig;
-use CodeHuiter\Config\Config;
+use CodeHuiter\Config\CoreConfig;
 use CodeHuiter\Core\Exception\ExceptionProcessor;
 use CodeHuiter\Exception\Runtime\CoreException;
 use Exception;
@@ -24,6 +24,11 @@ class Application
             self::$instance = new self();
         }
         return self::$instance;
+    }
+
+    public static function started(): bool
+    {
+        return (bool)self::$instance && self::$instance->request;
     }
 
     public function destroy(): void
@@ -78,8 +83,8 @@ class Application
             throw CoreException::onServiceNotFound($name);
         }
 
-        $scope = $this->config->services[$name][Config::OPT_KEY_SCOPE] ?? Config::OPT_KEY_SCOPE_PERMANENT;
-        if ($scope === Config::OPT_KEY_SCOPE_REQUEST) {
+        $scope = $this->config->services[$name][CoreConfig::KEY_SCOPE] ?? CoreConfig::SCOPE_PERMANENT;
+        if ($scope === CoreConfig::SCOPE_REQUEST) {
             $scope .= $this->request ? $this->request->getId() : 0;
         }
         if (isset($this->serviceCreateStack[$scope][$name])) {
@@ -87,21 +92,21 @@ class Application
         }
         $this->serviceCreateStack[$scope][$name] = true;
 
-        if ($scope === Config::OPT_KEY_SCOPE_NO_SHARED || !isset($this->container[$scope][$name])) {
+        if ($scope === CoreConfig::SCOPE_NO_SHARED || !isset($this->container[$scope][$name])) {
             $obj = null;
-            if (isset($this->config->services[$name][Config::OPT_KEY_CALLBACK]) && $this->config->services[$name][Config::OPT_KEY_CALLBACK]) {
-                $callback = $this->config->services[$name][Config::OPT_KEY_CALLBACK];
+            if (isset($this->config->services[$name][CoreConfig::KEY_CALLBACK]) && $this->config->services[$name][CoreConfig::KEY_CALLBACK]) {
+                $callback = $this->config->services[$name][CoreConfig::KEY_CALLBACK];
                 $obj = $callback($this);
-            } elseif (isset($this->config->services[$name][Config::OPT_KEY_CLASS]) && $this->config->services[$name][Config::OPT_KEY_CLASS]) {
-                $class = $this->config->services[$name][Config::OPT_KEY_CLASS];
+            } elseif (isset($this->config->services[$name][CoreConfig::KEY_CLASS]) && $this->config->services[$name][CoreConfig::KEY_CLASS]) {
+                $class = $this->config->services[$name][CoreConfig::KEY_CLASS];
                 $obj = new $class();
-            } elseif (isset($this->config->services[$name][Config::OPT_KEY_CLASS_APP]) && $this->config->services[$name][Config::OPT_KEY_CLASS_APP]) {
-                $class = $this->config->services[$name][Config::OPT_KEY_CLASS_APP];
+            } elseif (isset($this->config->services[$name][CoreConfig::KEY_CLASS_APP]) && $this->config->services[$name][CoreConfig::KEY_CLASS_APP]) {
+                $class = $this->config->services[$name][CoreConfig::KEY_CLASS_APP];
                 $obj = new $class($this);
             } else {
                 throw CoreException::onServiceNotProvideCreationInfo($name);
             }
-            $validateClass = $this->config->services[$name][Config::OPT_KEY_VALIDATE] ?? $name;
+            $validateClass = $this->config->services[$name][CoreConfig::KEY_VALIDATE] ?? $name;
             if ($validateClass !== false) {
                 if (!is_a($obj, $validateClass)) {
                     throw CoreException::onServiceValidationNotPassed($name, $validateClass, get_class($obj));
@@ -134,8 +139,8 @@ class Application
             throw CoreException::onServiceNotFound($name);
         }
 
-        $scope = $this->config->services[$name][Config::OPT_KEY_SCOPE] ?? Config::OPT_KEY_SCOPE_PERMANENT;
-        if ($scope === Config::OPT_KEY_SCOPE_REQUEST) {
+        $scope = $this->config->services[$name][CoreConfig::KEY_SCOPE] ?? CoreConfig::SCOPE_PERMANENT;
+        if ($scope === CoreConfig::SCOPE_REQUEST) {
             $scope .= $this->request->getId();
         }
 
@@ -168,7 +173,7 @@ class Application
             /** @var Response $response */
             $response = $this->get(Response::class);
 
-            $this->destroyScope(Config::OPT_KEY_SCOPE_REQUEST . $this->request->getId());
+            $this->destroyScope(CoreConfig::SCOPE_REQUEST . $this->request->getId());
 
             $this->request = null;
             return $response;

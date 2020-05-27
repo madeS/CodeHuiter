@@ -10,7 +10,6 @@ use CodeHuiter\Facilities\Exception\Runtime\AuthRuntimeException;
 use CodeHuiter\Facilities\Module\Auth\Event\GroupsChangedEvent;
 use CodeHuiter\Facilities\Module\Auth\Event\JoinAccountsEvent;
 use CodeHuiter\Facilities\Module\Auth\Model\User;
-use CodeHuiter\Facilities\Module\Auth\Model\UserModel;
 use CodeHuiter\Facilities\Module\Auth\Model\UserRepository;
 use CodeHuiter\Facilities\Module\Auth\Oauth\OAuthData;
 use CodeHuiter\Facilities\Result\ModuleResult;
@@ -245,8 +244,8 @@ class AuthService
 
         if (isset($this->commonHash) && md5($sig) === $this->commonHash) {
             $userInfo->setGroups(array_merge($userInfo->getGroups(), $this->groups));
-            if ($userInfo instanceof UserModel) {
-                $userInfo->initOriginals();
+            if ($userInfo instanceof User) {
+                $userInfo->initModelOriginals();
             }
             return $userInfo;
         }
@@ -743,7 +742,7 @@ class AuthService
      * @param string $js_timezoneOffset
      * @return int|null
      */
-    public function setTimezone(User $user, string $js_timezoneOffset): int
+    public function setTimezone(User $user, string $js_timezoneOffset): ?int
     {
         $timezoneOffset = (int)$js_timezoneOffset;
 

@@ -51,6 +51,9 @@ imageinterlace($im, true);
 imagegif($im, './php_interlaced.gif');
 ```
 
+Cookie httpOnly
+Cookie SameSate Lax
+Cookie Secure for https only
 
 
 #### LOW

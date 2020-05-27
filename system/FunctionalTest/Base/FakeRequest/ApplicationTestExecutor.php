@@ -2,7 +2,7 @@
 
 namespace CodeHuiter\FunctionalTest\Base\FakeRequest;
 
-use CodeHuiter\Config\ConfigTest;
+use CodeHuiter\Config\TestFacilitiesConfig;
 use CodeHuiter\Core\Application;
 use CodeHuiter\Core\ByDefault\Request;
 use CodeHuiter\Core\Response;
@@ -26,7 +26,7 @@ class ApplicationTestExecutor
             require __DIR__ . '/../../../../bootstrap/paths.php';
             $application = Application::getInstance();
             $originConfig = $application->config;
-            $application->init(ConfigTest::class);
+            $application->init(TestFacilitiesConfig::class);
             $testConfig = $application->config;
             self::$testApplication = new self($application);
 

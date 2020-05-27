@@ -3,7 +3,9 @@
 namespace App\Module\ChromeExtension\Controller;
 
 use App\Module\ChromeExtension\Model\YoutubeCacheModel;
-use CodeHuiter\Database\RelationalModelRepository;
+use CodeHuiter\Config\CoreConfig;
+use CodeHuiter\Database\RelationalRepository;
+use CodeHuiter\Config\Module\RelationalRepositoryConfig;
 use CodeHuiter\Facilities\Module\ThirdPartyApi\ThirdPartyApiProvider;
 use CodeHuiter\Modifier\StringModifier;
 
@@ -23,7 +25,14 @@ class Youtube_Controller extends \CodeHuiter\Facilities\Controller\Base\BaseCont
         $videos = explode(',', $videoIds);
         $requestVideos = [];
 
-        $repository = new RelationalModelRepository($this->app, new YoutubeCacheModel());
+        $repository = new RelationalRepository(
+            $this->app,
+            new RelationalRepositoryConfig(
+                YoutubeCacheModel::class,
+                CoreConfig::SERVICE_DB_DEFAULT,
+                'youtube_api_cache'
+            )
+        );
 
         $result = [];
 
@@ -54,7 +63,7 @@ class Youtube_Controller extends \CodeHuiter\Facilities\Controller\Base\BaseCont
         foreach ($videosData as $videoData) {
             $cacheModel = $repository->getById([$videoData->getId()]);
             if ($cacheModel === null) {
-                $cacheModel = YoutubeCacheModel::getEmpty();
+                $cacheModel = YoutubeCacheModel::emptyModel();
             }
             $cacheModel->id = $videoData->getId();
             $cacheModel->data = StringModifier::jsonEncode($videoData->toArray());

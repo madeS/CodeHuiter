@@ -13,44 +13,42 @@ use CodeHuiter\Service\Logger;
 use CodeHuiter\Core\Request;
 use CodeHuiter\Service\Renderer;
 use CodeHuiter\Core\Router;
-use CodeHuiter\Database\RelationalDatabase;
-use CodeHuiter\Database\Drivers\PDODriver;
+use CodeHuiter\Database\RelationalDatabaseHandler;
+use CodeHuiter\Database\Handlers\PDORelationalDatabaseHandler;
 use CodeHuiter\Service\ByDefault;
 use CodeHuiter\Service\DateService;
 use CodeHuiter\Service\Mailer;
 use CodeHuiter\Service\HtmlParser;
 use CodeHuiter\Service\Language;
-use CodeHuiter\Service\ByDefault\Log\FileLog;
+use CodeHuiter\Service\ByDefault\Log\FileLogger;
 use CodeHuiter\Service\Network;
 
-abstract class Config
+abstract class CoreConfig
 {
-    public const OPT_KEY_SINGLE = 'single';
+    public const KEY_CLASS_APP = 'class_app';
+    public const KEY_CLASS = 'class';
+    public const KEY_CALLBACK = 'callback';
+    public const KEY_VALIDATE = 'validate';
+    public const KEY_SCOPE = 'scope'; // permanent by default
 
-    public const OPT_KEY_CLASS_APP = 'class_app';
-    public const OPT_KEY_CLASS = 'class';
-    public const OPT_KEY_CALLBACK = 'callback';
-    public const OPT_KEY_VALIDATE = 'validate';
-    public const OPT_KEY_SCOPE = 'scope';
-    public const OPT_KEY_SCOPE_PERMANENT = 'scope_permanent';
-    public const OPT_KEY_SCOPE_REQUEST = 'scope_request';
-    public const OPT_KEY_SCOPE_NO_SHARED = 'scope_no_shared';
+    public const SCOPE_PERMANENT = 'scope_permanent';
+    public const SCOPE_REQUEST = 'scope_request';
+    public const SCOPE_NO_SHARED = 'scope_no_shared';
 
-    // TODO Check usages of KEYS
-    public const SERVICE_KEY_LOADER = 'loader';
-    public const SERVICE_KEY_LOG = 'log';
-    public const SERVICE_KEY_CONSOLE = 'console';
-    public const SERVICE_KEY_DEBUG = 'debug';
-    public const SERVICE_KEY_DATE = 'date';
-    public const SERVICE_KEY_NETWORK = 'network';
-    public const SERVICE_KEY_LANG = 'lang';
-    public const SERVICE_KEY_HTML_PARSER = 'htmlParser';
-    public const SERVICE_KEY_EMAIL = 'email';
-    public const SERVICE_KEY_RENDERER = 'renderer';
-    public const SERVICE_KEY_REQUEST = 'request';
-    public const SERVICE_KEY_RESPONSE = 'response';
-    public const SERVICE_KEY_ROUTER = 'router';
-    public const SERVICE_KEY_DB_DEFAULT = 'db';
+    // Injected services into controller
+    public const INJECTED_LOADER = 'loader';
+    public const INJECTED_LOG = 'log';
+    public const INJECTED_CONSOLE = 'console';
+    public const INJECTED_DATE = 'date';
+    public const INJECTED_NETWORK = 'network';
+    public const INJECTED_LANG = 'lang';
+    public const INJECTED_RENDERER = 'renderer';
+    public const INJECTED_REQUEST = 'request';
+    public const INJECTED_RESPONSE = 'response';
+    public const INJECTED_ROUTER = 'router';
+
+    // Databases
+    public const SERVICE_DB_DEFAULT = 'db';
 
     /**
      * @var array <fieldKey, ServiceName>
@@ -84,7 +82,6 @@ abstract class Config
     /** @var EventsConfig */
     public $eventsConfig;
 
-
     /** @var RelationalDatabaseConfig */
     public $defaultDatabaseConfig;
 
@@ -94,122 +91,62 @@ abstract class Config
         $this->frameworkConfig = new FrameworkConfig();
         $this->eventsConfig = new EventsConfig();
 
-        /**
-         * Class Loader service
-         */
-        $this->services[CodeLoader::class] = [self::OPT_KEY_CLASS => CodeLoader::class];
-        $this->injectedServices[self::SERVICE_KEY_LOADER] = CodeLoader::class;
-
-        /**
-         * Logger service
-         */
-        $this->services[Logger::class] = [self::OPT_KEY_CALLBACK => static function (Application $app) {
-            return new FileLog($app->config->logConfig);
-        }];
-        $this->injectedServices[self::SERVICE_KEY_LOG] = Logger::class;
         $this->logConfig = new LogConfig();
+        $this->dateConfig = new DateConfig();
+        $this->emailConfig = new EmailConfig();
+        $this->rendererConfig = new RendererConfig();
+        $this->responseConfig = new ResponseConfig();
+        $this->requestConfig = new RequestConfig();
+        $this->routerConfig = new RouterConfig();
 
         /**
-         * Console Service
+         * Services
          */
-        $this->services[Console::class] = [self::OPT_KEY_CALLBACK => static function (Application $app) {
+        $this->services[CodeLoader::class] = [self::KEY_CLASS => CodeLoader::class];
+        $this->services[Logger::class] = [self::KEY_CALLBACK => static function (Application $app) {
+            return new FileLogger($app->config->logConfig);
+        }];
+        $this->services[Console::class] = [self::KEY_CALLBACK => static function (Application $app) {
             return new ByDefault\Console($app->get(Logger::class));
         }];
-        $this->injectedServices[self::SERVICE_KEY_CONSOLE] = Console::class;
-
-        /**
-         * Date Service
-         */
         $this->services[DateService::class] = [
-            self::OPT_KEY_CALLBACK => static function (Application $app) {
+            self::KEY_CALLBACK => static function (Application $app) {
                 return new ByDefault\DateService($app->config->dateConfig);
             },
-            self::OPT_KEY_SCOPE => self::OPT_KEY_SCOPE_REQUEST,
+            self::KEY_SCOPE => self::SCOPE_REQUEST,
         ];
-        $this->injectedServices[self::SERVICE_KEY_DATE] = DateService::class;
-        $this->dateConfig = new DateConfig();
-
-        /**
-         * Network Service
-         */
-        $this->services[Network::class] = [self::OPT_KEY_CALLBACK => static function (Application $app) {
+        $this->services[Network::class] = [self::KEY_CALLBACK => static function (Application $app) {
             return new ByDefault\Network($app->get(Logger::class));
         }];
-        $this->injectedServices[self::SERVICE_KEY_NETWORK] = Network::class;
-
-        /**
-         * Language Service
-         */
-        $this->services[Language::class] = [self::OPT_KEY_CLASS => ByDefault\Language::class];
-        $this->injectedServices[self::SERVICE_KEY_LANG] = Language::class;
-
-        /**
-         * HtmlParser Service
-         */
-        $this->services[HtmlParser::class] = [self::OPT_KEY_CLASS => ByDefault\HtmlParser\SimpleHtmlDomParser::class];
-        $this->injectedServices[self::SERVICE_KEY_HTML_PARSER] = HtmlParser::class;
-
-        /**
-         * MimeTypeConverter Service
-         */
-        $this->services[MimeTypeConverter::class] = [self::OPT_KEY_CLASS => ByDefault\MimeTypeConverter::class];
-
-        /**
-         * Mailer Service
-         */
-        $this->services[Mailer::class] = [self::OPT_KEY_CALLBACK => static function (Application $app) {
+        $this->services[Language::class] = [self::KEY_CLASS => ByDefault\Language::class];
+        $this->services[HtmlParser::class] = [self::KEY_CLASS => ByDefault\HtmlParser\SimpleHtmlDomParser::class];
+        $this->services[MimeTypeConverter::class] = [self::KEY_CLASS => ByDefault\MimeTypeConverter::class];
+        $this->services[Mailer::class] = [self::KEY_CALLBACK => static function (Application $app) {
             return new ByDefault\Email\Mailer($app->config->emailConfig, $app->get(Logger::class), $app->get(DateService::class));
         }];
-        $this->injectedServices[self::SERVICE_KEY_EMAIL] = Mailer::class;
-        $this->emailConfig = new EmailConfig();
-
-        /**
-         * Renderer Service
-         */
         $this->services[Renderer::class] = [
-            self::OPT_KEY_CALLBACK => static function (Application $app) {
+            self::KEY_CALLBACK => static function (Application $app) {
                 return $app->get(ByDefault\PhpRenderer::class);
             },
-            self::OPT_KEY_SCOPE => self::OPT_KEY_SCOPE_REQUEST,
+            self::KEY_SCOPE => self::SCOPE_REQUEST,
         ];
-        $this->injectedServices[self::SERVICE_KEY_RENDERER] = Renderer::class;
-        $this->rendererConfig = new RendererConfig();
-
-        /**
-         * PhpRenderer Service
-         */
         $this->services[ByDefault\PhpRenderer::class] = [
-            self::OPT_KEY_CALLBACK => static function (Application $app) {
+            self::KEY_CALLBACK => static function (Application $app) {
                 return new ByDefault\PhpRenderer($app->config->rendererConfig, $app->get(Response::class), $app->get(Logger::class));
             },
-            self::OPT_KEY_SCOPE => self::OPT_KEY_SCOPE_REQUEST,
+            self::KEY_SCOPE => self::SCOPE_REQUEST,
         ];
-
-        /**
-         * Request Service
-         */
-        $this->services[Request::class] = [self::OPT_KEY_CALLBACK => static function (Application $app) {
+        $this->services[Request::class] = [self::KEY_CALLBACK => static function (Application $app) {
             return new \CodeHuiter\Core\ByDefault\Request($app->config->requestConfig);
         }];
-        $this->injectedServices[self::SERVICE_KEY_REQUEST] = Request::class;
-        $this->requestConfig = new RequestConfig();
-
-        /**
-         * Response Service
-         */
-        $this->services[Response::class] = [self::OPT_KEY_CALLBACK => static function (Application $app) {
+        $this->services[Response::class] = [
+            self::KEY_CALLBACK => static function (Application $app) {
                 return new \CodeHuiter\Core\ByDefault\Response($app, $app->config->responseConfig, $app->get(Request::class));
             },
-            self::OPT_KEY_SCOPE => self::OPT_KEY_SCOPE_REQUEST,
+            self::KEY_SCOPE => self::SCOPE_REQUEST,
         ];
-        $this->injectedServices[self::SERVICE_KEY_RESPONSE] = Response::class;
-        $this->responseConfig = new ResponseConfig();
-
-        /**
-         * Router Service
-         */
         $this->services[Router::class] = [
-            self::OPT_KEY_CALLBACK => static function (Application $app) {
+            self::KEY_CALLBACK => static function (Application $app) {
                 return new Router(
                     $app,
                     $app->config->routerConfig,
@@ -217,35 +154,34 @@ abstract class Config
                     $app->get(CodeLoader::class)
                 );
             },
-            self::OPT_KEY_SCOPE => self::OPT_KEY_SCOPE_REQUEST,
+            self::KEY_SCOPE => self::SCOPE_REQUEST,
         ];
-        $this->injectedServices[self::SERVICE_KEY_ROUTER] = Router::class;
-        $this->routerConfig = new RouterConfig();
-
-        /**
-         * Request Service
-         */
-        $this->services[FileStorage::class] = [self::OPT_KEY_CALLBACK => static function (Application $app) {
-            return new ByDefault\FileStorage($app->get(Logger::class));
-        }];
-
-        /**
-         * EventDispatcher Service
-         */
+        $this->services[FileStorage::class] = [
+            self::KEY_CALLBACK => static function (Application $app) {
+                return new ByDefault\FileStorage($app->get(Logger::class));
+            }
+        ];
         $this->services[EventDispatcher::class] = [
-            self::OPT_KEY_CLASS_APP => ByDefault\EventDispatcher\EventDispatcher::class,
+            self::KEY_CLASS_APP => ByDefault\EventDispatcher\EventDispatcher::class,
         ];
 
-        /**
-         * Default Database Service
-         */
-        $this->services[self::SERVICE_KEY_DB_DEFAULT] = [
-            self::OPT_KEY_CALLBACK => static function (Application $app) {
-                return new PDODriver($app->get(Logger::class), $app->config->defaultDatabaseConfig);
+        $this->injectedServices[self::INJECTED_LOADER] = CodeLoader::class;
+        $this->injectedServices[self::INJECTED_LOG] = Logger::class;
+        $this->injectedServices[self::INJECTED_CONSOLE] = Console::class;
+        $this->injectedServices[self::INJECTED_DATE] = DateService::class;
+        $this->injectedServices[self::INJECTED_NETWORK] = Network::class;
+        $this->injectedServices[self::INJECTED_LANG] = Language::class;
+        $this->injectedServices[self::INJECTED_RENDERER] = Renderer::class;
+        $this->injectedServices[self::INJECTED_REQUEST] = Request::class;
+        $this->injectedServices[self::INJECTED_RESPONSE] = Response::class;
+        $this->injectedServices[self::INJECTED_ROUTER] = Router::class;
+
+        $this->services[self::SERVICE_DB_DEFAULT] = [
+            self::KEY_CALLBACK => static function (Application $app) {
+                return new PDORelationalDatabaseHandler($app->get(Logger::class), $app->config->defaultDatabaseConfig);
             },
-            self::OPT_KEY_VALIDATE => RelationalDatabase::class,
+            self::KEY_VALIDATE => RelationalDatabaseHandler::class,
         ];
-        $this->injectedServices[self::SERVICE_KEY_DB_DEFAULT] = self::SERVICE_KEY_DB_DEFAULT;
         $this->defaultDatabaseConfig = new RelationalDatabaseConfig();
     }
 
@@ -411,6 +347,11 @@ class EventsConfig
     public static function modelUpdatedName(string $class)
     {
         return $class . '.updated';
+    }
+
+    public static function modelDeletingName(string $class)
+    {
+        return $class . '.deleting';
     }
 }
 

@@ -2,15 +2,10 @@
 
 namespace CodeHuiter\Facilities\Module\Shop\Model;
 
-use CodeHuiter\Database\RelationalModel;
+use CodeHuiter\Database\Model;
 
-class ShopCategoryProductModel extends RelationalModel
+class ShopCategoryProductModel extends Model
 {
-    protected $_databaseServiceKey = 'db';
-    protected $_table = 'TestWithTwoAutoIncrement';
-    protected $_primaryFields = ['onePrimaryField', 'secondPrimaryField'];
-    protected $_autoIncrementField = 'secondPrimaryField';
-
     /**
      * @var int
      */
@@ -81,6 +76,4 @@ class ShopCategoryProductModel extends RelationalModel
     {
         return "[{$this->onePrimaryField},{$this->secondPrimaryField},{$this->created_at}]";
     }
-
-
 }

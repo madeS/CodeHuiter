@@ -2,7 +2,10 @@
 
 namespace App\Controller;
 
-use CodeHuiter\Database\RelationalModelRepository;
+use CodeHuiter\Config\CoreConfig;
+use CodeHuiter\Database\RelationalDatabaseHandler;
+use CodeHuiter\Database\RelationalRepository;
+use CodeHuiter\Config\Module\RelationalRepositoryConfig;
 use CodeHuiter\Facilities\Controller\Base\BaseController;
 use CodeHuiter\Facilities\Module\Shop\Model\ShopCategoryProductModel;
 use CodeHuiter\Facilities\Module\Shop\Model\SomeServiceInterface;
@@ -20,11 +23,21 @@ class Test_Controller extends BaseController
     public function testPartModel(): void
     {
         /** @var ShopCategoryProductModel $model */
-        $model = ShopCategoryProductModel::getEmpty();
+        $model = ShopCategoryProductModel::emptyModel();
         $model->setCreatedAt($this->date->sqlTime());
         $model->setOnePrimaryField(555);
 
-        $repository = new RelationalModelRepository($this->app, new ShopCategoryProductModel());
+        $repository = new RelationalRepository(
+            $this->app,
+            new RelationalRepositoryConfig(
+                ShopCategoryProductModel::class,
+                CoreConfig::SERVICE_DB_DEFAULT,
+                'TestWithTwoAutoIncrement',
+                'secondPrimaryField',
+                ['onePrimaryField', 'secondPrimaryField']
+            )
+        );
+
         $repository->save($model);
 
         echo $model;
@@ -90,16 +103,18 @@ class Test_Controller extends BaseController
 
     public function migrate(): void
     {
-        $medias = $this->db->select("SELECT * FROM user_medias WHERE 1");
+        $db = $this->getDb();
+
+        $medias = $db->select("SELECT * FROM user_medias WHERE 1");
         foreach ($medias as $media) {
-            $this->db->execute(
+            $db->execute(
                 "UPDATE user_medias SET created_at = :time WHERE id = :id",
                 [
                     ':time' => $this->date->sqlTime($media['created_at_int']),
                     ':id' => $media['id'],
                 ]
             );
-            $this->db->execute(
+            $db->execute(
                 "UPDATE user_medias SET updated_at = :time WHERE id = :id",
                 [
                     ':time' => $this->date->sqlTime($media['updated_at_int']),
@@ -108,23 +123,23 @@ class Test_Controller extends BaseController
             );
         }
 
-        $medias = $this->db->select("SELECT * FROM user_albums WHERE 1");
+        $medias = $db->select("SELECT * FROM user_albums WHERE 1");
         foreach ($medias as $media) {
-            $this->db->execute(
+            $db->execute(
                 "UPDATE user_albums SET created_at = :time WHERE id = :id",
                 [
                     ':time' => $this->date->sqlTime($media['created_at_int']),
                     ':id' => $media['id'],
                 ]
             );
-            $this->db->execute(
+            $db->execute(
                 "UPDATE user_albums SET updated_at = :time WHERE id = :id",
                 [
                     ':time' => $this->date->sqlTime($media['updated_at_int']),
                     ':id' => $media['id'],
                 ]
             );
-            $this->db->execute(
+            $db->execute(
                 "UPDATE user_albums SET show_at = :time WHERE id = :id",
                 [
                     ':time' => $this->date->sqlTime($media['date_show']),
@@ -134,4 +149,8 @@ class Test_Controller extends BaseController
         }
     }
 
+    private function getDb(): RelationalDatabaseHandler
+    {
+        return $this->app->get(CoreConfig::SERVICE_DB_DEFAULT);
+    }
 }

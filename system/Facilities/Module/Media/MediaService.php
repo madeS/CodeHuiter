@@ -16,7 +16,7 @@ use CodeHuiter\Facilities\Module\Media\Image\Options\ResizeOptions;
 use CodeHuiter\Facilities\Module\Media\Image\Options\WatermarkImageOptions;
 use CodeHuiter\Facilities\Module\Media\Image\Options\WatermarkOptions;
 use CodeHuiter\Facilities\Module\Media\Model\Media;
-use CodeHuiter\Facilities\Module\Media\Model\MediaModel;
+use CodeHuiter\Facilities\Module\Media\Model\Media;
 use CodeHuiter\Facilities\Module\Media\Model\MediaRepository;
 use CodeHuiter\Facilities\Result\ModuleResult;
 use CodeHuiter\Facilities\Service\Content;
@@ -63,18 +63,18 @@ class MediaService
         if (!$setUserMedia && $user->getPictureId()) {
             // We can set user photo from settled ID
             $setUserMedia = $this->getMediaRepository()->findOne([
-                MediaModel::FIELD_ID => $setUserMedia->getId(),
-                MediaModel::FIELD_USER_ID => $user->getId(),
-                MediaModel::FIELD_TYPE => Media::TYPE_PHOTO,
+                Media::FIELD_ID => $setUserMedia->getId(),
+                Media::FIELD_USER_ID => $user->getId(),
+                Media::FIELD_TYPE => Media::TYPE_PHOTO,
             ]);
         }
         if (!$setUserMedia) {
             // We can set last user photo
             $setUserMedia = $this->getMediaRepository()->findOne([
-                MediaModel::FIELD_ID => $setUserMedia->getId(),
-                MediaModel::FIELD_USER_ID => $user->getId(),
-                MediaModel::FIELD_TYPE => Media::TYPE_PHOTO,
-            ], ['order' => [MediaModel::FIELD_SORT_NUMBER => 'desc']]);
+                Media::FIELD_ID => $setUserMedia->getId(),
+                Media::FIELD_USER_ID => $user->getId(),
+                Media::FIELD_TYPE => Media::TYPE_PHOTO,
+            ], ['order' => [Media::FIELD_SORT_NUMBER => 'desc']]);
         }
         if (!$user->isInGroup(AuthService::GROUP_NOT_DELETED)) {
             $user->setPictureId(0);

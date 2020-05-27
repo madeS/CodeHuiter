@@ -2,7 +2,7 @@
 
 namespace CodeHuiter\Config;
 
-class ConfigTest extends FacilitiesConfig
+class TestFacilitiesConfig extends FacilitiesConfig
 {
     public function __construct()
     {

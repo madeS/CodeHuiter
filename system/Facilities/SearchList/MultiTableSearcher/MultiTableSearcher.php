@@ -4,9 +4,9 @@ namespace CodeHuiter\Facilities\SearchList\MultiTableSearcher;
 
 use CodeHuiter\Core\Application;
 use CodeHuiter\Core\Request;
-use CodeHuiter\Database\Drivers\PDODriver;
-use CodeHuiter\Database\RelationalDatabase;
-use CodeHuiter\Database\RelationalModel;
+use CodeHuiter\Database\Handlers\PDORelationalDatabaseHandler;
+use CodeHuiter\Database\RelationalDatabaseHandler;
+use CodeHuiter\Database\RelationalRepository;
 use CodeHuiter\Modifier\StringModifier;
 use CodeHuiter\Facilities\SearchList\SearchListResult;
 use stdClass;
@@ -65,7 +65,7 @@ class MultiTableSearcher
     protected $bindings = [];
 
     protected function searchFinish(
-        string $modelClass,
+        RelationalRepository $repository,
         array $options = [],
         array $filters = [],
         array $pages = [],
@@ -83,20 +83,16 @@ class MultiTableSearcher
         }
 
 
-        $sql_limit = PDODriver::sqlLimit($pages);
+        $sql_limit = PDORelationalDatabaseHandler::sqlLimit($pages);
         $resultSql = "SELECT {$this->sqls_select} FROM {$this->sqls_from} WHERE {$this->sqls_where} {$this->sqls_order} $sql_limit ";
         if ($this->sqls_after){
             $resultSql = StringModifier::replace($this->sqls_after, array('{#sql}' => $resultSql));
             $this->sqls_after = '';
         }
 
-        //echo "[$resultSql]\n<br/>";
-        /** @var RelationalModel $model */
-        $model = new $modelClass();
-        $model->getModelDatabaseServiceKey();
-        /** @var RelationalDatabase $dbHandler */
-        $dbHandler = $this->application->get($model->getModelDatabaseServiceKey());
-        $ret = $dbHandler->selectObjects($modelClass, $resultSql, $this->bindings);
+        /** @var RelationalDatabaseHandler $dbHandler */
+        $dbHandler = $this->application->get($repository->getConfig()->dbServiceName);
+        $ret = $dbHandler->selectObjects($repository->getConfig()->modelClass, $resultSql, $this->bindings);
 
         foreach($ret as $index => $r){
             foreach ($this->sqls_connect as $inside){
@@ -120,7 +116,7 @@ class MultiTableSearcher
     }
 
     protected function searchFinishOne(
-        string $modelClass,
+        RelationalRepository $repository,
         array $options = []
     ): ?stdClass {
         if (isset($options['id']) && $options['id'] !== null){
@@ -143,12 +139,8 @@ class MultiTableSearcher
             $this->sqls_after = '';
         }
 
-        /** @var RelationalModel $model */
-        $model = new $modelClass();
-        $model->getModelDatabaseServiceKey();
-        /** @var RelationalDatabase $dbHandler */
-        $dbHandler = $this->application->get($model->getModelDatabaseServiceKey());
-        $ret = $dbHandler->selectOneObject($modelClass, $resultSql, $this->bindings);
+        $dbHandler = $this->application->get($repository->getConfig()->dbServiceName);
+        $ret = $dbHandler->selectOneObject($repository->getConfig()->modelClass, $resultSql, $this->bindings);
 
         if ($ret) {
             foreach ($this->sqls_connect as $inside){
@@ -164,13 +156,13 @@ class MultiTableSearcher
         return $ret;
     }
 
-    protected function resultInside(&$someObjecty, $prefix, $subarray): void
+    protected function resultInside(&$someObject, $prefix, $subarray): void
     {
-        $someObjecty->$subarray = [];
-        foreach($someObjecty as $key => $val){
+        $someObject->$subarray = [];
+        foreach($someObject as $key => $val){
             if (strpos($key,$prefix) === 0){
-                $someObjecty->$subarray[substr($key, strlen($prefix))] = $val;
-                unset($someObjecty->$key);
+                $someObject->$subarray[substr($key, strlen($prefix))] = $val;
+                unset($someObject->$key);
             }
         }
     }

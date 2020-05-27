@@ -2,11 +2,11 @@
 
 namespace CodeHuiter\Facilities\Module\Media\SearchList;
 
+use CodeHuiter\Facilities\Module\Media\Model\MediaRepository;
 use CodeHuiter\Modifier\IntModifier;
 use CodeHuiter\Facilities\Module\Auth\AuthService;
 use CodeHuiter\Facilities\Module\Auth\SearchList\UserSearcher;
 use CodeHuiter\Facilities\Module\Auth\UserService;
-use CodeHuiter\Facilities\Module\Media\Model\MediaModel;
 use CodeHuiter\Facilities\SearchList\MultiTableSearcher\MultiTableSearcher;
 use CodeHuiter\Facilities\SearchList\SearchListResult;
 
@@ -27,9 +27,10 @@ class MediaSearcher extends MultiTableSearcher
         array $pages = [],
         bool $requireResultCount = false
     ): SearchListResult {
+        /** @var MediaRepository $repository */
+        $repository = $this->application->get(MediaRepository::class);
 
-        $model = new MediaModel();
-        $table = $model->getModelTable();
+        $table = $repository->getConfig()->table;
 
         $this->sqls_table = $table;
         $this->sqls_extend = [];
@@ -103,7 +104,7 @@ class MediaSearcher extends MultiTableSearcher
             }
         }
 
-        return $this->searchFinish(MediaModel::class, $options, $filters, $pages, $requireResultCount);
+        return $this->searchFinish($repository, $options, $filters, $pages, $requireResultCount);
     }
 
     private function getUserService(): UserService

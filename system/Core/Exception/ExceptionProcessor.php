@@ -27,6 +27,9 @@ class ExceptionProcessor
         $exceptions = [$exception];
         $show_errors = true;
         try {
+            if (!Application::started()) {
+                throw new \Exception('Application not started');
+            }
             $app = Application::getInstance();
             /** @var Request $request */
             $request = $app->get(Request::class);

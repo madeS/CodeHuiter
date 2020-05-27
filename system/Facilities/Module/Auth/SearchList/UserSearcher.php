@@ -3,7 +3,7 @@
 namespace CodeHuiter\Facilities\Module\Auth\SearchList;
 
 use CodeHuiter\Facilities\Module\Auth\AuthService;
-use CodeHuiter\Facilities\Module\Auth\Model\UserModel;
+use CodeHuiter\Facilities\Module\Auth\Model\UserRepository;
 use CodeHuiter\Facilities\SearchList\MultiTableSearcher\MultiTableSearcher;
 use CodeHuiter\Facilities\SearchList\SearchListResult;
 use CodeHuiter\Service\DateService;
@@ -29,8 +29,9 @@ class UserSearcher extends MultiTableSearcher
         array $pages = [],
         bool $requireResultCount = false
     ): SearchListResult {
-        $model = new UserModel();
-        $userTable = $model->getModelTable();
+        $repository = $this->getUserRepository()->getRelationalRepository();
+
+        $userTable = $repository->getConfig()->table;
 
         $this->sqls_table = $userTable;
         $this->sqls_extend = ['data_info'];
@@ -81,7 +82,12 @@ class UserSearcher extends MultiTableSearcher
 //			}
         }
 
-        return $this->searchFinish(UserModel::class, $options, $filters, $pages, $requireResultCount);
+        return $this->searchFinish($repository, $options, $filters, $pages, $requireResultCount);
+    }
+
+    private function getUserRepository(): UserRepository
+    {
+        return $this->application->get(UserRepository::class);
     }
 
     private function getDateService(): DateService

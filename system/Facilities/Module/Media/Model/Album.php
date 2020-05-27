@@ -2,71 +2,214 @@
 
 namespace CodeHuiter\Facilities\Module\Media\Model;
 
-interface Album
+use CodeHuiter\Database\Model;
+
+class Album extends Model
 {
-    public function getId(): int;
+    private const DEFAULT_PICTURE = 'default/empty.png';
 
-    public function getActive(): int;
+    /** @var int */
+    protected $id;
+    /** @var int */
+    protected $active = 1;
+    /** @var string */
+    protected $type = 'unknown';
+    /** @var int */
+    protected $user_id = 0;
 
-    public function setActive(int $active): void;
+    /** @var string */
+    protected $title= '';
+    /** @var string */
+    protected $alias = '';
+    /** @var string */
+    protected $category = 'default';
 
-    public function getType(): string;
+    /** @var string */
+    protected $object_type = 'unknown';
+    /** @var int */
+    protected $object_id = 0;
 
-    public function setType(string $type): void;
+    /** @var int */
+    protected $picture_id = 0;
+    /** @var string */
+    protected $picture_preview = self::DEFAULT_PICTURE;
 
-    public function getUserId(): int;
+    /** @var string */
+    protected $description = '';
+    /** @var string */
+    protected $content = '';
+    /** @var int */
+    protected $medias_count = '';
 
-    public function setUserId(int $user_id): void;
+    /** @var string */
+    protected $created_at;
+    /** @var string */
+    protected $updated_at;
+    /** @var string */
+    protected $show_at;
 
-    public function getTitle(): string;
+    public function getId(): int
+    {
+        return $this->id;
+    }
 
-    public function setTitle(string $title): void;
+    public function getActive(): int
+    {
+        return $this->active;
+    }
 
-    public function getAlias(): string;
+    public function setActive(int $active): void
+    {
+        $this->active = $active;
+    }
 
-    public function setAlias(string $alias): void;
+    public function getType(): string
+    {
+        return $this->type;
+    }
 
-    public function getCategory(): string;
+    public function setType(string $type): void
+    {
+        $this->type = $type;
+    }
 
-    public function setCategory(string $category): void;
+    public function getUserId(): int
+    {
+        return $this->user_id;
+    }
 
-    public function getObjectType(): string;
+    public function setUserId(int $user_id): void
+    {
+        $this->user_id = $user_id;
+    }
 
-    public function setObjectType(string $object_type): void;
+    public function getTitle(): string
+    {
+        return $this->title;
+    }
 
-    public function getObjectId(): int;
+    public function setTitle(string $title): void
+    {
+        $this->title = $title;
+    }
 
-    public function setObjectId(int $object_id): void;
+    public function getAlias(): string
+    {
+        return $this->alias;
+    }
 
-    public function getPictureId(): int;
+    public function setAlias(string $alias): void
+    {
+        $this->alias = $alias;
+    }
 
-    public function setPictureId(int $picture_id): void;
+    public function getCategory(): string
+    {
+        return $this->category;
+    }
 
-    public function getPicturePreview(): string;
+    public function setCategory(string $category): void
+    {
+        $this->category = $category;
+    }
 
-    public function setPicturePreview(string $picture_preview): void;
+    public function getObjectType(): string
+    {
+        return $this->object_type;
+    }
 
-    public function getDescription(): string;
+    public function setObjectType(string $object_type): void
+    {
+        $this->object_type = $object_type;
+    }
 
-    public function setDescription(string $description): void;
+    public function getObjectId(): int
+    {
+        return $this->object_id;
+    }
 
-    public function getContent(): string;
+    public function setObjectId(int $object_id): void
+    {
+        $this->object_id = $object_id;
+    }
 
-    public function setContent(string $content): void;
+    public function getPictureId(): int
+    {
+        return $this->picture_id;
+    }
 
-    public function getMediasCount(): int;
+    public function setPictureId(int $picture_id): void
+    {
+        $this->picture_id = $picture_id;
+    }
 
-    public function setMediasCount(int $medias_count): void;
+    public function getPicturePreview(): string
+    {
+        return $this->picture_preview;
+    }
 
-    public function getCreatedAt(): string;
+    public function setPicturePreview(string $picture_preview): void
+    {
+        $this->picture_preview = $picture_preview;
+    }
 
-    public function setCreatedAt(string $created_at): void;
+    public function getDescription(): string
+    {
+        return $this->description;
+    }
 
-    public function getUpdatedAt(): string;
+    public function setDescription(string $description): void
+    {
+        $this->description = $description;
+    }
 
-    public function setUpdatedAt(string $updated_at): void;
+    public function getContent(): string
+    {
+        return $this->content;
+    }
 
-    public function getShowAt(): string;
+    public function setContent(string $content): void
+    {
+        $this->content = $content;
+    }
 
-    public function setShowAt(string $show_at): void;
+    public function getMediasCount(): int
+    {
+        return $this->medias_count;
+    }
+
+    public function setMediasCount(int $medias_count): void
+    {
+        $this->medias_count = $medias_count;
+    }
+
+    public function getCreatedAt(): string
+    {
+        return $this->created_at;
+    }
+
+    public function setCreatedAt(string $created_at): void
+    {
+        $this->created_at = $created_at;
+    }
+
+    public function getUpdatedAt(): string
+    {
+        return $this->updated_at;
+    }
+
+    public function setUpdatedAt(string $updated_at): void
+    {
+        $this->updated_at = $updated_at;
+    }
+
+    public function getShowAt(): string
+    {
+        return $this->show_at;
+    }
+
+    public function setShowAt(string $show_at): void
+    {
+        $this->show_at = $show_at;
+    }
 }

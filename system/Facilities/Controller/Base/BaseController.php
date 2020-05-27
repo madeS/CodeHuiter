@@ -4,7 +4,6 @@ namespace CodeHuiter\Facilities\Controller\Base;
 
 use CodeHuiter\Config\FacilitiesConfig;
 use CodeHuiter\Core\Application;
-use CodeHuiter\Core\CodeLoader;
 use CodeHuiter\Core\Controller;
 use CodeHuiter\Core\Exception\ExceptionProcessor;
 use CodeHuiter\Exception\CodeHuiterException;
@@ -17,26 +16,26 @@ use CodeHuiter\Facilities\Service\Compressor;
 /**
  * The base facilities controller
  *
- * @property-read Compressor $compressor
- * @see FacilitiesConfig::SERVICE_KEY_COMPRESSOR There are Forward Usages
+ * @property-read Compressor $comprewssor
+ * @see FacilitiesConfig::INJECTED_COMPRESSOR There are Forward Usages
  *
  * @property-read \App\Service\Link $links
- * @see FacilitiesConfig::SERVICE_KEY_LINKS There are Forward Usages
+ * @see FacilitiesConfig::INJECTED_LINKS There are Forward Usages
  *
  * @property-read \CodeHuiter\Facilities\Service\Content $content
- * @see FacilitiesConfig::SERVICE_KEY_CONTENT There are Forward Usages
+ * @see FacilitiesConfig::INJECTED_CONTENT There are Forward Usages
  *
  * @property-read \CodeHuiter\Facilities\Module\Auth\AuthService $auth
- * @see FacilitiesConfig::SERVICE_KEY_AUTH There are Forward Usages
+ * @see FacilitiesConfig::INJECTED_AUTH There are Forward Usages
  *
  * @property-read \CodeHuiter\Facilities\Module\Auth\UserService $userService
- * @see FacilitiesConfig::SERVICE_KEY_USER There are Forward Usages
+ * @see FacilitiesConfig::INJECTED_USER There are Forward Usages
  *
  * @property-read \CodeHuiter\Facilities\Service\AjaxResponse $ajaxResponse
- * @see FacilitiesConfig::SERVICE_KEY_MJSA_RESPONSE There are Forward Usages
+ * @see FacilitiesConfig::INJECTED_AJAX_RESPONSE There are Forward Usages
  *
  * @property-read \CodeHuiter\Facilities\Service\Validator $validator
- * @see FacilitiesConfig::SERVICE_KEY_VALIDATOR There are Forward Usages
+ * @see FacilitiesConfig::INJECTED_VALIDATOR There are Forward Usages
  */
 class BaseController extends Controller
 {

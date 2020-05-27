@@ -110,7 +110,7 @@ class VkOAuthManager implements OAuthManager
         }
     }
 
-    public function iframeUser(int $viewerId = 0, $authKey = ''): int
+    public function iframeUser(int $viewerId = 0, $authKey = ''): ?int
     {
         if ($authKey === md5($this->iframeAppId.'_'.$viewerId.'_'.$this->iframeSecret)) {
             return $viewerId;

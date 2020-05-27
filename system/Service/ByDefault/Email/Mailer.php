@@ -2,9 +2,11 @@
 
 namespace CodeHuiter\Service\ByDefault\Email;
 
+use CodeHuiter\Config\CoreConfig;
 use CodeHuiter\Config\EmailConfig;
 use CodeHuiter\Core\Application;
-use CodeHuiter\Database\RelationalModelRepository;
+use CodeHuiter\Database\RelationalRepository;
+use CodeHuiter\Config\Module\RelationalRepositoryConfig;
 use CodeHuiter\Service\ByDefault\Email\Model\MailerModel;
 use CodeHuiter\Service\ByDefault\Email\Sender\EmailSender;
 use CodeHuiter\Service\Logger;
@@ -16,7 +18,7 @@ class Mailer extends AbstractEmail
     /**
      * @var EmailSender
      */
-    protected $emailSender = null;
+    protected $emailSender;
 
     /**
      * @var DateService
@@ -24,7 +26,7 @@ class Mailer extends AbstractEmail
     protected $date;
 
     /**
-     * @var RelationalModelRepository
+     * @var RelationalRepository
      */
     protected $mailerRepository;
 
@@ -36,7 +38,16 @@ class Mailer extends AbstractEmail
     public function __construct(EmailConfig $config, Logger $log, DateService $dateService)
     {
         $this->date = $dateService;
-        $this->mailerRepository = new RelationalModelRepository(Application::getInstance(), new MailerModel());
+        $this->mailerRepository = new RelationalRepository(
+            Application::getInstance(),
+            new RelationalRepositoryConfig(
+                MailerModel::class,
+                CoreConfig::SERVICE_DB_DEFAULT,
+                'mailer',
+                'id',
+                ['id']
+            )
+        );
         parent::__construct($config, $log);
     }
 
@@ -74,9 +85,9 @@ class Mailer extends AbstractEmail
         if ($queued) {
             foreach ($emails as $email) {
                 /** @var MailerModel $model */
-                $model = MailerModel::getEmpty();
+                $model = MailerModel::emptyModel();
                 // TODO rewrite by sets ?
-                $model->updateBySet([
+                $model->updateModelBySet([
                     'user_id' => 0,
                     'subject' => $subject,
                     'email' => $email,

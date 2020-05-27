@@ -2,15 +2,10 @@
 
 namespace App\Module\ChromeExtension\Model;
 
-use CodeHuiter\Database\RelationalModel;
+use CodeHuiter\Database\Model;
 
-class YoutubeCacheModel extends RelationalModel
+class YoutubeCacheModel extends Model
 {
-    protected $_table = 'youtube_api_cache';
-    protected $_databaseServiceKey = 'db';
-    protected $_primaryFields = ['id'];
-    protected $_autoIncrementField = 'id';
-
     /** @var string */
     public $id;
     /** @var string */

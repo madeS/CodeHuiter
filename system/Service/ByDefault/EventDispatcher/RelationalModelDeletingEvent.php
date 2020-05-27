@@ -2,7 +2,8 @@
 
 namespace CodeHuiter\Service\ByDefault\EventDispatcher;
 
-use CodeHuiter\Database\RelationalModel;
+use CodeHuiter\Config\EventsConfig;
+use CodeHuiter\Database\Model;
 use CodeHuiter\Service\EventDispatcher\Event;
 
 class RelationalModelDeletingEvent implements Event
@@ -13,13 +14,13 @@ class RelationalModelDeletingEvent implements Event
     private $eventName;
 
     /**
-     * @var RelationalModel
+     * @var Model
      */
     private $model;
 
-    public function __construct(RelationalModel $model)
+    public function __construct(Model $model)
     {
-        $this->eventName = $model->getModelDatabaseServiceKey() . '_' . $model->getModelTable() . '.deleting';
+        $this->eventName = EventsConfig::modelDeletingName(get_class($model));
         $this->model = $model;
     }
 
@@ -28,7 +29,7 @@ class RelationalModelDeletingEvent implements Event
         return $this->eventName;
     }
 
-    public function getModel(): RelationalModel
+    public function getModel(): Model
     {
         return $this->model;
     }

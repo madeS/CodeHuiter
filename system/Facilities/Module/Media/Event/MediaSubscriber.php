@@ -5,7 +5,7 @@ namespace CodeHuiter\Facilities\Module\Media\Event;
 use CodeHuiter\Config\AuthConfig;
 use CodeHuiter\Core\Application;
 use CodeHuiter\Facilities\Module\Auth\Event\JoinAccountsEvent;
-use CodeHuiter\Facilities\Module\Media\Model\MediaModel;
+use CodeHuiter\Facilities\Module\Media\Model\Media;
 use CodeHuiter\Facilities\Module\Media\Model\MediaRepository;
 use CodeHuiter\Service\EventDispatcher\Event;
 use CodeHuiter\Service\EventDispatcher\EventSubscriber;
@@ -32,8 +32,8 @@ class MediaSubscriber implements EventSubscriber
     private function joinMedias(string $donorUserId, string $targetUserId): void
     {
         $this->getMediaRepository()->update(
-            [MediaModel::FIELD_USER_ID => $donorUserId],
-            [MediaModel::FIELD_USER_ID => $targetUserId]
+            [Media::FIELD_USER_ID => $donorUserId],
+            [Media::FIELD_USER_ID => $targetUserId]
         );
     }
 

@@ -4,7 +4,7 @@ namespace CodeHuiter\Service\ByDefault\Log;
 use CodeHuiter\Core\Exception\ExceptionProcessor;
 use Exception;
 
-class FileLog extends AbstractLog
+class FileLogger extends AbstractLog
 {
     /**
      * @param string $message

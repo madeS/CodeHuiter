@@ -6,7 +6,6 @@ use CodeHuiter\Config\ConnectorConfig;
 use CodeHuiter\Core\Response;
 use CodeHuiter\Facilities\Controller\Base\BaseController;
 use CodeHuiter\Facilities\Module\Auth\Model\UserRepository;
-use CodeHuiter\Facilities\Module\Auth\SearchList\UserSearcher;
 use CodeHuiter\Facilities\Module\Connector\ConnectableObject;
 use CodeHuiter\Facilities\Module\Connector\ConnectorService;
 use CodeHuiter\Facilities\Module\Media\MediaService;
