@@ -20,7 +20,7 @@ class RelationalModelDeletingEvent implements Event
 
     public function __construct(Model $model)
     {
-        $this->eventName = EventsConfig::modelDeletingName(get_class($model));
+        $this->eventName = EventsConfig::modelDeleting(get_class($model));
         $this->model = $model;
     }
 

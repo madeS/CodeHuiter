@@ -5,7 +5,6 @@ namespace App\Controller;
 use CodeHuiter\Config\CoreConfig;
 use CodeHuiter\Database\RelationalDatabaseHandler;
 use CodeHuiter\Database\RelationalRepository;
-use CodeHuiter\Config\Module\RelationalRepositoryConfig;
 use CodeHuiter\Facilities\Controller\Base\BaseController;
 use CodeHuiter\Facilities\Module\Shop\Model\ShopCategoryProductModel;
 use CodeHuiter\Facilities\Module\Shop\Model\SomeServiceInterface;
@@ -29,13 +28,7 @@ class Test_Controller extends BaseController
 
         $repository = new RelationalRepository(
             $this->app,
-            new RelationalRepositoryConfig(
-                ShopCategoryProductModel::class,
-                CoreConfig::SERVICE_DB_DEFAULT,
-                'TestWithTwoAutoIncrement',
-                'secondPrimaryField',
-                ['onePrimaryField', 'secondPrimaryField']
-            )
+            $this->app->config->repositoryConfigs[ShopCategoryProductModel::class]
         );
 
         $repository->save($model);

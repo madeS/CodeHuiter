@@ -2,12 +2,9 @@
 
 namespace CodeHuiter\Service\ByDefault\Email;
 
-use CodeHuiter\Config\CoreConfig;
 use CodeHuiter\Config\EmailConfig;
 use CodeHuiter\Core\Application;
 use CodeHuiter\Database\RelationalRepository;
-use CodeHuiter\Config\Module\RelationalRepositoryConfig;
-use CodeHuiter\Service\ByDefault\Email\Model\MailerModel;
 use CodeHuiter\Service\ByDefault\Email\Sender\EmailSender;
 use CodeHuiter\Service\Logger;
 use CodeHuiter\Exception\TagException;
@@ -38,15 +35,10 @@ class Mailer extends AbstractEmail
     public function __construct(EmailConfig $config, Logger $log, DateService $dateService)
     {
         $this->date = $dateService;
+        $application = Application::getInstance();
         $this->mailerRepository = new RelationalRepository(
-            Application::getInstance(),
-            new RelationalRepositoryConfig(
-                MailerModel::class,
-                CoreConfig::SERVICE_DB_DEFAULT,
-                'mailer',
-                'id',
-                ['id']
-            )
+            $application,
+            $application->config->repositoryConfigs[Model\Mailer::class]
         );
         parent::__construct($config, $log);
     }
@@ -84,8 +76,8 @@ class Mailer extends AbstractEmail
     ): bool {
         if ($queued) {
             foreach ($emails as $email) {
-                /** @var MailerModel $model */
-                $model = MailerModel::emptyModel();
+                /** @var Model\Mailer $model */
+                $model = Model\Mailer::emptyModel();
                 // TODO rewrite by sets ?
                 $model->updateModelBySet([
                     'user_id' => 0,
@@ -160,7 +152,7 @@ class Mailer extends AbstractEmail
      */
     protected function sendFromQueue($count = 1, $id = null): bool
     {
-        /** @var MailerModel[] $messages */
+        /** @var Model\Mailer[] $messages */
         $messages = $this->mailerRepository->find(
             $id ? ['id' => $id] : [],
             [

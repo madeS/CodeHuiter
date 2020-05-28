@@ -2,7 +2,7 @@
 
 namespace CodeHuiter\Database;
 
-use CodeHuiter\Config\Module\RelationalRepositoryConfig;
+use CodeHuiter\Config\Database\RelationalRepositoryConfig;
 use CodeHuiter\Core\Application;
 use CodeHuiter\Service\ByDefault\EventDispatcher\RelationalModelDeletingEvent;
 use CodeHuiter\Service\ByDefault\EventDispatcher\RelationalModelUpdatedEvent;

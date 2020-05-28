@@ -2,33 +2,15 @@
 
 namespace CodeHuiter\Config;
 
+use CodeHuiter\Config\Database\RelationalRepositoryConfig;
+use CodeHuiter\Core;
 use CodeHuiter\Core\Application;
 use CodeHuiter\Core\Request;
-use CodeHuiter\Core\Response;
-use CodeHuiter\Config\Module\RelationalRepositoryConfig;
-use CodeHuiter\Facilities\Module\Auth\Model\User;
-use CodeHuiter\Facilities\Module\Auth\UserService;
-use CodeHuiter\Facilities\Module\Connector\ConnectAccessibility;
-use CodeHuiter\Facilities\Module\Connector\ConnectorService;
-use CodeHuiter\Facilities\Module\Developing\DevelopingService;
-use CodeHuiter\Facilities\Module\Media\Event\MediaSubscriber;
-use CodeHuiter\Facilities\Module\Media\MediaService;
-use CodeHuiter\Facilities\Module\Media\Model\Media;
-use CodeHuiter\Facilities\Module\Media\Model\MediaRepository;
-use CodeHuiter\Facilities\Module\ThirdPartyApi\ThirdPartyApiProvider;
-use CodeHuiter\Facilities\Service\ByDefault;
-use CodeHuiter\Facilities\Service\AjaxResponse;
-use CodeHuiter\Facilities\Service\Validator;
-use CodeHuiter\Service\ByDefault\PhpRenderer;
-use CodeHuiter\Service\DateService;
-use CodeHuiter\Facilities\Module\Auth\AuthService;
-use CodeHuiter\Facilities\Module\Auth\Model\UserRepository;
-use CodeHuiter\Facilities\Service\Compressor;
-use CodeHuiter\Facilities\Service\Link;
-use CodeHuiter\Facilities\Service\Content;
-use CodeHuiter\Service\FileStorage;
-use CodeHuiter\Service\Language;
-use CodeHuiter\Service\Logger;
+use CodeHuiter\Database\Handlers\PDORelationalDatabaseHandler;
+use CodeHuiter\Database\RelationalDatabaseHandler;
+use CodeHuiter\Facilities;
+use CodeHuiter\Facilities\Module;
+use CodeHuiter\Service;
 
 class FacilitiesConfig extends CoreConfig
 {
@@ -58,7 +40,7 @@ class FacilitiesConfig extends CoreConfig
     public const INJECTED_USER = 'userService';
 
     /**
-     * @var RelationalRepositoryConfig[]
+     * @var Database\RelationalRepositoryConfig[]
      */
     public $repositoryConfigs = [];
 
@@ -73,106 +55,178 @@ class FacilitiesConfig extends CoreConfig
         $this->authConfig = new AuthConfig();
         $this->connectorConfig = new ConnectorConfig();
         $this->mediaConfig = new MediaConfig();
+        $this->defaultDatabaseConfig = new RelationalDatabaseConfig();
+
+        $this->services[self::SERVICE_DB_DEFAULT] = [
+            self::KEY_CALLBACK => static function (Application $app) {
+                return new PDORelationalDatabaseHandler(
+                    $app->get(Service\Logger::class),
+                    $app->config->defaultDatabaseConfig
+                );
+            },
+            self::KEY_VALIDATE => RelationalDatabaseHandler::class,
+        ];
 
         /**
          * Facility Services
          */
-        $this->services[Compressor::class] = [
-            self::KEY_CALLBACK => static function (Application $app) {
-                return new ByDefault\Compressor(
-                    $app->config->compressorConfig,
-                    $app->get(Request::class),
-                    $app->get(PhpRenderer::class)
-                );
-            },
-            self::KEY_SCOPE => self::SCOPE_REQUEST,
-        ];
-        $this->services[AjaxResponse::class] = [
-            self::KEY_CALLBACK => static function (Application $app) {
-                /** @var Request $request */
-                $request = $app->get(Request::class);
-                if ($request->getRequestValue('mjsaAjax') || $request->getRequestValue('bodyAjax')) {
-                    return new ByDefault\MjsaAjaxResponse($app->get(Language::class));
+        $this->services += [
+            Facilities\Service\Compressor::class => [
+                self::KEY_CALLBACK => static function (Application $app) {
+                    return new Facilities\Service\ByDefault\Compressor(
+                        $app->config->compressorConfig,
+                        $app->get(Core\Request::class),
+                        $app->get(Service\ByDefault\PhpRenderer::class)
+                    );
+                },
+                self::KEY_SCOPE => self::SCOPE_REQUEST,
+            ],
+            Facilities\Service\AjaxResponse::class => [
+                self::KEY_CALLBACK => static function (Application $app) {
+                    /** @var Request $request */
+                    $request = $app->get(Core\Request::class);
+                    if ($request->getRequestValue('mjsaAjax') || $request->getRequestValue('bodyAjax')) {
+                        return new Facilities\Service\ByDefault\MjsaAjaxResponse($app->get(Service\Language::class));
+                    }
+                    if ($request->getRequestValue('jsonAjax') || $request->getRequestValue('bodyJsonAjax')) {
+                        return new Facilities\Service\ByDefault\JsonAjaxResponse($app->get(Service\Language::class));
+                    }
+                    return new Facilities\Service\ByDefault\JsonAjaxResponse($app->get(Service\Language::class));
+                },
+                self::KEY_SCOPE => self::SCOPE_REQUEST,
+            ],
+            Facilities\Service\Link::class => [
+                self::KEY_CALLBACK => static function (Application $app) {
+                    return new Facilities\Service\Link($app, $app->config->linksConfig);
                 }
-                if ($request->getRequestValue('jsonAjax') || $request->getRequestValue('bodyJsonAjax')) {
-                    return new ByDefault\JsonAjaxResponse($app->get(Language::class));
+            ],
+            Facilities\Service\Content::class => [
+                self::KEY_CALLBACK => static function (Application $app) {
+                    return new Facilities\Service\Content(
+                        $app->config->contentConfig,
+                        $app->get(Service\FileStorage::class),
+                        $app->get(Service\Logger::class)
+                    );
                 }
-                return new ByDefault\JsonAjaxResponse($app->get(Language::class));
-            },
-            self::KEY_SCOPE => self::SCOPE_REQUEST,
+            ],
+            Facilities\Service\Validator::class => [
+                self::KEY_CALLBACK => static function (Application $app) {
+                    return new Facilities\Service\ByDefault\Validator($app->get(Service\Language::class));
+                }
+            ],
         ];
-        $this->services[Link::class] = [
-            self::KEY_CALLBACK => static function (Application $app) {
-                return new Link($app, $app->config->linksConfig);
-            }
-        ];
-        $this->services[Content::class] = [
-            self::KEY_CALLBACK => static function (Application $app) {
-                return new Content($app->config->contentConfig, $app->get(FileStorage::class), $app->get(Logger::class));
-            }
-        ];
-        $this->services[Validator::class] = [
-            self::KEY_CALLBACK => static function (Application $app) {
-                return new ByDefault\Validator($app->get(Language::class));
-            }
-        ];
-
 
         /**
          * Module Services
          */
-        $this->services[AuthService::class] = [
-            self::KEY_CALLBACK => static function (Application $app) {
-                return new AuthService(
-                    $app,
-                    $app->config->authConfig,
-                    $app->get(DateService::class),
-                    $app->get(Language::class),
-                    $app->get(Request::class),
-                    $app->get(Response::class),
-                    $app->get(UserRepository::class)
-                );
-            },
-            self::KEY_SCOPE => self::SCOPE_REQUEST,
+        $this->services += [
+            Module\Connector\ConnectorService::class => [
+                self::KEY_CALLBACK => static function (Application $app) {
+                    return new Module\Connector\ConnectorService($app, $app->config->connectorConfig);
+                },
+            ],
+            Module\Connector\ConnectAccessibility::class => [
+                self::KEY_CALLBACK => static function (Application $app) {
+                    return new Module\Connector\ConnectAccessibility($app);
+                },
+            ],
+            Module\Developing\DevelopingService::class => [
+                self::KEY_CLASS => Module\Developing\DevelopingService::class,
+                self::KEY_SCOPE => self::SCOPE_REQUEST,
+            ],
+            Module\ThirdPartyApi\ThirdPartyApiProvider::class => [
+                self::KEY_CLASS_APP => Module\ThirdPartyApi\ThirdPartyApiProvider::class,
+                self::KEY_SCOPE => self::SCOPE_REQUEST
+            ],
         ];
-        $this->services[ConnectorService::class] = [
-            self::KEY_CALLBACK => static function (Application $app) {
-                return new ConnectorService($app, $app->config->connectorConfig);
-            },
+
+        $this->authConfig->cookieDomain = '.' . $this->settingsConfig->domain;
+        $this->services += [
+            Module\Auth\AuthService::class => [
+                self::KEY_CALLBACK => static function (Application $app) {
+                    return new Module\Auth\AuthService(
+                        $app,
+                        $app->config->authConfig,
+                        $app->get(Service\DateService::class),
+                        $app->get(Service\Language::class),
+                        $app->get(Core\Request::class),
+                        $app->get(Core\Response::class),
+                        $app->get(Module\Auth\Model\UserRepository::class)
+                    );
+                },
+                self::KEY_SCOPE => self::SCOPE_REQUEST,
+            ],
+            Module\Auth\UserService::class => [
+                self::KEY_CLASS_APP => Module\Auth\UserService::class,
+                self::KEY_SCOPE => self::SCOPE_REQUEST,
+            ],
+            Module\Auth\Model\UserRepository::class => [
+                self::KEY_CLASS_APP => Module\Auth\Model\UserRepository::class,
+                self::KEY_SCOPE => self::SCOPE_REQUEST,
+            ],
         ];
-        $this->services[ConnectAccessibility::class] = [
-            self::KEY_CALLBACK => static function (Application $app) {
-                return new ConnectAccessibility($app);
-            },
+
+        $this->services += [
+            Module\Media\MediaService::class => [
+                self::KEY_CALLBACK => static function (Application $app) {
+                    return new Module\Media\MediaService($app);
+                },
+            ],
+            Module\Media\Event\MediaSubscriber::class => [
+                self::KEY_CLASS_APP => Module\Media\Event\MediaSubscriber::class,
+                self::KEY_SCOPE => self::SCOPE_REQUEST
+            ],
+            Module\Media\Model\MediaRepository::class => [
+                self::KEY_CLASS_APP => Module\Media\Model\MediaRepository::class,
+                self::KEY_SCOPE => self::SCOPE_REQUEST,
+            ],
         ];
-        $this->services[DevelopingService::class] = [self::KEY_CLASS => DevelopingService::class, self::KEY_SCOPE => self::SCOPE_REQUEST,];
-        $this->services[UserService::class] = [self::KEY_CLASS_APP => UserService::class, self::KEY_SCOPE => self::SCOPE_REQUEST,];
-        $this->services[ThirdPartyApiProvider::class] = [self::KEY_CLASS_APP => ThirdPartyApiProvider::class, self::KEY_SCOPE => self::SCOPE_REQUEST];
-        $this->services[MediaService::class] = [
-            self::KEY_CALLBACK => static function (Application $app) {
-                return new MediaService($app);
-            },
-        ];
-        $this->services[MediaSubscriber::class] = [self::KEY_CLASS_APP => MediaSubscriber::class, self::KEY_SCOPE => self::SCOPE_REQUEST];
+
+
+        $this->eventsConfig->events[] = [AuthConfig::EVENT_USER_JOIN_ACCOUNT, Module\Media\Event\MediaSubscriber::class];
+        $this->eventsConfig->events[] = [EventsConfig::modelDeleting(Module\Auth\Model\User::class), Module\Media\Event\MediaSubscriber::class];
+
+        $this->initCompressorConfig();
 
         /**
          * Repositories
          */
-        $this->services[UserRepository::class] = [self::KEY_CLASS_APP => UserRepository::class, self::KEY_SCOPE => self::SCOPE_REQUEST,];
-        $this->services[MediaRepository::class] = [self::KEY_CLASS_APP => MediaRepository::class, self::KEY_SCOPE => self::SCOPE_REQUEST,];
+        $this->repositoryConfigs[Module\Auth\Model\User::class] = new Database\RelationalRepositoryConfig(
+                Module\Auth\Model\User::class, self::SERVICE_DB_DEFAULT, 'users', 'id', ['id']
+        );
+        $this->repositoryConfigs[Module\Media\Model\Media::class] = new Database\RelationalRepositoryConfig(
+            Module\Media\Model\Media::class, self::SERVICE_DB_DEFAULT, 'users', 'id', ['id']
+        );
+        $this->repositoryConfigs[Module\Shop\Model\ShopCategoryProductModel::class] = new RelationalRepositoryConfig(
+            Module\Shop\Model\ShopCategoryProductModel::class, CoreConfig::SERVICE_DB_DEFAULT, 'TestWithTwoAutoIncrement', 'secondPrimaryField', ['onePrimaryField', 'secondPrimaryField']
+        );
+        $this->repositoryConfigs[Service\ByDefault\Email\Model\Mailer::class] = new RelationalRepositoryConfig(
+            Service\ByDefault\Email\Model\Mailer::class, CoreConfig::SERVICE_DB_DEFAULT, 'mailer', 'id', ['id']
+        );
+        $this->services[Facilities\Service\RelationalRepositoryProvider::class] = [
+            self::KEY_CLASS_APP => Facilities\Service\ByDefault\RelationalRepositoryProvider::class,
+        ];
 
         /**
          * Injected to controller
          */
-        $this->injectedServices[self::INJECTED_COMPRESSOR] = Compressor::class;
-        $this->injectedServices[self::INJECTED_AJAX_RESPONSE] = AjaxResponse::class;
-        $this->injectedServices[self::INJECTED_LINKS] = Link::class;
-        $this->injectedServices[self::INJECTED_CONTENT] = Content::class;
-        $this->injectedServices[self::INJECTED_VALIDATOR] = Validator::class;
-        $this->injectedServices[self::INJECTED_AUTH] = AuthService::class;
-        $this->injectedServices[self::INJECTED_USER] = UserService::class;
+        $this->injectedServices[self::INJECTED_COMPRESSOR] = Facilities\Service\Compressor::class;
+        $this->injectedServices[self::INJECTED_AJAX_RESPONSE] = Facilities\Service\AjaxResponse::class;
+        $this->injectedServices[self::INJECTED_LINKS] = Facilities\Service\Link::class;
+        $this->injectedServices[self::INJECTED_CONTENT] = Facilities\Service\Content::class;
+        $this->injectedServices[self::INJECTED_VALIDATOR] = Facilities\Service\Validator::class;
+        $this->injectedServices[self::INJECTED_AUTH] = Module\Auth\AuthService::class;
+        $this->injectedServices[self::INJECTED_USER] = Module\Auth\UserService::class;
 
+        $this->routerConfig->routes['users/id(:num)'] = 'users/get/$1';
+        $this->routerConfig->routes['users/id(:num)/medias'] = 'medias/media_list/$1';
+        $this->routerConfig->routes['users/id(:num)/albums'] = 'medias/album_list/$1';
+        $this->routerConfig->routes['users/id(:num)/album(:num)'] = 'medias/album_view/$1/$2';
+        $this->routerConfig->routes['users/id(:num)/album(:num)/edit'] = 'users/album_edit/$1/$2';
+    }
 
+    private function initCompressorConfig(): void
+    {
         // connect image crop (jcrop)
         $this->compressorConfig->css[] = '/pub/css/jquery.jcrop.min.css';
         $this->compressorConfig->js[] = '/pub/js/jquery.jcrop.min.js';
@@ -202,25 +256,8 @@ class FacilitiesConfig extends CoreConfig
         // yashare
         $this->compressorConfig->singlyJs['yashare'] = '//yastatic.net/share/share.js" charset="utf-8';
         $this->compressorConfig->js[] = '/pub/js/app.yashare.js';
-
-        $this->authConfig->cookieDomain = '.' . $this->settingsConfig->domain;
-
-        $this->repositoryConfigs[User::class] = new RelationalRepositoryConfig(
-            User::class, self::SERVICE_DB_DEFAULT, 'users', 'id', ['id']
-        );
-        $this->repositoryConfigs[Media::class] = new RelationalRepositoryConfig(
-            Media::class, self::SERVICE_DB_DEFAULT, 'users', 'id', ['id']
-        );
-
-        $this->eventsConfig->events[] = [AuthConfig::EVENT_USER_JOIN_ACCOUNT, MediaSubscriber::class];
-        $this->eventsConfig->events[] = [EventsConfig::modelUpdatedName(Media::class), MediaSubscriber::class];
-
-        $this->routerConfig->routes['users/id(:num)'] = 'users/get/$1';
-        $this->routerConfig->routes['users/id(:num)/medias'] = 'medias/media_list/$1';
-        $this->routerConfig->routes['users/id(:num)/albums'] = 'medias/album_list/$1';
-        $this->routerConfig->routes['users/id(:num)/album(:num)'] = 'medias/album_view/$1/$2';
-        $this->routerConfig->routes['users/id(:num)/album(:num)/edit'] = 'users/album_edit/$1/$2';
     }
+
 }
 
 class ProjectConfig
@@ -310,7 +347,7 @@ class ConnectorConfig
     public const TYPE_ALBUM = 'album';
 
     public $connectObjectRepositories = [
-        self::TYPE_PROFILE => UserRepository::class
+        self::TYPE_PROFILE => Module\Auth\Model\UserRepository::class
     ];
 }
 
@@ -352,7 +389,6 @@ class AuthConfig
 {
     public const EVENT_USER_GROUP_CHANGED = 'user.groupChanged';
     public const EVENT_USER_JOIN_ACCOUNT = 'user.joinAccount';
-    public const EVENT_USER_DELETING = 'user.deleting';
 
     public $salt = '';
     public $passFuncMethod = 'normal';

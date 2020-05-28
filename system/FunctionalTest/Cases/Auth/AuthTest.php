@@ -2,11 +2,9 @@
 
 namespace CodeHuiter\FunctionalTest\Cases\Auth;
 
-use CodeHuiter\Config\CoreConfig;
 use CodeHuiter\Core\Application;
 use CodeHuiter\Database\RelationalRepository;
-use CodeHuiter\Config\Module\RelationalRepositoryConfig;
-use CodeHuiter\Service\ByDefault\Email\Model\MailerModel;
+use CodeHuiter\Service\ByDefault\Email\Model\Mailer;
 use CodeHuiter\Service\Language;
 use CodeHuiter\FunctionalTest\Base\FakeRequest\BaseFakeRequestApplicationTestCase;
 
@@ -335,17 +333,9 @@ class AuthTest extends BaseFakeRequestApplicationTestCase
 
     public static function getUserTokenFromMailer(string $email): array
     {
-        $mailerRepository = new RelationalRepository(
-            Application::getInstance(),
-            new RelationalRepositoryConfig(
-                MailerModel::class,
-                CoreConfig::SERVICE_DB_DEFAULT,
-                'mailer',
-                'id',
-                ['id']
-            )
-        );
-        /** @var MailerModel $mailer */
+        $application = Application::getInstance();
+        $mailerRepository = new RelationalRepository($application, $application->config->repositoryConfigs[Mailer::class]);
+        /** @var Mailer $mailer */
         $mailer = $mailerRepository->findOne(
             ['email' => $email],
             ['order' => ['id' => 'desc']]

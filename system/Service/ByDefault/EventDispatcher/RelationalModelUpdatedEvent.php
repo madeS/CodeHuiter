@@ -25,7 +25,7 @@ class RelationalModelUpdatedEvent implements Event
 
     public function __construct(Model $model, array $touchedSet)
     {
-        $this->eventName = EventsConfig::modelUpdatedName(get_class($model));
+        $this->eventName = EventsConfig::modelUpdated(get_class($model));
         $this->model = $model;
         $this->touchedSet = $touchedSet;
     }

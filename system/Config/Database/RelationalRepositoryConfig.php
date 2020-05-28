@@ -1,6 +1,6 @@
 <?php
 
-namespace CodeHuiter\Config\Module;
+namespace CodeHuiter\Config\Database;
 
 class RelationalRepositoryConfig
 {

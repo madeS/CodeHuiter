@@ -2,12 +2,11 @@
 
 namespace CodeHuiter\Facilities\Module\Auth\Model;
 
-use CodeHuiter\Config\CoreConfig;
 use CodeHuiter\Core\Application;
 use CodeHuiter\Database\RelationalRepository;
-use CodeHuiter\Config\Module\RelationalRepositoryConfig;
 use CodeHuiter\Facilities\Module\Connector\ConnectableObject;
 use CodeHuiter\Facilities\Module\Connector\ConnectableObjectRepository;
+use CodeHuiter\Facilities\Service\RelationalRepositoryProvider;
 
 class UserRepository implements ConnectableObjectRepository
 {
@@ -21,16 +20,9 @@ class UserRepository implements ConnectableObjectRepository
      */
     public function __construct(Application $application)
     {
-        $this->repository = new RelationalRepository(
-            $application,
-            new RelationalRepositoryConfig(
-                User::class,
-                CoreConfig::SERVICE_DB_DEFAULT,
-                'users',
-                'id',
-                ['id']
-            )
-        );
+        /** @var RelationalRepositoryProvider $repositoryProvider */
+        $repositoryProvider = $application->get(RelationalRepositoryProvider::class);
+        $this->repository = $repositoryProvider->get(User::class);
     }
 
     public function getRelationalRepository(): RelationalRepository

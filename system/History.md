@@ -3,7 +3,8 @@
 
 ## Bench Test History ###
 
-v0.2.5.92   - Memory: 623.34KB   Real: 2,048.00KB Avg(107): 0.002240 / 0.001667 (CI3_BASE|390.44KB) = 1.3437
+v0.2.5.93   - Memory: 632.07KB   Real: 2,048.00KB Avg(107): 0.001855 / 0.001250 (CI3_BASE) = 1.48
+v0.2.5.92   - Memory: 623.34KB   Real: 2,048.00KB Avg(107): 0.002240 / 0.001667 (CI3_BASE) = 1.34
 v0.2.0.82   - Memory: 1,350.74KB Real: 2,048.00KB Avg(148): 0.012033 / 0.001415 (CI3_BASE) = 8.50 Written base architecture
 v0.1.46.75  - Memory: 531.98KB   Real: 2,048.00KB Avg(148): 0.001899 / 0.001282 (CI3_BASE) =  (with method service initializations)
 v0.1.45.74  - Memory: 531.98KB   Real: 2,048.00KB Avg(148): 0.001899 / 0.001282 (CI3_BASE) = 

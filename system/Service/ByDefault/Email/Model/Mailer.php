@@ -4,7 +4,7 @@ namespace CodeHuiter\Service\ByDefault\Email\Model;
 
 use CodeHuiter\Database\Model;
 
-class MailerModel extends Model
+class Mailer extends Model
 {
     /** @var int|null */
     public $id;

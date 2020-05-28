@@ -2,10 +2,9 @@
 
 namespace CodeHuiter\Facilities\Module\Media\Model;
 
-use CodeHuiter\Config\CoreConfig;
 use CodeHuiter\Core\Application;
 use CodeHuiter\Database\RelationalRepository;
-use CodeHuiter\Config\Module\RelationalRepositoryConfig;
+use CodeHuiter\Config\Database\RelationalRepositoryConfig;
 use CodeHuiter\Exception\Runtime\RuntimeWrongClassException;
 use CodeHuiter\Facilities\Module\Connector\ConnectableObject;
 use CodeHuiter\Facilities\Module\Connector\ConnectableObjectRepository;
@@ -24,13 +23,7 @@ class MediaRepository implements ConnectableObjectRepository
     {
         $this->repository = new RelationalRepository(
             $application,
-            new RelationalRepositoryConfig(
-                Media::class,
-                CoreConfig::SERVICE_DB_DEFAULT,
-                'user_medias',
-                'id',
-                ['id']
-            )
+            $application->config->repositoryConfigs[Media::class]
         );
     }
 

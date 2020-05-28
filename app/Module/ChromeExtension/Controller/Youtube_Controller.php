@@ -5,7 +5,7 @@ namespace App\Module\ChromeExtension\Controller;
 use App\Module\ChromeExtension\Model\YoutubeCacheModel;
 use CodeHuiter\Config\CoreConfig;
 use CodeHuiter\Database\RelationalRepository;
-use CodeHuiter\Config\Module\RelationalRepositoryConfig;
+use CodeHuiter\Config\Database\RelationalRepositoryConfig;
 use CodeHuiter\Facilities\Module\ThirdPartyApi\ThirdPartyApiProvider;
 use CodeHuiter\Modifier\StringModifier;
 
