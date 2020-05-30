@@ -2,11 +2,11 @@
 
 namespace CodeHuiter\Facilities\Module\Developing\Manager;
 
-use CodeHuiter\Config\RelationalDatabaseConfig;
+use CodeHuiter\Config\Database\ConnectionDatabaseConfig;
 
 class DatabaseManager
 {
-    public function saveDumpDB(RelationalDatabaseConfig $config, string $directory, ?string $name = null): void
+    public function saveDumpDB(ConnectionDatabaseConfig $config, string $directory, ?string $name = null): void
     {
         $host = $this->getDsnAttribute('host', $config->dsn);
         $database = $this->getDsnAttribute('dbname', $config->dsn);
@@ -22,7 +22,7 @@ class DatabaseManager
         );
     }
 
-    public function loadDumpDB(RelationalDatabaseConfig $config, string $directory, ?string $name = null): void
+    public function loadDumpDB(ConnectionDatabaseConfig $config, string $directory, ?string $name = null): void
     {
         $host = $this->getDsnAttribute('host', $config->dsn);
         $database = $this->getDsnAttribute('dbname', $config->dsn);

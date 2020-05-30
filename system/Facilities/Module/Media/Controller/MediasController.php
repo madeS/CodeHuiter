@@ -2,7 +2,7 @@
 
 namespace CodeHuiter\Facilities\Module\Media\Controller;
 
-use CodeHuiter\Config\ConnectorConfig;
+use CodeHuiter\Config\Facilities\Module\ConnectorConfig;
 use CodeHuiter\Core\Response;
 use CodeHuiter\Facilities\Controller\Base\BaseController;
 use CodeHuiter\Facilities\Module\Auth\Model\UserRepository;

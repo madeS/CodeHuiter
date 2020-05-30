@@ -2,7 +2,7 @@
 
 namespace CodeHuiter\Facilities\Service;
 
-use CodeHuiter\Config\CompressorConfig;
+use CodeHuiter\Config\Facilities\Service\CompressorConfig;
 
 interface Compressor
 {

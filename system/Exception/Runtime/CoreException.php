@@ -40,6 +40,11 @@ class CoreException extends CodeHuiterRuntimeException
         return new self("Service [$serviceName] is not registered");
     }
 
+    public static function onServiceConfigInvalid(string $serviceName): CoreException
+    {
+        return new self("Service Config for [$serviceName] invalid");
+    }
+
     public static function onServiceNotProvideCreationInfo(string $serviceName): CoreException
     {
         return new self("Class [$serviceName] not provide object creation information");

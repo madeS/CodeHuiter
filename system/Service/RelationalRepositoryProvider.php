@@ -1,6 +1,6 @@
 <?php
 
-namespace CodeHuiter\Facilities\Service;
+namespace CodeHuiter\Service;
 
 use CodeHuiter\Database\RelationalRepository;
 

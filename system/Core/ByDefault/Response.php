@@ -3,7 +3,7 @@
 namespace CodeHuiter\Core\ByDefault;
 
 use CodeHuiter\Service\MimeTypeConverter;
-use CodeHuiter\Config\ResponseConfig;
+use CodeHuiter\Config\Core\ResponseConfig;
 use CodeHuiter\Core\Application;
 use CodeHuiter\Core\CodeLoader;
 use CodeHuiter\Core\Exception\ExceptionProcessor;

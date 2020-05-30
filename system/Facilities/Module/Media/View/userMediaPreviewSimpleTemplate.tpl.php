@@ -1,9 +1,6 @@
 <?php
 
-use CodeHuiter\Config\ConnectorConfig;
 use CodeHuiter\Facilities\Module\Auth\Model\User;
-use CodeHuiter\Facilities\Module\Connector\ConnectableObject;
-use CodeHuiter\Facilities\Module\Connector\ConnectorService;
 use CodeHuiter\Facilities\Module\Media\Model\Media;
 use CodeHuiter\Modifier\StringModifier;
 

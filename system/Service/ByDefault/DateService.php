@@ -2,7 +2,7 @@
 
 namespace CodeHuiter\Service\ByDefault;
 
-use CodeHuiter\Config\DateConfig;
+use CodeHuiter\Config\Service\DateConfig;
 use CodeHuiter\Core\Application;
 use CodeHuiter\Exception\Runtime\DateTimeConvertException;
 use CodeHuiter\Facilities\Module\Auth\Model\User;

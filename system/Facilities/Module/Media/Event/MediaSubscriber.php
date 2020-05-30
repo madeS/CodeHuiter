@@ -2,7 +2,7 @@
 
 namespace CodeHuiter\Facilities\Module\Media\Event;
 
-use CodeHuiter\Config\AuthConfig;
+use CodeHuiter\Config\Facilities\Module\AuthConfig;
 use CodeHuiter\Core\Application;
 use CodeHuiter\Facilities\Module\Auth\Event\JoinAccountsEvent;
 use CodeHuiter\Facilities\Module\Media\Model\Media;

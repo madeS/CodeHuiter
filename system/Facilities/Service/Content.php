@@ -2,7 +2,7 @@
 
 namespace CodeHuiter\Facilities\Service;
 
-use CodeHuiter\Config\ContentConfig;
+use CodeHuiter\Config\Facilities\Service\ContentConfig;
 use CodeHuiter\Service\FileStorage;
 use CodeHuiter\Service\Logger;
 

@@ -2,7 +2,7 @@
 
 namespace CodeHuiter\Service\ByDefault;
 
-use CodeHuiter\Config\RendererConfig;
+use CodeHuiter\Config\Service\RendererConfig;
 use CodeHuiter\Core\Controller;
 use CodeHuiter\Core\Exception\ExceptionProcessor;
 use CodeHuiter\Core\Response;

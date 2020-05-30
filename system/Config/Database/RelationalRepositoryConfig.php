@@ -2,7 +2,7 @@
 
 namespace CodeHuiter\Config\Database;
 
-class RelationalRepositoryConfig
+class RelationalRepositoryConfig implements RepositoryConfig
 {
     /**
      * @var string

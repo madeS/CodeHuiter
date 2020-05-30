@@ -3,7 +3,7 @@
 namespace CodeHuiter\Core;
 
 use App\Config\DefaultConfig;
-use CodeHuiter\Config\CoreConfig;
+use CodeHuiter\Config\Core\ServiceConfig;
 use CodeHuiter\Core\Exception\ExceptionProcessor;
 use CodeHuiter\Exception\Runtime\CoreException;
 use Exception;
@@ -82,9 +82,13 @@ class Application
         if(!isset($this->config->services[$name])) {
             throw CoreException::onServiceNotFound($name);
         }
+        $serviceConfig = $this->config->services[$name];
+        if (!$serviceConfig instanceof ServiceConfig) {
+            throw CoreException::onServiceConfigInvalid($name);
+        }
 
-        $scope = $this->config->services[$name][CoreConfig::KEY_SCOPE] ?? CoreConfig::SCOPE_PERMANENT;
-        if ($scope === CoreConfig::SCOPE_REQUEST) {
+        $scope = $serviceConfig->scope ?? ServiceConfig::SCOPE_PERMANENT;
+        if ($scope === ServiceConfig::SCOPE_REQUEST) {
             $scope .= $this->request ? $this->request->getId() : 0;
         }
         if (isset($this->serviceCreateStack[$scope][$name])) {
@@ -92,22 +96,22 @@ class Application
         }
         $this->serviceCreateStack[$scope][$name] = true;
 
-        if ($scope === CoreConfig::SCOPE_NO_SHARED || !isset($this->container[$scope][$name])) {
+        if ($scope === ServiceConfig::SCOPE_NO_SHARED || !isset($this->container[$scope][$name])) {
             $obj = null;
-            if (isset($this->config->services[$name][CoreConfig::KEY_CALLBACK]) && $this->config->services[$name][CoreConfig::KEY_CALLBACK]) {
-                $callback = $this->config->services[$name][CoreConfig::KEY_CALLBACK];
+            if ($serviceConfig->type === ServiceConfig::TYPE_CALLBACK && $serviceConfig->callback) {
+                $callback = $serviceConfig->callback;
                 $obj = $callback($this);
-            } elseif (isset($this->config->services[$name][CoreConfig::KEY_CLASS]) && $this->config->services[$name][CoreConfig::KEY_CLASS]) {
-                $class = $this->config->services[$name][CoreConfig::KEY_CLASS];
+            } elseif ($serviceConfig->type === ServiceConfig::TYPE_CLASS) {
+                $class = $serviceConfig->className;
                 $obj = new $class();
-            } elseif (isset($this->config->services[$name][CoreConfig::KEY_CLASS_APP]) && $this->config->services[$name][CoreConfig::KEY_CLASS_APP]) {
-                $class = $this->config->services[$name][CoreConfig::KEY_CLASS_APP];
+            } elseif ($serviceConfig->type === ServiceConfig::TYPE_CLASS_APP) {
+                $class = $serviceConfig->className;
                 $obj = new $class($this);
             } else {
                 throw CoreException::onServiceNotProvideCreationInfo($name);
             }
-            $validateClass = $this->config->services[$name][CoreConfig::KEY_VALIDATE] ?? $name;
-            if ($validateClass !== false) {
+            $validateClass = $serviceConfig->validateClassName ?? $name;
+            if ($validateClass !== '') {
                 if (!is_a($obj, $validateClass)) {
                     throw CoreException::onServiceValidationNotPassed($name, $validateClass, get_class($obj));
                 }
@@ -138,9 +142,10 @@ class Application
         if(!isset($this->config->services[$name])) {
             throw CoreException::onServiceNotFound($name);
         }
+        $serviceConfig = $this->config->services[$name];
 
-        $scope = $this->config->services[$name][CoreConfig::KEY_SCOPE] ?? CoreConfig::SCOPE_PERMANENT;
-        if ($scope === CoreConfig::SCOPE_REQUEST) {
+        $scope = $serviceConfig->scope ?? ServiceConfig::SCOPE_PERMANENT;
+        if ($scope === ServiceConfig::SCOPE_REQUEST) {
             $scope .= $this->request->getId();
         }
 
@@ -173,7 +178,7 @@ class Application
             /** @var Response $response */
             $response = $this->get(Response::class);
 
-            $this->destroyScope(CoreConfig::SCOPE_REQUEST . $this->request->getId());
+            $this->destroyScope(ServiceConfig::SCOPE_REQUEST . $this->request->getId());
 
             $this->request = null;
             return $response;

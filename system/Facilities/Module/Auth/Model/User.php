@@ -2,7 +2,7 @@
 
 namespace CodeHuiter\Facilities\Module\Auth\Model;
 
-use CodeHuiter\Config\ConnectorConfig;
+use CodeHuiter\Config\Facilities\Module\ConnectorConfig;
 use CodeHuiter\Database\Model;
 use CodeHuiter\Exception\InvalidFlowException;
 use CodeHuiter\Facilities\Module\Connector\ConnectableObject;

@@ -6,7 +6,6 @@ use CodeHuiter\Core\Response;
 use CodeHuiter\Facilities\Controller\Base\BaseController;
 use CodeHuiter\Facilities\Module\Auth\AuthService;
 use CodeHuiter\Facilities\Module\Auth\Oauth\OAuthFactory;
-use CodeHuiter\Facilities\Module\Auth\Oauth\OAuthManager;
 
 class AuthController extends BaseController
 {
@@ -278,7 +277,7 @@ class AuthController extends BaseController
         return new OAuthFactory(
             $this->network,
             $this->log,
-            $this->app->config->settingsConfig,
+            $this->app->config->webConfig,
             $this->app->config->authConfig
         );
     }

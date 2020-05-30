@@ -31,8 +31,12 @@ class ApplicationTestExecutor
             self::$testApplication = new self($application);
 
             $databaseManager = self::$testApplication->getDevelopingService()->getDatabaseManager();
-            $databaseManager->saveDumpDB($originConfig->defaultDatabaseConfig, STORAGE_TEMP_PATH, 'originForTest');
-            $databaseManager->loadDumpDB($testConfig->defaultDatabaseConfig, STORAGE_TEMP_PATH, 'originForTest');
+            foreach ($originConfig->databaseConfig->connectionConfigs as $dbServiceName => $connectionConfig) {
+                $databaseManager->saveDumpDB($connectionConfig, STORAGE_TEMP_PATH, $dbServiceName . '_originForTest');
+            }
+            foreach ($testConfig->databaseConfig->connectionConfigs as $dbServiceName => $connectionConfig) {
+                $databaseManager->loadDumpDB($connectionConfig, STORAGE_TEMP_PATH, $dbServiceName . '_originForTest');
+            }
         }
         return self::$testApplication;
     }
@@ -49,7 +53,7 @@ class ApplicationTestExecutor
             [
                 INPUT_SERVER => [
                     //'REQUEST_METHOD' => ''
-                    'HTTP_HOST' => $this->application->config->settingsConfig->domain,
+                    'HTTP_HOST' => $this->application->config->webConfig->domain,
                     'REQUEST_URI' => $uri
                 ],
                 INPUT_COOKIE => $cookie,
@@ -66,7 +70,7 @@ class ApplicationTestExecutor
             [
                 INPUT_SERVER => [
                     //'REQUEST_METHOD' => ''
-                    'HTTP_HOST' => $this->application->config->settingsConfig->domain,
+                    'HTTP_HOST' => $this->application->config->webConfig->domain,
                     'REQUEST_URI' => $uri
                 ],
                 INPUT_POST => $data,

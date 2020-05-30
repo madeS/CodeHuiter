@@ -2,6 +2,8 @@
 
 namespace App\Config;
 
+use CodeHuiter\Config\Database\DatabaseConfig;
+
 class DevelopingVagrantConfig extends DefaultConfig
 {
     public function __construct()
@@ -10,9 +12,10 @@ class DevelopingVagrantConfig extends DefaultConfig
 
         $this->frameworkConfig->showErrors = true;
 
-        $this->defaultDatabaseConfig->dsn = 'mysql:host=localhost;dbname=app_db';
-        $this->defaultDatabaseConfig->username = 'appuser';
-        $this->defaultDatabaseConfig->password = 'apppassword';
+        $dbName = DatabaseConfig::SERVICE_DB_DEFAULT;
+        $this->databaseConfig->connectionConfigs[$dbName]->dsn = 'mysql:host=localhost;dbname=app_db';
+        $this->databaseConfig->connectionConfigs[$dbName]->username = 'appuser';
+        $this->databaseConfig->connectionConfigs[$dbName]->password = 'apppassword';
 
         $this->compressorConfig->version = '20200526224500';
         //$this->compressorConfig->version = 'dev';

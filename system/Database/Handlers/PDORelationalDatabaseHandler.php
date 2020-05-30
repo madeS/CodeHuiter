@@ -1,7 +1,7 @@
 <?php
 namespace CodeHuiter\Database\Handlers;
 
-use CodeHuiter\Config\RelationalDatabaseConfig;
+use CodeHuiter\Config\Database\ConnectionDatabaseConfig;
 use CodeHuiter\Database\RelationalDatabaseHandler;
 use CodeHuiter\Exception\CodeHuiterRuntimeException;
 use CodeHuiter\Exception\DatabaseException;
@@ -24,7 +24,7 @@ class PDORelationalDatabaseHandler implements RelationalDatabaseHandler
     protected $transactionLevel = 0;
 
     /**
-     * @var RelationalDatabaseConfig
+     * @var ConnectionDatabaseConfig
      */
     protected $config;
 
@@ -33,16 +33,16 @@ class PDORelationalDatabaseHandler implements RelationalDatabaseHandler
      */
     protected $profiler;
 
-    public function __construct(Logger $log, RelationalDatabaseConfig $databaseConfig)
+    public function __construct(Logger $log, ConnectionDatabaseConfig $databaseConfig)
     {
         $this->profiler = new DatabaseProfiler($log, $databaseConfig);
         $this->connect($databaseConfig);
     }
 
     /**
-     * @param RelationalDatabaseConfig $config
+     * @param ConnectionDatabaseConfig $config
      */
-    protected function connect(RelationalDatabaseConfig $config): void
+    protected function connect(ConnectionDatabaseConfig $config): void
     {
         $this->config = $config;
         $options = [

@@ -1,7 +1,7 @@
 <?php
 namespace CodeHuiter\Database\Handlers;
 
-use CodeHuiter\Config\RelationalDatabaseConfig;
+use CodeHuiter\Config\Database\ConnectionDatabaseConfig;
 use CodeHuiter\Service\Logger;
 
 class DatabaseProfiler
@@ -31,7 +31,7 @@ class DatabaseProfiler
      */
     private $executeTime = 0;
 
-    public function __construct(Logger $log, RelationalDatabaseConfig $databaseConfig)
+    public function __construct(Logger $log, ConnectionDatabaseConfig $databaseConfig)
     {
         $this->log = $log;
         $this->isLogIfLonger = $databaseConfig->logIfLonger;

@@ -5,7 +5,7 @@ $compressorConfig = $those->compressor->checkCompress();
 <?php if(isset($canonical) && $canonical):?>
     <link rel="canonical" href="<?php echo $canonical ?>" />
 <?php elseif(isset($uri) && $uri && $uri != $those->request->getUri()):?>
-    <link rel="canonical" href="<?php echo $those->app->config->settingsConfig->siteUrl . $uri ?>" />
+    <link rel="canonical" href="<?php echo $those->app->config->webConfig->siteUrl . $uri ?>" />
 <?php endif;?>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <title><?php echo (isset($seo) && $seo && $seo['title']) ? $seo['title'] : $headTitle ?></title>
@@ -17,11 +17,11 @@ $compressorConfig = $those->compressor->checkCompress();
     <meta name="revisit" content="<?php echo $head_revisit ?>">
 <?php endif; ?>
 <?php if(isset($uri) && $uri):?>
-    <meta property="og:url" content="<?php echo $those->app->config->settingsConfig->siteUrl . $uri ?>" />
+    <meta property="og:url" content="<?php echo $those->app->config->webConfig->siteUrl . $uri ?>" />
 <?php endif;?>
 <meta property="og:title" content="<?php echo (isset($seo) && $seo && $seo['title']) ? $seo['title'] : $headTitle ?>"/>
 <meta property="og:description" content="<?php echo (isset($seo) && $seo && $seo['description']) ? $seo['description'] : $headDescription ?>"/>
-<meta property="og:image" content="<?php echo $those->app->config->settingsConfig->siteUrl . $headImage?>"/>
+<meta property="og:image" content="<?php echo $those->app->config->webConfig->siteUrl . $headImage?>"/>
 <meta name="author" content="<?php echo $those->app->config->projectConfig->copyrightName ?>"/>
 <meta name="viewport" content="width=device-width">
 <meta name="MobileOptimized" content="320"/>

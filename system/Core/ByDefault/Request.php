@@ -2,7 +2,7 @@
 
 namespace CodeHuiter\Core\ByDefault;
 
-use CodeHuiter\Config\RequestConfig;
+use CodeHuiter\Config\Core\RequestConfig;
 use CodeHuiter\Core\RequestFile;
 use CodeHuiter\Exception\InvalidRequestException;
 use CodeHuiter\Exception\ServerConfigException;

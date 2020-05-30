@@ -2,12 +2,9 @@
 
 namespace App\Controller;
 
-use CodeHuiter\Config\CoreConfig;
+use CodeHuiter\Config\Database\DatabaseConfig;
 use CodeHuiter\Database\RelationalDatabaseHandler;
-use CodeHuiter\Database\RelationalRepository;
 use CodeHuiter\Facilities\Controller\Base\BaseController;
-use CodeHuiter\Facilities\Module\Shop\Model\ShopCategoryProductModel;
-use CodeHuiter\Facilities\Module\Shop\Model\SomeServiceInterface;
 
 class Test_Controller extends BaseController
 {
@@ -15,33 +12,10 @@ class Test_Controller extends BaseController
     {
         //return $this->error404();
         //echo 'Is Test index function';
+        /** @noinspection ForgottenDebugOutputInspection */
         phpinfo();
     }
 
-
-    public function testPartModel(): void
-    {
-        /** @var ShopCategoryProductModel $model */
-        $model = ShopCategoryProductModel::emptyModel();
-        $model->setCreatedAt($this->date->sqlTime());
-        $model->setOnePrimaryField(555);
-
-        $repository = new RelationalRepository(
-            $this->app,
-            $this->app->config->repositoryConfigs[ShopCategoryProductModel::class]
-        );
-
-        $repository->save($model);
-
-        echo $model;
-
-        $this->console->log('Its work yesss');
-
-        /** @var SomeServiceInterface $someService */
-        $someService = $this->app->get(SomeServiceInterface::class);
-        $someService->doSomething();
-
-    }
 
 
 
@@ -144,6 +118,6 @@ class Test_Controller extends BaseController
 
     private function getDb(): RelationalDatabaseHandler
     {
-        return $this->app->get(CoreConfig::SERVICE_DB_DEFAULT);
+        return $this->app->get(DatabaseConfig::SERVICE_DB_DEFAULT);
     }
 }

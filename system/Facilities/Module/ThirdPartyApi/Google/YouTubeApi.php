@@ -2,7 +2,7 @@
 
 namespace CodeHuiter\Facilities\Module\ThirdPartyApi\Google;
 
-use CodeHuiter\Config\GoogleApiConfig;
+use CodeHuiter\Config\Facilities\Module\GoogleApiConfig;
 use CodeHuiter\Modifier\StringModifier;
 use CodeHuiter\Service\Language;
 use CodeHuiter\Service\Logger;

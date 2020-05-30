@@ -19,7 +19,7 @@ use CodeHuiter\Facilities\Service\Compressor;
  * @property-read Compressor $comprewssor
  * @see FacilitiesConfig::INJECTED_COMPRESSOR There are Forward Usages
  *
- * @property-read \App\Service\Link $links
+ * @property-read \App\Service\Links $links
  * @see FacilitiesConfig::INJECTED_LINKS There are Forward Usages
  *
  * @property-read \CodeHuiter\Facilities\Service\Content $content
@@ -155,11 +155,11 @@ class BaseController extends Controller
 
     protected function init()
     {
-        $this->lang->setLanguage($this->app->config->settingsConfig->language);
+        $this->lang->setLanguage($this->app->config->webConfig->language);
         $this->data = [
             'bodyAjax' => $this->ajaxResponse->isBodyAjax($this->request),
-            'language' => $this->app->config->settingsConfig->language,
-            'siteUrl' => $this->app->config->settingsConfig->siteUrl,
+            'language' => $this->app->config->webConfig->language,
+            'siteUrl' => $this->app->config->webConfig->siteUrl,
             'filters' => [],
             'pages' => [],
         ];

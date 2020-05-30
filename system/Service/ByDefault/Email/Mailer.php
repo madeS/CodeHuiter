@@ -2,13 +2,13 @@
 
 namespace CodeHuiter\Service\ByDefault\Email;
 
-use CodeHuiter\Config\EmailConfig;
-use CodeHuiter\Core\Application;
+use CodeHuiter\Config\Service\EmailConfig;
 use CodeHuiter\Database\RelationalRepository;
 use CodeHuiter\Service\ByDefault\Email\Sender\EmailSender;
 use CodeHuiter\Service\Logger;
 use CodeHuiter\Exception\TagException;
 use CodeHuiter\Service\DateService;
+use CodeHuiter\Service\RelationalRepositoryProvider;
 
 class Mailer extends AbstractEmail
 {
@@ -27,19 +27,14 @@ class Mailer extends AbstractEmail
      */
     protected $mailerRepository;
 
-    /**
-     * @param EmailConfig $config
-     * @param Logger $log
-     * @param DateService $dateService
-     */
-    public function __construct(EmailConfig $config, Logger $log, DateService $dateService)
-    {
+    public function __construct(
+        EmailConfig $config,
+        Logger $log,
+        DateService $dateService,
+        RelationalRepositoryProvider $repositoryProvider
+    ) {
         $this->date = $dateService;
-        $application = Application::getInstance();
-        $this->mailerRepository = new RelationalRepository(
-            $application,
-            $application->config->repositoryConfigs[Model\Mailer::class]
-        );
+        $this->mailerRepository = $repositoryProvider->get(Model\Mailer::class);
         parent::__construct($config, $log);
     }
 

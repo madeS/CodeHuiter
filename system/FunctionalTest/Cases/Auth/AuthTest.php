@@ -3,10 +3,10 @@
 namespace CodeHuiter\FunctionalTest\Cases\Auth;
 
 use CodeHuiter\Core\Application;
-use CodeHuiter\Database\RelationalRepository;
 use CodeHuiter\Service\ByDefault\Email\Model\Mailer;
 use CodeHuiter\Service\Language;
 use CodeHuiter\FunctionalTest\Base\FakeRequest\BaseFakeRequestApplicationTestCase;
+use CodeHuiter\Service\RelationalRepositoryProvider;
 
 class AuthTest extends BaseFakeRequestApplicationTestCase
 {
@@ -334,7 +334,10 @@ class AuthTest extends BaseFakeRequestApplicationTestCase
     public static function getUserTokenFromMailer(string $email): array
     {
         $application = Application::getInstance();
-        $mailerRepository = new RelationalRepository($application, $application->config->repositoryConfigs[Mailer::class]);
+        /** @var RelationalRepositoryProvider $repositoryProvider */
+        $repositoryProvider = $application->get(RelationalRepositoryProvider::class);
+        $mailerRepository = $repositoryProvider->get(Mailer::class);
+
         /** @var Mailer $mailer */
         $mailer = $mailerRepository->findOne(
             ['email' => $email],

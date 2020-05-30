@@ -2,7 +2,7 @@
 
 namespace CodeHuiter\Facilities\Module\Connector;
 
-use CodeHuiter\Config\ConnectorConfig;
+use CodeHuiter\Config\Facilities\Module\ConnectorConfig;
 use CodeHuiter\Core\Application;
 use CodeHuiter\Facilities\Module\Auth\Model\User;
 use CodeHuiter\Facilities\Module\Auth\UserService;

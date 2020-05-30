@@ -2,7 +2,7 @@
 
 namespace CodeHuiter\Core;
 
-use CodeHuiter\Config\RouterConfig;
+use CodeHuiter\Config\Core\RouterConfig;
 use CodeHuiter\Service\Logger;
 use CodeHuiter\Exception\Runtime\CoreException;
 use CodeHuiter\Exception\InvalidConfigException;
@@ -133,15 +133,15 @@ class Router
      */
     public function setRouting($routeKey, $params)
     {
-        if (
-            !isset($this->config->$routeKey)
-            || !isset($this->config->$routeKey['controller'])
-            || !isset($this->config->$routeKey['controller_method'])
-        ) {
+        if (!isset($this->config->$routeKey)) {
             throw new InvalidConfigException("Not correct exist config.router.{$routeKey} ");
         }
-        $this->setController($this->config->$routeKey['controller'], true);
-        $this->setControllerMethod($this->config->$routeKey['controller_method']);
+        $routeConfig = $this->config->$routeKey;
+        if (!isset($routeConfig['controller']) || !isset($routeConfig['controller_method'])) {
+            throw new InvalidConfigException("Not correct exist config.router.{$routeKey} ");
+        }
+        $this->setController($routeConfig['controller'], true);
+        $this->setControllerMethod($routeConfig['controller_method']);
         $this->setControllerMethodParams($params);
     }
 

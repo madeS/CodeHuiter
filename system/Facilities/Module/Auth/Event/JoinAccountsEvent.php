@@ -2,7 +2,7 @@
 
 namespace CodeHuiter\Facilities\Module\Auth\Event;
 
-use CodeHuiter\Config\AuthConfig;
+use CodeHuiter\Config\Facilities\Module\AuthConfig;
 use CodeHuiter\Facilities\Module\Auth\Model\User;
 use CodeHuiter\Service\EventDispatcher\Event;
 

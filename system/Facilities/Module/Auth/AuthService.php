@@ -2,7 +2,7 @@
 
 namespace CodeHuiter\Facilities\Module\Auth;
 
-use CodeHuiter\Config\AuthConfig;
+use CodeHuiter\Config\Facilities\Module\AuthConfig;
 use CodeHuiter\Core\Application;
 use CodeHuiter\Core\Request;
 use CodeHuiter\Core\Response;
@@ -470,7 +470,7 @@ class AuthService
             '{#siteName}' => $this->app->config->projectConfig->projectName,
         ]);
         $content = $this->lang->get('auth_email:confirm_body', [
-            '{#siteUrl}' => $this->app->config->settingsConfig->siteUrl,
+            '{#siteUrl}' => $this->app->config->webConfig->siteUrl,
             '{#userId}' => $user->getId(),
             '{#login}' => $user->getLogin(),
             '{#token}' => $userDataInfo[$key],
@@ -525,7 +525,7 @@ class AuthService
         ]);
         $content = $this->lang->get('auth_email:recovery_body', [
             '{#siteName}' => $this->app->config->projectConfig->projectName,
-            '{#siteUrl}' => $this->app->config->settingsConfig->siteUrl,
+            '{#siteUrl}' => $this->app->config->webConfig->siteUrl,
             '{#userId}' => $user->getId(),
             '{#login}' => $user->getLogin(),
             '{#token}' => $userDataInfo[$key],

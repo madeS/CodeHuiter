@@ -2,13 +2,13 @@
 
 namespace CodeHuiter\Facilities\Service;
 
-use CodeHuiter\Config\LinksConfig;
+use CodeHuiter\Config\Facilities\Service\LinksConfig;
 use CodeHuiter\Core\Application;
 use CodeHuiter\Exception\InvalidFlowException;
 use CodeHuiter\Facilities\Module\Auth\Model\User;
 use CodeHuiter\Facilities\Module\Auth\Model\UserRepository;
 
-class Link
+class Links
 {
     /** @var Application */
     protected $app;

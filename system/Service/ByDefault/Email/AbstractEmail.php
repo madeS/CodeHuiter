@@ -2,7 +2,7 @@
 
 namespace CodeHuiter\Service\ByDefault\Email;
 
-use CodeHuiter\Config\EmailConfig;
+use CodeHuiter\Config\Service\EmailConfig;
 use CodeHuiter\Service\Logger;
 
 abstract class AbstractEmail implements \CodeHuiter\Service\Mailer

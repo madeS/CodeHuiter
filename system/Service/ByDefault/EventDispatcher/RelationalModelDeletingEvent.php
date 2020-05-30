@@ -2,7 +2,7 @@
 
 namespace CodeHuiter\Service\ByDefault\EventDispatcher;
 
-use CodeHuiter\Config\EventsConfig;
+use CodeHuiter\Config\Service\EventsConfig;
 use CodeHuiter\Database\Model;
 use CodeHuiter\Service\EventDispatcher\Event;
 

@@ -2,7 +2,7 @@
 
 namespace CodeHuiter\Facilities\Service\ByDefault;
 
-use CodeHuiter\Config\CompressorConfig;
+use CodeHuiter\Config\Facilities\Service\CompressorConfig;
 use CodeHuiter\Core\Request;
 use CodeHuiter\Service\ByDefault\PhpRenderer;
 

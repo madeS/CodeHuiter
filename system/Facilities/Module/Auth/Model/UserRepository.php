@@ -6,7 +6,7 @@ use CodeHuiter\Core\Application;
 use CodeHuiter\Database\RelationalRepository;
 use CodeHuiter\Facilities\Module\Connector\ConnectableObject;
 use CodeHuiter\Facilities\Module\Connector\ConnectableObjectRepository;
-use CodeHuiter\Facilities\Service\RelationalRepositoryProvider;
+use CodeHuiter\Service\RelationalRepositoryProvider;
 
 class UserRepository implements ConnectableObjectRepository
 {

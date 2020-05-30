@@ -1,6 +1,6 @@
 <?php
 
-use CodeHuiter\Config\ConnectorConfig;
+use CodeHuiter\Config\Facilities\Module\ConnectorConfig;
 use CodeHuiter\Facilities\Module\Connector\ConnectableObject;
 use CodeHuiter\Facilities\Module\Connector\ConnectorService;
 

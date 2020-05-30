@@ -18,10 +18,9 @@ class Database_Controller extends BaseController
         if (!$this->request->isCli()) {
             throw new CodeHuiterRuntimeException('This method runs only by CLI');
         }
-        $this->getDevelopingService()->getDatabaseManager()->saveDumpDB(
-            $this->app->config->defaultDatabaseConfig,
-            MIGRATION_PATH . 'database/'
-        );
+        foreach ($this->app->config->databaseConfig->connectionConfigs as $dbService => $connectionConfig) {
+            $this->getDevelopingService()->getDatabaseManager()->saveDumpDB($connectionConfig, MIGRATION_PATH . 'database/');
+        }
     }
 
     public function load(): void
@@ -32,10 +31,10 @@ class Database_Controller extends BaseController
         if ($this->app->config->projectConfig->disableDbImport) {
             throw new CodeHuiterRuntimeException('This method disabled by config');
         }
-        $this->getDevelopingService()->getDatabaseManager()->loadDumpDB(
-            $this->app->config->defaultDatabaseConfig,
-            MIGRATION_PATH . 'database/'
-        );
+        foreach ($this->app->config->databaseConfig->connectionConfigs as $dbService => $connectionConfig) {
+            $this->getDevelopingService()->getDatabaseManager()->loadDumpDB($connectionConfig, MIGRATION_PATH . 'database/');
+        }
+
         echo 'OK';
     }
 

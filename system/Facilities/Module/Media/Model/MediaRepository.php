@@ -8,6 +8,7 @@ use CodeHuiter\Config\Database\RelationalRepositoryConfig;
 use CodeHuiter\Exception\Runtime\RuntimeWrongClassException;
 use CodeHuiter\Facilities\Module\Connector\ConnectableObject;
 use CodeHuiter\Facilities\Module\Connector\ConnectableObjectRepository;
+use CodeHuiter\Service\RelationalRepositoryProvider;
 
 class MediaRepository implements ConnectableObjectRepository
 {
@@ -21,10 +22,9 @@ class MediaRepository implements ConnectableObjectRepository
      */
     public function __construct(Application $application)
     {
-        $this->repository = new RelationalRepository(
-            $application,
-            $application->config->repositoryConfigs[Media::class]
-        );
+        /** @var RelationalRepositoryProvider $repositoryProvider */
+        $repositoryProvider = $application->get(RelationalRepositoryProvider::class);
+        $this->repository = $repositoryProvider->get(Media::class);
     }
 
     public function getConfig(): RelationalRepositoryConfig
@@ -79,19 +79,14 @@ class MediaRepository implements ConnectableObjectRepository
      */
     public function save(Media $media): Media
     {
-        if ($media instanceof Media) {
-            /** @var Media|null $model */
-            $model = $this->repository->save($media);
-
-            return $model;
-        }
-        throw RuntimeWrongClassException::wrongObjectGot(Media::class, $media);
+        /** @var Media|null $model */
+        $model = $this->repository->save($media);
+        return $model;
     }
 
     public function delete(Media $media): void
     {
         if ($media instanceof Media) {
-            //$this->getEventDispatcher()->fire(new MediaDeletingEvent($media));
             $this->repository->delete($media);
             return;
         }

@@ -12,6 +12,6 @@ class DefaultConfig extends FacilitiesConfig
 
         $this->routerConfig->routes['extension/(:all)'] = 'APP_MODULE_ChromeExtension/$1';
 
-        $this->settingsConfig->domain = 'app.local';
+        $this->webConfig->domain = 'app.local';
     }
 }

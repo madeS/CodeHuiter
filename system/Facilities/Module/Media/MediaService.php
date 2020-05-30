@@ -2,7 +2,7 @@
 
 namespace CodeHuiter\Facilities\Module\Media;
 
-use CodeHuiter\Config\ConnectorConfig;
+use CodeHuiter\Config\Facilities\Module\ConnectorConfig;
 use CodeHuiter\Core\Application;
 use CodeHuiter\Modifier\StringModifier;
 use CodeHuiter\Facilities\Module\Auth\AuthService;
@@ -15,7 +15,6 @@ use CodeHuiter\Facilities\Module\Media\Image\Options\DestinationOptions;
 use CodeHuiter\Facilities\Module\Media\Image\Options\ResizeOptions;
 use CodeHuiter\Facilities\Module\Media\Image\Options\WatermarkImageOptions;
 use CodeHuiter\Facilities\Module\Media\Image\Options\WatermarkOptions;
-use CodeHuiter\Facilities\Module\Media\Model\Media;
 use CodeHuiter\Facilities\Module\Media\Model\Media;
 use CodeHuiter\Facilities\Module\Media\Model\MediaRepository;
 use CodeHuiter\Facilities\Result\ModuleResult;

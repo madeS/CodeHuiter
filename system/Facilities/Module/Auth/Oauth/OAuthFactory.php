@@ -2,8 +2,8 @@
 
 namespace CodeHuiter\Facilities\Module\Auth\Oauth;
 
-use CodeHuiter\Config\AuthConfig;
-use CodeHuiter\Config\SettingsConfig;
+use CodeHuiter\Config\Facilities\Module\AuthConfig;
+use CodeHuiter\Config\Core\WebConfig;
 use CodeHuiter\Service\Logger;
 use CodeHuiter\Service\Network;
 
@@ -18,9 +18,9 @@ class OAuthFactory
      */
     private $logger;
     /**
-     * @var SettingsConfig
+     * @var WebConfig
      */
-    private $settingsConfig;
+    private $webConfig;
     /**
      * @var AuthConfig
      */
@@ -29,12 +29,12 @@ class OAuthFactory
     public function __construct(
         Network $network,
         Logger $logger,
-        SettingsConfig $settingsConfig,
+        WebConfig $webConfig,
         AuthConfig $authConfig
     ) {
         $this->network = $network;
         $this->logger = $logger;
-        $this->settingsConfig = $settingsConfig;
+        $this->webConfig = $webConfig;
         $this->authConfig = $authConfig;
     }
 
@@ -44,7 +44,7 @@ class OAuthFactory
             case 'vk': return new VkOAuthManager(
                 $this->network,
                 $this->logger,
-                $this->settingsConfig->siteUrl,
+                $this->webConfig->siteUrl,
                 $this->authConfig->vkAppId,
                 $this->authConfig->vkSecret,
                 $this->authConfig->vkIframeAppId,
@@ -53,7 +53,7 @@ class OAuthFactory
             case 'fb': return new FbOAuthManager(
                 $this->network,
                 $this->logger,
-                $this->settingsConfig->siteUrl,
+                $this->webConfig->siteUrl,
                 $this->authConfig->facebookAppId,
                 $this->authConfig->facebookSecret,
                 $this->authConfig->facebookSecret
@@ -61,7 +61,7 @@ class OAuthFactory
             case 'gl': return new GlOAuthManager(
                 $this->network,
                 $this->logger,
-                $this->settingsConfig->siteUrl,
+                $this->webConfig->siteUrl,
                 $this->authConfig->googleConfig->googleAppId,
                 $this->authConfig->googleConfig->googleSecret
             );

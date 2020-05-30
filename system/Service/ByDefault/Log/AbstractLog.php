@@ -2,14 +2,14 @@
 
 namespace CodeHuiter\Service\ByDefault\Log;
 
-use CodeHuiter\Config\LogConfig;
+use CodeHuiter\Config\Service\LoggerConfig;
 use CodeHuiter\Service\Logger;
 use Exception;
 
 abstract class AbstractLog implements Logger
 {
     /**
-     * @var LogConfig
+     * @var LoggerConfig
      */
     protected $config;
 
@@ -35,9 +35,9 @@ abstract class AbstractLog implements Logger
     protected $tag = '';
 
     /**
-     * @param LogConfig $config
+     * @param LoggerConfig $config
      */
-    public function __construct(LogConfig $config)
+    public function __construct(LoggerConfig $config)
     {
         $this->config = $config;
         $this->defaultLevel = $this->config->defaultLevel ?? 'debug';

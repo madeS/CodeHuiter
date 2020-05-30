@@ -2,7 +2,7 @@
 
 namespace CodeHuiter\Facilities\Module\Media\Model;
 
-use CodeHuiter\Config\ConnectorConfig;
+use CodeHuiter\Config\Facilities\Module\ConnectorConfig;
 use CodeHuiter\Database\Model;
 use CodeHuiter\Facilities\Module\Connector\ConnectableObject;
 
