@@ -865,7 +865,7 @@ class AuthService
     {
         $user->setSocialId($authData->getOriginSource(), $authData->getOriginId());
         $dataInfo = $user->getDataInfo();
-        if ($authData->getAccessToken() === null && $dataInfo['oauthData'][$authData->getOriginSource()]['accessToken']) {
+        if ($authData->getAccessToken() === null && !empty($dataInfo['oauthData'][$authData->getOriginSource()]['accessToken'])) {
             $authData->setAccessToken($dataInfo['oauthData'][$authData->getOriginSource()]['accessToken']);
         }
         $dataInfo['oauthData'][$authData->getOriginSource()] = $authData->getAsArray();
@@ -988,7 +988,6 @@ class Mauth {
     public $admin_level = 5;
     public $superadmin_level = 6;
 
-    private $allowOauth = array('vk','ig','fb','gl','tw','od');
 
     public $online_time = 180; // 3 min;
 

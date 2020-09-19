@@ -51,7 +51,6 @@ class User extends Model implements ConnectableObject
     protected $gl_id = '';
     protected $tw_id = '';
     protected $ig_id = '';
-    protected $od_id = '';
     protected $oauths = '{}';
     protected $skype_id = '';
     protected $name = '';
@@ -321,11 +320,10 @@ class User extends Model implements ConnectableObject
     {
         switch ($socialType) {
             case 'vk': return $this->vk_id;
-            case 'fb': return $this->fb_id;
-            case 'gl': return $this->gl_id;
-            case 'tw': return $this->tw_id;
-            case 'ig': return $this->ig_id;
-            case 'od': return $this->od_id;
+            case 'facebook': return $this->fb_id;
+            case 'google': return $this->gl_id;
+            case 'twitter': return $this->tw_id;
+            case 'instagram': return $this->ig_id;
         }
         throw InvalidFlowException::onInvalidArgument('socialType', $socialType);
     }
@@ -339,12 +337,12 @@ class User extends Model implements ConnectableObject
     {
         switch ($socialType) {
             case 'vk': $this->vk_id = $socialId; break;
-            case 'fb': $this->fb_id = $socialId; break;
-            case 'gl': $this->gl_id = $socialId; break;
-            case 'tw': $this->tw_id = $socialId; break;
-            case 'od': $this->od_id = $socialId; break;
+            case 'facebook': $this->fb_id = $socialId; break;
+            case 'google': $this->gl_id = $socialId; break;
+            case 'twitter': $this->tw_id = $socialId; break;
+            case 'instagram': $this->ig_id = $socialId; break;
+            default: throw InvalidFlowException::onInvalidArgument('socialType', $socialType);
         }
-        throw InvalidFlowException::onInvalidArgument('socialType', $socialType);
     }
 
     public function getGender(): int

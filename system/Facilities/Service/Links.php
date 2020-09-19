@@ -181,11 +181,11 @@ class Links
     public function oauth($type = ''): string
     {
         switch ($type) {
-            case 'vk': return '/auth/vk';
-            case 'fb': return '/auth/fb';
-            case 'ig': return '/auth/ig';
-            case 'tw': return '/auth/tw';
-            case 'gl': return '/auth/gl';
+            case 'vk': return '/auth/oauth/vk';
+            case 'facebook': return '/auth/oauth/facebook';
+            case 'instagram': return '/auth/oauth/instagram';
+            case 'twitter': return '/auth/oauth/twitter';
+            case 'google': return '/auth/oauth/google';
         }
         throw new InvalidFlowException('Unknown type in link->oauth');
     }
@@ -193,11 +193,11 @@ class Links
     public function oauthUnlink($type = ''): string
     {
         switch ($type) {
-            case 'vk': return '/auth/vk_unlink';
-            case 'fb': return '/auth/fb_unlink';
-            case 'ig': return '/auth/ig_unlink';
-            case 'tw': return '/auth/tw_unlink';
-            case 'gl': return '/auth/gl_unlink';
+            case 'vk': return '/auth/oauth_unlink/vk';
+            case 'facebook': return '/auth/oauth_unlink/facebook';
+            case 'instagram': return '/auth/oauth_unlink/instagram';
+            case 'twitter': return '/auth/oauth_unlink/twitter';
+            case 'google': return '/auth/oauth_unlink/google';
         }
         throw new InvalidFlowException('Unknown type in link->oauth');
     }

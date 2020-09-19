@@ -282,7 +282,7 @@ class AuthController extends BaseController
         );
     }
 
-    public function oauth_login(string $type = ''): void
+    public function oauth(string $type = ''): void
     {
         $this->initWithAuth(false);
         $manager = $this->getOAuthManagerFactory()->createOAuthManager($type);
@@ -309,12 +309,12 @@ class AuthController extends BaseController
         $oauthData = $manager->login($this->request->getGetAsArray());
         if ($oauthData === null) {
             $this->oauthCloser($manager->getLastErrorMessage());
+            return;
         }
-        if ($this->auth->user->exist()) {
-            $result = $this->auth->loginByOauth($oauthData, true);
-            if ($result->isError()) {
-                $this->oauthCloser($result->getMessage());
-            }
+        $result = $this->auth->loginByOauth($oauthData, true);
+        if ($result->isError()) {
+            $this->oauthCloser($result->getMessage());
+            return;
         }
         $this->oauthCloser(null);
     }

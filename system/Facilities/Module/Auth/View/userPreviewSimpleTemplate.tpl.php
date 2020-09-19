@@ -4,7 +4,7 @@
 <a href="<?=$those->links->user($userPreview)?>" class="bodyajax user-item">
 	<img class="preview" src="<?=$those->content->store('user_medias', $userPreview->getPicturePreview())?>" alt="<?=$those->userService->getPresentName($userPreview)?>"/>
 	<?php if($those->userService->isOnline($userPreview)):?>
-		<span class="online"></span>s
+		<span class="online"></span>
 	<?php endif;?>
 	<span class="name tfc"><span class="tfi"><?=$those->userService->getPresentName($userPreview)?></span><span class="tf"></span></span>
 </a>

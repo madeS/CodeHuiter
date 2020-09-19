@@ -17,6 +17,6 @@ class InvalidFlowException extends CodeHuiterRuntimeException
 
     public static function onInvalidArgument(string $argumentName, string $argumentValue): InvalidFlowException
     {
-        return new self(sprintf('Invalid argument %s got %s', $argumentName, $argumentValue));
+        return new self(sprintf('Invalid argument %s got [%s]', $argumentName, $argumentValue));
     }
 }

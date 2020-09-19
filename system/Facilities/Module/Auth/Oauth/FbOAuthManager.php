@@ -2,14 +2,15 @@
 
 namespace CodeHuiter\Facilities\Module\Auth\Oauth;
 
+use CodeHuiter\Modifier\Debugger;
 use CodeHuiter\Modifier\StringModifier;
 use CodeHuiter\Service\Logger;
 use CodeHuiter\Service\Network;
 
 class FbOAuthManager implements OAuthManager
 {
-    private const CALLBACK_SUCCESS_REDIRECT = '/auth/oauth_success/fb'; /* call function login */
-    private const CALLBACK_FAIL_REDIRECT = '/auth/oauth_cancel/fb'; /* call function login */
+    private const CALLBACK_SUCCESS_REDIRECT = '/auth/oauth_success/facebook'; /* call function login */
+    private const CALLBACK_FAIL_REDIRECT = '/auth/oauth_cancel/facebook'; /* call function login */
 
     private const LOGGER_TAG = 'FB_OAUTH';
 
@@ -84,8 +85,10 @@ class FbOAuthManager implements OAuthManager
         $successCallbackUrl = urlencode($this->siteUrl . self::CALLBACK_SUCCESS_REDIRECT);
         $url = 'https://www.facebook.com/dialog/oauth?';
         $url .= 'client_id='.$this->appId;
+        $url .= '&display=popup';
         $url .= '&redirect_uri='.$successCallbackUrl.'&response_type=code';
-        $url .= '&scope=user_about_me,user_birthday';
+        $url .= '&auth_type=rerequest';
+        $url .= '&scope=public_profile'; //,user_gender,user_birthday';
         $url .= '&state='.md5('test'.time());
         return $url;
     }
@@ -98,16 +101,14 @@ class FbOAuthManager implements OAuthManager
             return null;
         }
 
-        $resp = $this->network->httpRequest(
+        $responseJsonString = $this->network->httpRequest(
             'https://graph.facebook.com/oauth/access_token?client_id=' . $this->appId
             . '&redirect_uri=' . urlencode($this->siteUrl . self::CALLBACK_SUCCESS_REDIRECT)
             . '&client_secret=' . $this->secret . '&code=' . $code . '',
             Network::METHOD_GET
         );
-        $acc_arr = [];
-        parse_str($resp,$acc_arr);
-        $accessToken = $acc_arr['access_token'] ?? '';
-
+        $response = StringModifier::jsonDecode($responseJsonString);
+        $accessToken = $response['access_token'] ?? '';
         if (!$accessToken) {
             $this->lastErrorMessage = 'Facebook login fail! facebook not return access token.';
             return null;
@@ -117,29 +118,36 @@ class FbOAuthManager implements OAuthManager
 
     public function getUserData(string $accessToken, ?string $appSecretProof = null): ?OAuthData
     {
-        $url = 'https://graph.facebook.com/me?access_token='.$accessToken;
+        $url = 'https://graph.facebook.com/me?'
+            . 'fields=id,name,first_name,last_name,picture'
+            . '&access_token='.$accessToken;
         if ($appSecretProof){
             $url .= '&appsecret_proof='.$appSecretProof;
         }
         $resp = $this->network->httpRequest($url,Network::METHOD_GET);
-        $userdata = StringModifier::jsonDecode($resp);
-        $userId = $userdata['id'] ?? '';
+        $userData = StringModifier::jsonDecode($resp);
+
+        Debugger::log($userData); exit();
+
+        $userId = $userData['id'] ?? '';
         if (!$userId) {
             $this->lastErrorMessage = 'Facebook login fail! Code1003.';
             return null;
         }
-        $birthday = $userdata['birthday'] ?? '';
+        $birthday = $userData['birthday'] ?? '';
         $birthday = $birthday ? StringModifier::dateConvert($birthday, 'en-m') : '0000-01-01';
-        
+
+
+
         return new OAuthData(
-            'fb',
+            'facebook',
             $userId,
-            $userdata['name'] ?? '',
-            $userdata['first_name'] ?? '',
-            $userdata['last_name'] ?? '',
+            $userData['name'] ?? '',
+            $userData['first_name'] ?? '',
+            $userData['last_name'] ?? '',
             'https://graph.facebook.com/'.$userId.'/picture?type=large',
             $birthday,
-            $this->genderMapping[$userdata['gender'] ?? ''] ?? OAuthData::GENDER_UNKNOWN,
+            $this->genderMapping[$userData['gender'] ?? ''] ?? OAuthData::GENDER_UNKNOWN,
             []
         );
     }

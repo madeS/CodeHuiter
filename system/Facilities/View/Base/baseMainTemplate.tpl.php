@@ -3,7 +3,7 @@
 $baseTemplatePath = $those->app->config->projectConfig->baseTemplatePath;
 ?>
 
-<?php if(!$bodyAjax):?>
+<?php if(!$those->runData['bodyAjax']):?>
 <!DOCTYPE html>
 <html prefix="og: http://ogp.me/ns#">
 <head>

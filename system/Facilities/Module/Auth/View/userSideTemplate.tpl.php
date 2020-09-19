@@ -31,26 +31,26 @@ use CodeHuiter\Facilities\Module\Connector\ConnectorService; ?>
 		<?php if($user->getSocialId('vk')):?>
 			<a class="sik-vk small" href="<?='http://vk.com/id'.$user->getSocialId('vk')?>" target="_blank"><span class="ficon-vk"></span></a>
 		<?php endif;?>
-		<?php if($user->getSocialId('fb')):?>
-			<a class="sik-fb small" href="<?='http://facebook.com/'.$user->getSocialId('fb')?>" target="_blank"><span class="ficon-facebook"></span></a>
+		<?php if($user->getSocialId('facebook')):?>
+			<a class="sik-fb small" href="<?='http://facebook.com/'.$user->getSocialId('facebook')?>" target="_blank"><span class="ficon-facebook"></span></a>
 		<?php endif;?>
-		<?php if($user->getSocialId('tw')):?>
-			<a class="sik-tw small" href="<?='http://twitter.com/account/redirect_by_id?id='.$user->getSocialId('tw')?>" target="_blank"><span class="ficon-twitter"></span></a>
+		<?php if($user->getSocialId('twitter')):?>
+			<a class="sik-tw small" href="<?='http://twitter.com/account/redirect_by_id?id='.$user->getSocialId('twitter')?>" target="_blank"><span class="ficon-twitter"></span></a>
 		<?php endif;?>
-		<?php if($user->getSocialId('gl')):?>
-			<a class="sik-gl small" href="<?='https://plus.google.com/u/0/'.$user->getSocialId('gl')?>" target="_blank"><span class="ficon-gplus"></span></a>
+		<?php if($user->getSocialId('google')):?>
+			<a class="sik-gl small" href="<?='https://plus.google.com/u/0/'.$user->getSocialId('google')?>" target="_blank"><span class="ficon-gplus"></span></a>
 		<?php endif;?>
 	<?php else:?>
 		<?php if($user->getSocialId('vk')):?>
 			<span class="sik-vk small"><span class="ficon-vk"></span></span>
 		<?php endif;?>
-		<?php if($user->getSocialId('fb')):?>
+		<?php if($user->getSocialId('facebook')):?>
 			<span class="sik-fb small"><span class="ficon-facebook"></span></span>
 		<?php endif;?>
-		<?php if($user->getSocialId('tw')):?>
+		<?php if($user->getSocialId('twitter')):?>
 			<span class="sik-tw small"><span class="ficon-twitter"></span></span>
 		<?php endif;?>
-		<?php if($user->getSocialId('gl')):?>
+		<?php if($user->getSocialId('google')):?>
 			<span class="sik-gl small"><span class="ficon-gplus"></span></span>
 		<?php endif;?>
 	<?php endif;?>

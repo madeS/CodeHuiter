@@ -50,7 +50,7 @@ class OAuthFactory
                 $this->authConfig->vkIframeAppId,
                 $this->authConfig->vkIframeSecret
             );
-            case 'fb': return new FbOAuthManager(
+            case 'facebook': return new FbOAuthManager(
                 $this->network,
                 $this->logger,
                 $this->webConfig->siteUrl,
@@ -58,7 +58,7 @@ class OAuthFactory
                 $this->authConfig->facebookSecret,
                 $this->authConfig->facebookSecret
             );
-            case 'gl': return new GlOAuthManager(
+            case 'google': return new GlOAuthManager(
                 $this->network,
                 $this->logger,
                 $this->webConfig->siteUrl,

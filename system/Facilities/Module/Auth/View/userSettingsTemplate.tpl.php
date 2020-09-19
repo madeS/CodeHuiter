@@ -240,10 +240,10 @@ use CodeHuiter\Modifier\StringModifier;
 					<?php if($user->getSocialId('vk')):?>
 						<a class="sik-vk sik-btn"  href="<?='https://vk.com/id'.$user->getSocialId('vk')?>" target="_blank">
 							<span class="ficon-vk"></span>
-							<?php if($oauths['vk_id']['profilePhoto'] ?? ''):?>
-								<img src="<?=$oauths['vk_id']['profilePhoto']?>" style="width:26px; height: 26px; padding:3px; vertical-align: middle;" alt=""/>
+							<?php if($oauths['vk']['profilePhoto'] ?? ''):?>
+								<img src="<?=$oauths['vk']['profilePhoto']?>" style="width:26px; height: 26px; padding:3px; vertical-align: middle;" alt=""/>
 							<?php endif;?>
-							<?=$this->mm->g($oauths['vk_id']['name'])?>
+							<?php echo $oauths['vk']['name'] ?? ''?>
 						</a>
 
 						<a class="action" href="<?php echo $those->links->oauth('vk')?>" target="_blank" data-action="oauthOpen">
@@ -260,22 +260,22 @@ use CodeHuiter\Modifier\StringModifier;
 					<?php endif;?>
 
 					<?php if($those->app->config->authConfig->instagramAppId):?>
-						<?php if($user->getSocialId('ig')):?>
+						<?php if($user->getSocialId('instagram')):?>
 							<a class="sik-ig sik-btn"  href="<?='https://instagram.com/'.$user->getSocialId('ig')?>" target="_blank">
 								<span class="ficon-instagram"></span>
-								<?php if($oauths['ig_id']['profilePhoto'] ?? ''):?>
-									<img src="<?=$oauths['ig_id']['profilePhoto']?>" style="width:26px; height: 26px; padding:3px; vertical-align: middle;" alt=""/>
+								<?php if($oauths['instagram']['profilePhoto'] ?? ''):?>
+									<img src="<?=$oauths['instagram']['profilePhoto']?>" style="width:26px; height: 26px; padding:3px; vertical-align: middle;" alt=""/>
 								<?php endif;?>
-								<?=$this->mm->g($oauths['ig_id']['name'])?>
+								<?php echo $oauths['instagram']['name'] ?? ''?>
 							</a>
 
-							<a class="action" href="<?php echo $those->links->oauth('ig')?>" target="_blank" data-action="oauthOpen">
+							<a class="action" href="<?php echo $those->links->oauth('instagram')?>" target="_blank" data-action="oauthOpen">
 								<?php echo $those->lang->get('user:settings.link_another_account_ig');?>
 							</a>
-							или <span class="action likea" data-uri="<?php echo $those->links->oauthUnlink('ig')?>" data-action="easyAjax" data-params="<?php StringModifier::textForHtml('{"sync":"ig"}')?>">Отвязать</span>
+							или <span class="action likea" data-uri="<?php echo $those->links->oauthUnlink('instagram')?>" data-action="easyAjax" data-params="<?php StringModifier::textForHtml('{"sync":"ig"}')?>">Отвязать</span>
 						<?php else:?>
 							<span class="sik-ig sik-btn"><span class="ficon-instagram"></span></span>
-							<a class="action" href="<?php echo $those->links->oauth('ig')?>" target="_blank" data-action="oauthOpen">
+							<a class="action" href="<?php echo $those->links->oauth('instagram')?>" target="_blank" data-action="oauthOpen">
 								<?php echo $those->lang->get('user:settings.link_account_ig');?>
 							</a>
 						<?php endif;?>
@@ -283,22 +283,22 @@ use CodeHuiter\Modifier\StringModifier;
 					<?php endif;?>
 
 					<?php if($those->app->config->authConfig->facebookAppId):?>
-						<?php if($user->getSocialId('fb')):?>
-							<a class="sik-fb sik-btn"  href="<?='https://facebook.com/'.$user->getSocialId('fb')?>" target="_blank">
+						<?php if($user->getSocialId('facebook')):?>
+							<a class="sik-fb sik-btn"  href="<?='https://facebook.com/'.$user->getSocialId('facebook')?>" target="_blank">
 								<span class="ficon-facebook"></span>
-								<?php if($oauths['fb_id']['profilePhoto'] ?? ''):?>
-									<img src="<?=$oauths['fb_id']['profilePhoto']?>" style="width:26px; height: 26px; padding:3px; vertical-align: middle;" alt=""/>
+								<?php if($oauths['facebook']['profilePhoto'] ?? ''):?>
+									<img src="<?=$oauths['facebook']['profilePhoto']?>" style="width:26px; height: 26px; padding:3px; vertical-align: middle;" alt=""/>
 								<?php endif;?>
-								<?=$this->mm->g($oauths['fb_id']['name'])?>
+								<?php echo $oauths['facebook']['name'] ?? ''?>
 							</a>
 
-							<a class="action" href="<?php echo $those->links->oauth('fb')?>" target="_blank" data-action="oauthOpen">
+							<a class="action" href="<?php echo $those->links->oauth('facebook')?>" target="_blank" data-action="oauthOpen">
 								<?php echo $those->lang->get('user:settings.link_another_account_fb');?>
 							</a>
-							или <span class="action likea" data-uri="<?php echo $those->links->oauthUnlink('fb')?>" data-action="easyAjax" data-params="<?php StringModifier::textForHtml('{"sync":"fb"}')?>">Отвязать</span>
+							или <span class="action likea" data-uri="<?php echo $those->links->oauthUnlink('facebook')?>" data-action="easyAjax" data-params="<?php StringModifier::textForHtml('{"sync":"fb"}')?>">Отвязать</span>
 						<?php else:?>
 							<span class="sik-fb sik-btn"><span class="ficon-facebook"></span></span>
-							<a class="action" href="<?php echo $those->links->oauth('fb')?>" target="_blank" data-action="oauthOpen">
+							<a class="action" href="<?php echo $those->links->oauth('facebook')?>" target="_blank" data-action="oauthOpen">
 								<?php echo $those->lang->get('user:settings.link_account_fb');?>
 							</a>
 						<?php endif;?>
@@ -306,22 +306,22 @@ use CodeHuiter\Modifier\StringModifier;
 					<?php endif;?>
 
 					<?php if($those->app->config->authConfig->twitterConsumerKey):?>
-						<?php if($user->getSocialId('tw')):?>
-							<a class="sik-tw sik-btn"  href="<?='http://twitter.com/account/redirect_by_id?id='.$user->getSocialId('tw')?>" target="_blank">
+						<?php if($user->getSocialId('twitter')):?>
+							<a class="sik-tw sik-btn"  href="<?='http://twitter.com/account/redirect_by_id?id='.$user->getSocialId('twitter')?>" target="_blank">
 								<span class="ficon-twitter"></span>
-								<?php if($oauths['tw_id']['profilePhoto'] ?? ''):?>
-									<img src="<?=$oauths['tw_id']['profilePhoto']?>" style="width:26px; height: 26px; padding:3px; vertical-align: middle;" alt=""/>
+								<?php if($oauths['twitter']['profilePhoto'] ?? ''):?>
+									<img src="<?=$oauths['twitter']['profilePhoto']?>" style="width:26px; height: 26px; padding:3px; vertical-align: middle;" alt=""/>
 								<?php endif;?>
-								<?=$this->mm->g($oauths['tw_id']['name'])?>
+								<?php echo $oauths['twitter']['name'] ?? ''?>
 							</a>
 
-							<a class="action" href="<?php echo $those->links->oauth('tw')?>" target="_blank" data-action="oauthOpen">
+							<a class="action" href="<?php echo $those->links->oauth('twitter')?>" target="_blank" data-action="oauthOpen">
 								<?php echo $those->lang->get('user:settings.link_another_account_tw');?>
 							</a>
-							или <span class="action likea" data-uri="<?php echo $those->links->oauthUnlink('tw')?>" data-action="easyAjax" data-params="<?php StringModifier::textForHtml('{"sync":"tw"}')?>">Отвязать</span>
+							или <span class="action likea" data-uri="<?php echo $those->links->oauthUnlink('twitter')?>" data-action="easyAjax" data-params="<?php StringModifier::textForHtml('{"sync":"tw"}')?>">Отвязать</span>
 						<?php else:?>
 							<span class="sik-tw sik-btn"><span class="ficon-twitter"></span></span>
-							<a class="action" href="<?php echo $those->links->oauth('tw')?>" target="_blank" data-action="oauthOpen">
+							<a class="action" href="<?php echo $those->links->oauth('twitter')?>" target="_blank" data-action="oauthOpen">
 								<?php echo $those->lang->get('user:settings.link_account_tw');?>
 							</a>
 						<?php endif;?>
@@ -329,22 +329,22 @@ use CodeHuiter\Modifier\StringModifier;
 					<?php endif;?>
 
 					<?php if($those->app->config->authConfig->googleConfig->googleAppId):?>
-						<?php if($user->getSocialId('gl')):?>
-							<a class="sik-gl sik-btn"  href="<?='\'https://plus.google.com/u/0/'.$user->getSocialId('gl')?>" target="_blank">
+						<?php if($user->getSocialId('google')):?>
+							<a class="sik-gl sik-btn"  href="<?='\'https://plus.google.com/u/0/'.$user->getSocialId('google')?>" target="_blank">
 								<span class="ficon-gplus"></span>
-								<?php if($oauths['gl_id']['profilePhoto'] ?? ''):?>
-									<img src="<?=$oauths['gl_id']['profilePhoto']?>" style="width:26px; height: 26px; padding:3px; vertical-align: middle;" alt=""/>
+								<?php if($oauths['google']['profilePhoto'] ?? ''):?>
+									<img src="<?=$oauths['google']['profilePhoto']?>" style="width:26px; height: 26px; padding:3px; vertical-align: middle;" alt=""/>
 								<?php endif;?>
-								<?=$this->mm->g($oauths['gl_id']['name'])?>
+								<?php echo $oauths['google']['name'] ?? ''?>
 							</a>
 
-							<a class="action" href="<?php echo $those->links->oauth('gl')?>" target="_blank" data-action="oauthOpen">
+							<a class="action" href="<?php echo $those->links->oauth('google')?>" target="_blank" data-action="oauthOpen">
 								<?php echo $those->lang->get('user:settings.link_another_account_gl');?>
 							</a>
-							или <span class="action likea" data-uri="<?php echo $those->links->oauthUnlink('gl')?>" data-action="easyAjax" data-params="<?php StringModifier::textForHtml('{"sync":"gl"}')?>">Отвязать</span>
+							или <span class="action likea" data-uri="<?php echo $those->links->oauthUnlink('google')?>" data-action="easyAjax" data-params="<?php StringModifier::textForHtml('{"sync":"gl"}')?>">Отвязать</span>
 						<?php else:?>
 							<span class="sik-gl sik-btn"><span class="ficon-gplus"></span></span>
-							<a class="action" href="<?php echo $those->links->oauth('gl')?>" target="_blank" data-action="oauthOpen">
+							<a class="action" href="<?php echo $those->links->oauth('google')?>" target="_blank" data-action="oauthOpen">
 								<?php echo $those->lang->get('user:settings.link_account_gl');?>
 							</a>
 						<?php endif;?>

@@ -3,6 +3,7 @@
 namespace CodeHuiter\Facilities\Module\Auth\Oauth;
 
 use CodeHuiter\Core\Application;
+use CodeHuiter\Modifier\Debugger;
 use CodeHuiter\Modifier\StringModifier;
 use CodeHuiter\Facilities\Module\Auth\Model\User;
 use CodeHuiter\Facilities\Module\Auth\Model\UserRepository;
@@ -15,6 +16,8 @@ class VkOAuthManager implements OAuthManager
     private const CALLBACK_FAIL_REDIRECT = '/auth/oauth_cancel/vk'; /* call function login */
 
     private const LOGGER_TAG = 'VK_OAUTH';
+
+    private const API_VERSION = '5.110';
 
     /**
      * @var Network
@@ -174,23 +177,23 @@ class VkOAuthManager implements OAuthManager
         $fields = urlencode('sex,bdate,photo_big,city,contacts,photo_max_orig');
         $access_token_str = $access_token ? '&access_token=' . $access_token : '';
         $resp = $this->network->httpRequest(
-            'https://api.vk.com/method/users.get?uids='.$user_id.'&fields='.$fields.''.$access_token_str,
+            'https://api.vk.com/method/users.get?v=' . self::API_VERSION . '&user_ids='.$user_id.'&fields='.$fields.''.$access_token_str,
             Network::METHOD_GET
         );
-        $userdata = StringModifier::jsonDecode($resp);
-        $userdata = $userdata['response'][0] ?? [];
-        $uid = $userdata['uid'] ?? '';
+        $userData = StringModifier::jsonDecode($resp);
+        $userData = $userData['response'][0] ?? [];
+        $uid = $userData['id'] ?? '';
         if (!$uid) {
             $this->logger->withTag(self::LOGGER_TAG)->notice('VK GetUserData is invalid');
             $this->lastErrorMessage = 'VK login fail! Code 3.';
             return null;
         }
-        $name = '';
-        $firstName = $userdata['first_name'] ?? '';
-        $lastName = $userdata['last_name'] ?? '';
-        $gender = $this->genderMapping[(int)($userdata['sex'] ?? 0)] ?? OAuthData::GENDER_UNKNOWN;
-        $profilePhoto = $userdata['photo_max_orig'] ?? '';
-        $vkBirthday = $userdata['bdate'] ?? '';
+        $firstName = $userData['first_name'] ?? '';
+        $lastName = $userData['last_name'] ?? '';
+        $name = $firstName . ($lastName ? ' ' . $lastName : '');
+        $gender = $this->genderMapping[(int)($userData['sex'] ?? 0)] ?? OAuthData::GENDER_UNKNOWN;
+        $profilePhoto = $userData['photo_max_orig'] ?? '';
+        $vkBirthday = $userData['bdate'] ?? '';
         $profileBirthday = $vkBirthday ? StringModifier::dateConvert($vkBirthday, 'ru-m') : '0000-01-01';
 
         return new OAuthData(

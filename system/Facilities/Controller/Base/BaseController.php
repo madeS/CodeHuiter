@@ -42,8 +42,7 @@ class BaseController extends Controller
     /** @var array $data */
     protected $data;
 
-    /** @var array $runData */
-    public $runData;
+    public $runData = [];
 
     public function __construct(Application $app)
     {
@@ -156,9 +155,11 @@ class BaseController extends Controller
     protected function init()
     {
         $this->lang->setLanguage($this->app->config->webConfig->language);
-        $this->data = [
+        $this->runData = [
             'bodyAjax' => $this->ajaxResponse->isBodyAjax($this->request),
             'language' => $this->app->config->webConfig->language,
+        ];
+        $this->data = [
             'siteUrl' => $this->app->config->webConfig->siteUrl,
             'filters' => [],
             'pages' => [],
@@ -167,7 +168,7 @@ class BaseController extends Controller
             $this->data[$defaultField] = $this->app->config->projectConfig->$defaultField;
         }
 
-        $this->lang->setLanguage($this->data['language']);
+        $this->lang->setLanguage($this->runData['language']);
     }
 
     protected function acceptSearchListResult(SearchListResult $result, string $itemsKey = 'items'): void

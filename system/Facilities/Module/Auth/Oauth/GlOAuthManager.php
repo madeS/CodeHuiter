@@ -127,7 +127,7 @@ class GlOAuthManager implements OAuthManager
         }
 
         return new OAuthData(
-            'fb',
+            'google',
             $userId,
             $userdata['name'] ?? '',
             $userdata['given_name'] ?? '',

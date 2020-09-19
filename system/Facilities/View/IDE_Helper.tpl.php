@@ -5,11 +5,6 @@ $those = null;
 /** @var \CodeHuiter\Service\ByDefault\PhpRenderer $renderer */
 $renderer = null;
 
-/** @var string $bodyAjax */
-$bodyAjax = '';
-/** @var string $language */
-$language = '';
-
 /** @var string $template */
 $template = '';
 

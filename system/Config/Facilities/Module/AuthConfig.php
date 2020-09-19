@@ -43,11 +43,10 @@ class AuthConfig
 
     public $originSources = [
         'vk',
-        'fb',
-        'gl',
-        'tw',
-        'ig',
-        'od',
+        'facebook',
+        'google',
+        'twitter',
+        'instagram',
     ];
 
     public $facebookAppId = '600000000000121';

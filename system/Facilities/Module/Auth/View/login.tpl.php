@@ -9,31 +9,31 @@
 			<?php if($those->auth->config->vkAppId):?>
 				<a class="sik-vk big hint hbottom action"
 				   data-title="<?php echo $those->lang->get('auth_ui:sign_in_with_vk');?>"
-				   href="<?php $those->links->oauth('vk')?>" target="_blank" data-action="oauthOpen"
+				   href="<?php echo $those->links->oauth('vk')?>" target="_blank" data-action="oauthOpen"
 				><span class="ficon-vk"></span></a>
 			<?php endif;?>
 			<?php if($those->auth->config->instagramAppId):?>
 				<a class="sik-ig big hint hbottom action"
 				   data-title="<?php echo $those->lang->get('auth_ui:sign_in_with_ig');?>"
-				   href="<?php $those->links->oauth('ig')?>" target="_blank" data-action="oauthOpen"
+				   href="<?php echo $those->links->oauth('instagram')?>" target="_blank" data-action="oauthOpen"
 				><span class="ficon-instagram"></span></a>
 			<?php endif;?>
 			<?php if($those->auth->config->facebookAppId):?>
 				<a class="sik-fb big hint hbottom action"
 				   data-title="<?php echo $those->lang->get('auth_ui:sign_in_with_fb');?>"
-				   href="<?php $those->links->oauth('fb')?>" target="_blank" data-action="oauthOpen"
+				   href="<?php echo $those->links->oauth('facebook')?>" target="_blank" data-action="oauthOpen"
 				><span class="ficon-facebook"></span></a>
 			<?php endif;?>
 			<?php if($those->auth->config->twitterConsumerKey):?>
 				<a class="sik-tw big hint hbottom hlefted action"
 				   data-title="<?php echo $those->lang->get('auth_ui:sign_in_with_tw');?>"
-				   href="<?php $those->links->oauth('tw')?>" target="_blank" data-action="oauthOpen"
+				   href="<?php echo $those->links->oauth('twitter')?>" target="_blank" data-action="oauthOpen"
 				><span class="ficon-twitter"></span></a>
 			<?php endif;?>
 			<?php if($those->auth->config->googleConfig->googleAppId):?>
 				<a class="sik-gl big hint hbottom hlefted action"
 				   data-title="<?php echo $those->lang->get('auth_ui:sign_in_with_gl');?>"
-				   href="<?php $those->links->oauth('gl')?>" target="_blank" data-action="oauthOpen"
+				   href="<?php echo $those->links->oauth('google')?>" target="_blank" data-action="oauthOpen"
 				><span class="ficon-gplus"></span></a>
 			<?php endif;?>
 		<p class="margintop"><?php echo $those->lang->get('auth_ui:or_use_login_and_password');?></p>
