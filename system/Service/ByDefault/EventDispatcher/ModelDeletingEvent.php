@@ -6,7 +6,7 @@ use CodeHuiter\Config\Service\EventsConfig;
 use CodeHuiter\Database\Model;
 use CodeHuiter\Service\EventDispatcher\Event;
 
-class RelationalModelUpdatedEvent implements Event
+class ModelDeletingEvent implements Event
 {
     /**
      * @var string
@@ -18,16 +18,10 @@ class RelationalModelUpdatedEvent implements Event
      */
     private $model;
 
-    /**
-     * @var array
-     */
-    private $touchedSet;
-
-    public function __construct(Model $model, array $touchedSet)
+    public function __construct(Model $model)
     {
-        $this->eventName = EventsConfig::modelUpdated(get_class($model));
+        $this->eventName = EventsConfig::modelDeleting(get_class($model));
         $this->model = $model;
-        $this->touchedSet = $touchedSet;
     }
 
     public function getEventName(): string
@@ -38,10 +32,5 @@ class RelationalModelUpdatedEvent implements Event
     public function getModel(): Model
     {
         return $this->model;
-    }
-
-    public function getTouchedSet(): array
-    {
-        return $this->touchedSet;
     }
 }

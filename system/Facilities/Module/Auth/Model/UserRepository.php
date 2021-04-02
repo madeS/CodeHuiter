@@ -44,17 +44,19 @@ class UserRepository implements ConnectableObjectRepository
         return $model;
     }
 
-    public function find(array $where, array $opt = []): array
+    /**
+     * @param array $where
+     * @return User[]
+     */
+    public function find(array $where): array
     {
-        /** @var User[] $models */
-        $models = $this->repository->find($where, $opt);
-        return $models;
+        return $this->repository->find($where, []);
     }
 
-    public function findOne(array $where, array $opt = []): ?User
+    public function findOne(array $where): ?User
     {
         /** @var User|null $model */
-        $model = $this->repository->findOne($where, $opt);
+        $model = $this->repository->findOne($where, []);
         return $model;
     }
 
@@ -63,14 +65,12 @@ class UserRepository implements ConnectableObjectRepository
         $this->repository->update($where, $set);
     }
 
-    public function save(User $user): User
+    public function save(User $model): void
     {
-        if (!$user->getId()) {
-            $user->setRegtime($this->repository->getDateService()->sqlTime());
+        if (!$model->getId()) {
+            $model->setRegtime($this->repository->getDateService()->sqlTime());
         }
-        /** @var User|null $model */
-        $model = $this->repository->save($user);
-        return $model;
+        $this->repository->save($model);
     }
 
     public function delete(User $user): void

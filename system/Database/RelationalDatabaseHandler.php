@@ -82,7 +82,7 @@ interface RelationalDatabaseHandler
      * @param string|null $className  CClassName or null for stdObject
      * @param string $table Table name
      * @param array $where Where Key-Value array
-     * @param array $opt [key'=>field as key, order => ['field1' => 'asc', 'field2' => 'desc'], limit=>[count=>,from=>,page=>,per_page=>]]
+     * @param array $opt ['key'=>field as key, order => ['field1' => 'asc', 'field2' => 'desc'], limit=>[count=>,from=>,page=>,per_page=>]]
      * @return \stdClass[]
      */
     public function selectWhereObjects(?string $className, string $table, array $where, array $opt = []): array;

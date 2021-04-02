@@ -88,10 +88,12 @@ class FacilitiesConfig extends CoreConfig
         $this->injectedServices[self::INJECTED_AUTH] = Module\Auth\AuthService::class;
         $this->injectedServices[self::INJECTED_USER] = Module\Auth\UserService::class;
 
-        $this->routerConfig->routes['users/id(:num)'] = 'users/get/$1';
-        $this->routerConfig->routes['users/id(:num)/medias'] = 'medias/media_list/$1';
-        $this->routerConfig->routes['users/id(:num)/albums'] = 'medias/album_list/$1';
-        $this->routerConfig->routes['users/id(:num)/album(:num)'] = 'medias/album_view/$1/$2';
-        $this->routerConfig->routes['users/id(:num)/album(:num)/edit'] = 'users/album_edit/$1/$2';
+        $this->routerConfig->domainRoutes['all']['users/id(:num)'] = 'users/get/$1';
+        $this->routerConfig->domainRoutes['all']['users/id(:num)/medias'] = 'medias/media_list/$1';
+        $this->routerConfig->domainRoutes['all']['users/id(:num)/albums'] = 'medias/album_list/$1';
+        $this->routerConfig->domainRoutes['all']['users/id(:num)/album(:num)'] = 'medias/album_view/$1/$2';
+        $this->routerConfig->domainRoutes['all']['users/id(:num)/album(:num)/edit'] = 'users/album_edit/$1/$2';
+
+        $this->webConfig->domain = 'app.local';
     }
 }

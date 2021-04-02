@@ -4,8 +4,8 @@ namespace CodeHuiter\Database;
 
 use CodeHuiter\Config\Database\RelationalRepositoryConfig;
 use CodeHuiter\Core\Application;
-use CodeHuiter\Service\ByDefault\EventDispatcher\RelationalModelDeletingEvent;
-use CodeHuiter\Service\ByDefault\EventDispatcher\RelationalModelUpdatedEvent;
+use CodeHuiter\Service\ByDefault\EventDispatcher\ModelDeletingEvent;
+use CodeHuiter\Service\ByDefault\EventDispatcher\ModelUpdatedEvent;
 use CodeHuiter\Service\DateService;
 use CodeHuiter\Service\EventDispatcher;
 use CodeHuiter\Service\Logger;
@@ -86,7 +86,7 @@ class RelationalRepository
 
     /**
      * @param array $where
-     * @param array $opt
+     * @param array $opt ['key'=>field as key, order => ['field1' => 'asc', 'field2' => 'desc'], limit=>[count=>,from=>,page=>,per_page=>]]
      * @return Model[]
      */
     public function find(array $where, array $opt = []): array
@@ -122,27 +122,27 @@ class RelationalRepository
         return true;
     }
 
-    public function save(Model $model): Model
+    public function save(Model $model): void
     {
+        $modelBeforeSaving = clone $model;
+
         $whereSet = $this->getPrimarySet($model);
         $timeString = $this->getDateService()->sqlTime();
         if ($whereSet && $this->exist($model)) {
-            $model->updateModelBySet(['updated_at' => $timeString], true);
             $set = $model->getModelTouchedSet();
             if (!$set) {
-                return $model;
+                return;
             }
+            $model->updateModelBySet(['updated_at' => $timeString], true);
             $this->getDB()->update($this->table, $whereSet, $set);
         } else {
-            $model->updateModelBySet(['updated_at' => $timeString, 'created_at' => $timeString], true);
             $set = $model->getModelSettledSet();
+            $model->updateModelBySet(['updated_at' => $timeString, 'created_at' => $timeString], true);
             $primaryKey = $this->getDB()->insert($this->table, $set);
             $model->updateModelBySet([$this->config->autoIncrementField => $primaryKey]);
         }
         $model->initModelOriginals();
-        $this->getEventDispatcher()->fire(new RelationalModelUpdatedEvent($model, $set));
-
-        return $model;
+        $this->getEventDispatcher()->fire(new ModelUpdatedEvent($modelBeforeSaving, $model));
     }
 
     /**
@@ -159,7 +159,7 @@ class RelationalRepository
             return false;
         }
         // TODO Add AutoStart Transaction
-        $this->getEventDispatcher()->fire(new RelationalModelDeletingEvent($model));
+        $this->getEventDispatcher()->fire(new ModelDeletingEvent($model));
         return (bool)$this->getDB()->delete($this->table, $where);
     }
 

@@ -9,9 +9,5 @@ class DefaultConfig extends FacilitiesConfig
     public function __construct()
     {
         parent::__construct();
-
-        $this->routerConfig->routes['extension/(:all)'] = 'APP_MODULE_ChromeExtension/$1';
-
-        $this->webConfig->domain = 'app.local';
     }
 }

@@ -59,9 +59,6 @@ class MediaRepository implements ConnectableObjectRepository
         return $models;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function findOne(array $where, array $opt = []): ?Media
     {
         /** @var Media|null $model */
@@ -74,14 +71,10 @@ class MediaRepository implements ConnectableObjectRepository
         $this->repository->update($where, $set);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function save(Media $media): Media
     {
-        /** @var Media|null $model */
-        $model = $this->repository->save($media);
-        return $model;
+        $this->repository->save($media);
+        return $media;
     }
 
     public function delete(Media $media): void
