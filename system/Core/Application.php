@@ -64,7 +64,7 @@ class Application
     public function init(?string $environmentConfigClass = null): void
     {
         if ($environmentConfigClass === null) {
-            $environmentConfigClass = $this->requireVarIfFileExist(APP_PATH . 'Config/Env.php', 'Developing');
+            $environmentConfigClass = $this->requireVarIfFileExist(APP_PATH . 'Config/Env.php', 'ProductionConfig');
         }
 
         $this->config = new $environmentConfigClass();
